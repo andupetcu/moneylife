@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@moneylife/shared-types": ["../../packages/shared-types/src"],
+      "@moneylife/ui-kit": ["../../packages/ui-kit/src"]
+    }
+  },
+  "include": ["app", "src", "*.ts", "*.tsx"],
+  "exclude": ["node_modules"]
+}
