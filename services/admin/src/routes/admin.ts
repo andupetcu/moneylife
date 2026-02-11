@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import { wrap } from '../utils/wrap';
 import * as usersController from '../controllers/users';
 import * as gamesController from '../controllers/games';
 import * as antiCheatController from '../controllers/anti-cheat';
 
-export const adminRouter = Router();
+export const adminRouter: RouterType = Router();
 
 adminRouter.get('/users', wrap(usersController.searchUsers));
 adminRouter.get('/users/:id', wrap(usersController.getUser));

@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import { wrap } from '../utils/wrap';
 import * as inAppController from '../controllers/in-app';
 import * as pushController from '../controllers/push';
 
-export const notificationRouter = Router();
+export const notificationRouter: RouterType = Router();
 
 notificationRouter.get('/', wrap(inAppController.getNotifications));
 notificationRouter.put('/:id/read', wrap(inAppController.markRead));

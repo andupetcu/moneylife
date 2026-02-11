@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import { wrap } from '../utils/wrap';
 import { requireRole } from '../middleware/auth';
 import * as onboardingController from '../controllers/onboarding';
@@ -6,7 +6,7 @@ import * as themingController from '../controllers/theming';
 import * as analyticsController from '../controllers/analytics';
 import * as rewardsController from '../controllers/rewards';
 
-export const partnerRouter = Router();
+export const partnerRouter: RouterType = Router();
 
 partnerRouter.post('/', requireRole('system_admin'), wrap(onboardingController.createPartner));
 partnerRouter.get('/:id', wrap(onboardingController.getPartner));

@@ -34,11 +34,8 @@ export function MLCard({
               ? theme.spacing.xl
               : theme.spacing.lg,
     },
-    variant === 'elevated' && styles.elevated,
-    variant === 'outlined' && {
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-    },
+    ...(variant === 'elevated' ? [styles.elevated] : []),
+    ...(variant === 'outlined' ? [{ borderWidth: 1, borderColor: theme.colors.border } as ViewStyle] : []),
   ];
 
   return (

@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import { wrap } from '../utils/wrap';
 import * as plaidController from '../controllers/plaid';
 import * as truelayerController from '../controllers/truelayer';
 import * as saltEdgeController from '../controllers/salt-edge';
 import * as mirrorController from '../controllers/mirror-mode';
 
-export const bankingRouter = Router();
+export const bankingRouter: RouterType = Router();
 
 bankingRouter.post('/link', wrap(plaidController.createLinkToken));
 bankingRouter.post('/callback', wrap(plaidController.exchangePublicToken));

@@ -3,20 +3,47 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "jsx": "preserve",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "incremental": true,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@moneylife/shared-types": ["../../packages/shared-types/src"],
-      "@moneylife/ui-kit": ["../../packages/ui-kit/src"],
-      "react-native": ["./node_modules/react-native-web"]
-    }
+      "@/*": [
+        "./src/*"
+      ],
+      "@moneylife/shared-types": [
+        "../../packages/shared-types/src"
+      ],
+      "@moneylife/ui-kit": [
+        "../../packages/ui-kit/src"
+      ],
+      "react-native": [
+        "./node_modules/react-native-web"
+      ]
+    },
+    "allowJs": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
