@@ -1,0 +1,120 @@
+version: '3.8'
+
+# Production compose — services only.
+# Expects external PostgreSQL (RDS), Redis (ElastiCache), and AWS SQS/SNS.
+# All config via environment variables.
+
+x-common-env: &common-env
+  DATABASE_URL: ${DATABASE_URL}
+  REDIS_URL: ${REDIS_URL}
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  CORS_ORIGINS: ${CORS_ORIGINS:-}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+
+x-common: &common
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        cpus: '1.0'
+        memory: 512M
+
+services:
+  auth:
+    <<: *common
+    image: ${DOCKER_REGISTRY}/moneylife-auth:${IMAGE_TAG:-latest}
+    environment:
+      <<: *common-env
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRY: ${JWT_EXPIRY:-15m}
+      JWT_REFRESH_EXPIRY: ${JWT_REFRESH_EXPIRY:-7d}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
+      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+      APPLE_KEY_ID: ${APPLE_KEY_ID:-}
+      APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
+      PORT: '3001'
+    ports:
+      - '3001:3001'
+
+  game-engine:
+    <<: *common
+    image: ${DOCKER_REGISTRY}/moneylife-game-engine:${IMAGE_TAG:-latest}
+    environment:
+      <<: *common-env
+      AUTH_SERVICE_URL: http://auth:3001
+      PORT: '3002'
+    ports:
+      - '3002:3002'
+
+  rewards:
+    <<: *common
+    image: ${DOCKER_REGISTRY}/moneylife-rewards:${IMAGE_TAG:-latest}
+    environment:
+      <<: *common-env
+      TREMENDOUS_API_KEY: ${TREMENDOUS_API_KEY:-}
+      TREMENDOUS_ENV: ${TREMENDOUS_ENV:-production}
+      PORT: '3003'
+    ports:
+      - '3003:3003'
+
+  social:
+    <<: *common
+    image: ${DOCKER_REGISTRY}/moneylife-social:${IMAGE_TAG:-latest}
+    environment:
+      <<: *common-env
+      PORT: '3004'
+    ports:
+      - '3004:3004'
+
+  notification:
+    <<: *common
+    image: ${DOCKER_REGISTRY}/moneylife-notification:${IMAGE_TAG:-latest}
+    environment:
+      <<: *common-env
+      FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:-}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      PORT: '3005'
+    ports:
+      - '3005:3005'
+
+  partner:
+    <<: *common
+    image: ${DOCKER_REGISTRY}/moneylife-partner:${IMAGE_TAG:-latest}
+    environment:
+      <<: *common-env
+      AUTH_SERVICE_URL: http://auth:3001
+      PARTNER_WEBHOOK_SECRET: ${PARTNER_WEBHOOK_SECRET:-}
+      PORT: '3006'
+    ports:
+      - '3006:3006'
+
+  banking:
+    <<: *common
+    image: ${DOCKER_REGISTRY}/moneylife-banking:${IMAGE_TAG:-latest}
+    environment:
+      <<: *common-env
+      PLAID_CLIENT_ID: ${PLAID_CLIENT_ID:-}
+      PLAID_SECRET: ${PLAID_SECRET:-}
+      PLAID_ENV: ${PLAID_ENV:-production}
+      TRUELAYER_CLIENT_ID: ${TRUELAYER_CLIENT_ID:-}
+      TRUELAYER_CLIENT_SECRET: ${TRUELAYER_CLIENT_SECRET:-}
+      TRUELAYER_ENV: ${TRUELAYER_ENV:-live}
+      SALT_EDGE_APP_ID: ${SALT_EDGE_APP_ID:-}
+      SALT_EDGE_SECRET: ${SALT_EDGE_SECRET:-}
+      PORT: '3007'
+    ports:
+      - '3007:3007'
+
+  admin:
+    <<: *common
+    image: ${DOCKER_REGISTRY}/moneylife-admin:${IMAGE_TAG:-latest}
+    environment:
+      <<: *common-env
+      AUTH_SERVICE_URL: http://auth:3001
+      PORT: '3008'
+    ports:
+      - '3008:3008'

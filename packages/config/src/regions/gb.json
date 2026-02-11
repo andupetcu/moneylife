@@ -1,0 +1,54 @@
+{
+  "code": "gb",
+  "name": "United Kingdom",
+  "currency": "GBP",
+  "currencySymbol": "£",
+  "decimalDigits": 2,
+  "locale": "en-GB",
+  "pppFactor": 0.78,
+  "taxRates": {
+    "incomeTax": 0.20,
+    "nationalInsurance": 0.12,
+    "vat": 0.20,
+    "capitalGainsTax": 0.20,
+    "dividendTax": 0.0875
+  },
+  "typicalValues": {
+    "entryLevelSalaryMonthly": 210000,
+    "averageSalaryMonthly": 290000,
+    "averageRentCity": 150000,
+    "averageRentSuburb": 95000,
+    "groceriesMonthly": 40000,
+    "utilitiesMonthly": 18000,
+    "publicTransportMonthly": 14000,
+    "phoneMonthly": 3000,
+    "internetMonthly": 3500
+  },
+  "interestRates": {
+    "savingsAPY": 0.04,
+    "checkingAPY": 0.0,
+    "creditCardAPR": 0.219,
+    "personalLoanAPR": { "min": 0.039, "max": 0.25 },
+    "mortgageAPR": { "fixed30y": 0.055, "fixed15y": 0.048 },
+    "autoLoanAPR": { "good": 0.055, "bad": 0.13 },
+    "studentLoanAPR": 0.071,
+    "overdraftAPR": 0.396
+  },
+  "inflation": {
+    "annualRate": 0.04,
+    "historicalAverage": 0.025
+  },
+  "fees": {
+    "overdraftFee": 0,
+    "lateFeeCredit": 1200,
+    "lateFeeRent": 0,
+    "excessWithdrawalFee": 500
+  },
+  "insurance": {
+    "healthPremium": 0,
+    "autoPremium": 5000,
+    "rentersPremium": 1200,
+    "lifePremium": 2500,
+    "disabilityPremium": 3000
+  }
+}

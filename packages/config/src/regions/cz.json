@@ -1,0 +1,54 @@
+{
+  "code": "cz",
+  "name": "Czech Republic",
+  "currency": "CZK",
+  "currencySymbol": "Kč",
+  "decimalDigits": 2,
+  "locale": "cs-CZ",
+  "pppFactor": 23.5,
+  "taxRates": {
+    "incomeTax": 0.15,
+    "socialContributions": 0.11,
+    "vat": 0.21,
+    "capitalGainsTax": 0.15,
+    "dividendTax": 0.15
+  },
+  "typicalValues": {
+    "entryLevelSalaryMonthly": 3500000,
+    "averageSalaryMonthly": 4500000,
+    "averageRentCity": 1800000,
+    "averageRentSuburb": 1200000,
+    "groceriesMonthly": 800000,
+    "utilitiesMonthly": 500000,
+    "publicTransportMonthly": 55000,
+    "phoneMonthly": 50000,
+    "internetMonthly": 50000
+  },
+  "interestRates": {
+    "savingsAPY": 0.04,
+    "checkingAPY": 0.0,
+    "creditCardAPR": 0.22,
+    "personalLoanAPR": { "min": 0.05, "max": 0.20 },
+    "mortgageAPR": { "fixed30y": 0.055, "fixed15y": 0.050 },
+    "autoLoanAPR": { "good": 0.06, "bad": 0.13 },
+    "studentLoanAPR": 0.0,
+    "overdraftAPR": 0.18
+  },
+  "inflation": {
+    "annualRate": 0.025,
+    "historicalAverage": 0.03
+  },
+  "fees": {
+    "overdraftFee": 50000,
+    "lateFeeCredit": 50000,
+    "lateFeeRent": 100000,
+    "excessWithdrawalFee": 20000
+  },
+  "insurance": {
+    "healthPremium": 0,
+    "autoPremium": 150000,
+    "rentersPremium": 20000,
+    "lifePremium": 50000,
+    "disabilityPremium": 70000
+  }
+}

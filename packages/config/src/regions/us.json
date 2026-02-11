@@ -1,0 +1,55 @@
+{
+  "code": "us",
+  "name": "United States",
+  "currency": "USD",
+  "currencySymbol": "$",
+  "decimalDigits": 2,
+  "locale": "en-US",
+  "pppFactor": 1.0,
+  "taxRates": {
+    "incomeTax": 0.22,
+    "socialContributions": 0.0765,
+    "vat": 0.0,
+    "salesTax": 0.08,
+    "capitalGainsTax": 0.15,
+    "dividendTax": 0.15
+  },
+  "typicalValues": {
+    "entryLevelSalaryMonthly": 350000,
+    "averageSalaryMonthly": 500000,
+    "averageRentCity": 180000,
+    "averageRentSuburb": 130000,
+    "groceriesMonthly": 60000,
+    "utilitiesMonthly": 20000,
+    "publicTransportMonthly": 10000,
+    "phoneMonthly": 7000,
+    "internetMonthly": 6000
+  },
+  "interestRates": {
+    "savingsAPY": 0.045,
+    "checkingAPY": 0.0001,
+    "creditCardAPR": 0.1999,
+    "personalLoanAPR": { "min": 0.08, "max": 0.24 },
+    "mortgageAPR": { "fixed30y": 0.068, "fixed15y": 0.060 },
+    "autoLoanAPR": { "good": 0.065, "bad": 0.12 },
+    "studentLoanAPR": 0.055,
+    "overdraftAPR": 0.18
+  },
+  "inflation": {
+    "annualRate": 0.032,
+    "historicalAverage": 0.03
+  },
+  "fees": {
+    "overdraftFee": 3500,
+    "lateFeeCredit": 3500,
+    "lateFeeRent": 5000,
+    "excessWithdrawalFee": 1000
+  },
+  "insurance": {
+    "healthPremium": 15000,
+    "autoPremium": 8000,
+    "rentersPremium": 1500,
+    "lifePremium": 3000,
+    "disabilityPremium": 4000
+  }
+}

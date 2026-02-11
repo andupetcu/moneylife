@@ -1,0 +1,54 @@
+{
+  "code": "fr",
+  "name": "France",
+  "currency": "EUR",
+  "currencySymbol": "€",
+  "decimalDigits": 2,
+  "locale": "fr-FR",
+  "pppFactor": 0.92,
+  "taxRates": {
+    "incomeTax": 0.30,
+    "socialContributions": 0.22,
+    "vat": 0.20,
+    "capitalGainsTax": 0.30,
+    "dividendTax": 0.30
+  },
+  "typicalValues": {
+    "entryLevelSalaryMonthly": 220000,
+    "averageSalaryMonthly": 340000,
+    "averageRentCity": 100000,
+    "averageRentSuburb": 65000,
+    "groceriesMonthly": 35000,
+    "utilitiesMonthly": 15000,
+    "publicTransportMonthly": 7500,
+    "phoneMonthly": 2000,
+    "internetMonthly": 3000
+  },
+  "interestRates": {
+    "savingsAPY": 0.03,
+    "checkingAPY": 0.0,
+    "creditCardAPR": 0.18,
+    "personalLoanAPR": { "min": 0.035, "max": 0.15 },
+    "mortgageAPR": { "fixed30y": 0.038, "fixed15y": 0.032 },
+    "autoLoanAPR": { "good": 0.045, "bad": 0.10 },
+    "studentLoanAPR": 0.01,
+    "overdraftAPR": 0.14
+  },
+  "inflation": {
+    "annualRate": 0.025,
+    "historicalAverage": 0.02
+  },
+  "fees": {
+    "overdraftFee": 800,
+    "lateFeeCredit": 1200,
+    "lateFeeRent": 0,
+    "excessWithdrawalFee": 500
+  },
+  "insurance": {
+    "healthPremium": 0,
+    "autoPremium": 5000,
+    "rentersPremium": 1500,
+    "lifePremium": 2500,
+    "disabilityPremium": 3500
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@moneylife/db-migrations",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "migrate:up": "node-pg-migrate up --migrations-dir migrations --migration-file-language sql",
+    "migrate:down": "node-pg-migrate down --migrations-dir migrations --migration-file-language sql",
+    "migrate:status": "node-pg-migrate status --migrations-dir migrations",
+    "seed:dev": "psql $DATABASE_URL -f seeds/dev_users.sql -f seeds/dev_scenarios.sql -f seeds/dev_badges.sql"
+  },
+  "dependencies": {
+    "node-pg-migrate": "^7.0.0",
+    "pg": "^8.13.0"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "code": "hu",
+  "name": "Hungary",
+  "currency": "HUF",
+  "currencySymbol": "Ft",
+  "decimalDigits": 0,
+  "locale": "hu-HU",
+  "pppFactor": 370,
+  "taxRates": {
+    "incomeTax": 0.15,
+    "socialContributions": 0.185,
+    "vat": 0.27,
+    "capitalGainsTax": 0.15,
+    "dividendTax": 0.15
+  },
+  "typicalValues": {
+    "entryLevelSalaryMonthly": 450000,
+    "averageSalaryMonthly": 650000,
+    "averageRentCity": 200000,
+    "averageRentSuburb": 130000,
+    "groceriesMonthly": 100000,
+    "utilitiesMonthly": 50000,
+    "publicTransportMonthly": 9500,
+    "phoneMonthly": 5000,
+    "internetMonthly": 5000
+  },
+  "interestRates": {
+    "savingsAPY": 0.06,
+    "checkingAPY": 0.0,
+    "creditCardAPR": 0.30,
+    "personalLoanAPR": { "min": 0.10, "max": 0.30 },
+    "mortgageAPR": { "fixed30y": 0.07, "fixed15y": 0.065 },
+    "autoLoanAPR": { "good": 0.08, "bad": 0.16 },
+    "studentLoanAPR": 0.0,
+    "overdraftAPR": 0.25
+  },
+  "inflation": {
+    "annualRate": 0.04,
+    "historicalAverage": 0.045
+  },
+  "fees": {
+    "overdraftFee": 5000,
+    "lateFeeCredit": 5000,
+    "lateFeeRent": 10000,
+    "excessWithdrawalFee": 2000
+  },
+  "insurance": {
+    "healthPremium": 0,
+    "autoPremium": 20000,
+    "rentersPremium": 3000,
+    "lifePremium": 8000,
+    "disabilityPremium": 10000
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "code": "de",
+  "name": "Germany",
+  "currency": "EUR",
+  "currencySymbol": "€",
+  "decimalDigits": 2,
+  "locale": "de-DE",
+  "pppFactor": 0.92,
+  "taxRates": {
+    "incomeTax": 0.30,
+    "socialContributions": 0.205,
+    "vat": 0.19,
+    "capitalGainsTax": 0.26375,
+    "dividendTax": 0.26375
+  },
+  "typicalValues": {
+    "entryLevelSalaryMonthly": 280000,
+    "averageSalaryMonthly": 400000,
+    "averageRentCity": 110000,
+    "averageRentSuburb": 70000,
+    "groceriesMonthly": 35000,
+    "utilitiesMonthly": 25000,
+    "publicTransportMonthly": 5800,
+    "phoneMonthly": 2000,
+    "internetMonthly": 3500
+  },
+  "interestRates": {
+    "savingsAPY": 0.025,
+    "checkingAPY": 0.0,
+    "creditCardAPR": 0.16,
+    "personalLoanAPR": { "min": 0.04, "max": 0.12 },
+    "mortgageAPR": { "fixed30y": 0.04, "fixed15y": 0.035 },
+    "autoLoanAPR": { "good": 0.04, "bad": 0.10 },
+    "studentLoanAPR": 0.0,
+    "overdraftAPR": 0.12
+  },
+  "inflation": {
+    "annualRate": 0.028,
+    "historicalAverage": 0.02
+  },
+  "fees": {
+    "overdraftFee": 0,
+    "lateFeeCredit": 1200,
+    "lateFeeRent": 0,
+    "excessWithdrawalFee": 500
+  },
+  "insurance": {
+    "healthPremium": 0,
+    "autoPremium": 5000,
+    "rentersPremium": 800,
+    "lifePremium": 2000,
+    "disabilityPremium": 3500
+  }
+}

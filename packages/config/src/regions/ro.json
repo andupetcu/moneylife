@@ -1,0 +1,54 @@
+{
+  "code": "ro",
+  "name": "Romania",
+  "currency": "RON",
+  "currencySymbol": "lei",
+  "decimalDigits": 2,
+  "locale": "ro-RO",
+  "pppFactor": 4.6,
+  "taxRates": {
+    "incomeTax": 0.10,
+    "socialContributions": 0.355,
+    "vat": 0.19,
+    "capitalGainsTax": 0.10,
+    "dividendTax": 0.08
+  },
+  "typicalValues": {
+    "entryLevelSalaryMonthly": 350000,
+    "averageSalaryMonthly": 550000,
+    "averageRentCity": 250000,
+    "averageRentSuburb": 150000,
+    "groceriesMonthly": 150000,
+    "utilitiesMonthly": 80000,
+    "publicTransportMonthly": 15000,
+    "phoneMonthly": 5000,
+    "internetMonthly": 5000
+  },
+  "interestRates": {
+    "savingsAPY": 0.045,
+    "checkingAPY": 0.0001,
+    "creditCardAPR": 0.22,
+    "personalLoanAPR": { "min": 0.09, "max": 0.26 },
+    "mortgageAPR": { "fixed30y": 0.065, "fixed15y": 0.058 },
+    "autoLoanAPR": { "good": 0.075, "bad": 0.14 },
+    "studentLoanAPR": 0.06,
+    "overdraftAPR": 0.20
+  },
+  "inflation": {
+    "annualRate": 0.055,
+    "historicalAverage": 0.04
+  },
+  "fees": {
+    "overdraftFee": 15000,
+    "lateFeeCredit": 15000,
+    "lateFeeRent": 20000,
+    "excessWithdrawalFee": 5000
+  },
+  "insurance": {
+    "healthPremium": 70000,
+    "autoPremium": 40000,
+    "rentersPremium": 7000,
+    "lifePremium": 15000,
+    "disabilityPremium": 20000
+  }
+}

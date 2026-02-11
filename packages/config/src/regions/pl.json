@@ -1,0 +1,54 @@
+{
+  "code": "pl",
+  "name": "Poland",
+  "currency": "PLN",
+  "currencySymbol": "zł",
+  "decimalDigits": 2,
+  "locale": "pl-PL",
+  "pppFactor": 4.2,
+  "taxRates": {
+    "incomeTax": 0.12,
+    "socialContributions": 0.1371,
+    "vat": 0.23,
+    "capitalGainsTax": 0.19,
+    "dividendTax": 0.19
+  },
+  "typicalValues": {
+    "entryLevelSalaryMonthly": 550000,
+    "averageSalaryMonthly": 800000,
+    "averageRentCity": 300000,
+    "averageRentSuburb": 180000,
+    "groceriesMonthly": 150000,
+    "utilitiesMonthly": 80000,
+    "publicTransportMonthly": 12000,
+    "phoneMonthly": 5000,
+    "internetMonthly": 6000
+  },
+  "interestRates": {
+    "savingsAPY": 0.055,
+    "checkingAPY": 0.0,
+    "creditCardAPR": 0.21,
+    "personalLoanAPR": { "min": 0.08, "max": 0.22 },
+    "mortgageAPR": { "fixed30y": 0.075, "fixed15y": 0.068 },
+    "autoLoanAPR": { "good": 0.07, "bad": 0.14 },
+    "studentLoanAPR": 0.02,
+    "overdraftAPR": 0.18
+  },
+  "inflation": {
+    "annualRate": 0.045,
+    "historicalAverage": 0.035
+  },
+  "fees": {
+    "overdraftFee": 5000,
+    "lateFeeCredit": 5000,
+    "lateFeeRent": 10000,
+    "excessWithdrawalFee": 2000
+  },
+  "insurance": {
+    "healthPremium": 0,
+    "autoPremium": 25000,
+    "rentersPremium": 3000,
+    "lifePremium": 8000,
+    "disabilityPremium": 12000
+  }
+}

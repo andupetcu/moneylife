@@ -1,0 +1,90 @@
+name: Deploy Production
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  DOCKER_REGISTRY: ghcr.io/andupetcu/moneylife
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [auth, game-engine, rewards, social, notification, partner, banking, admin]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract version
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./services/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}-${{ matrix.service }}:latest
+            ${{ env.DOCKER_REGISTRY }}-${{ matrix.service }}:${{ steps.version.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Production
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy services
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "Deploying ${TAG} to production..."
+          for service in auth game-engine rewards social notification partner banking admin; do
+            aws ecs update-service \
+              --cluster moneylife-production \
+              --service "moneylife-${service}" \
+              --force-new-deployment \
+              --no-cli-pager || true
+          done
+
+      - name: Wait for deployment
+        run: |
+          for service in auth game-engine rewards social notification partner banking admin; do
+            echo "Waiting for ${service}..."
+            aws ecs wait services-stable \
+              --cluster moneylife-production \
+              --services "moneylife-${service}" || true
+          done

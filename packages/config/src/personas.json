@@ -1,0 +1,126 @@
+{
+  "personas": [
+    {
+      "id": "teen",
+      "name": "Teen",
+      "ageRange": [15, 17],
+      "startingAge": 15,
+      "startingCash": 5000,
+      "monthlyIncome": 10000,
+      "incomeSource": "allowance",
+      "xpModifier": 1.2,
+      "availableAccountsAtStart": ["savings", "prepaid"],
+      "accountUnlocks": {
+        "checking": 3,
+        "credit_card": 5
+      },
+      "neverAvailable": ["mortgage", "bnpl"],
+      "startingBills": [
+        { "name": "Phone Plan", "amount": 1500, "category": "subscription" },
+        { "name": "Streaming", "amount": 1000, "category": "subscription" }
+      ],
+      "startingGoals": [
+        { "name": "Gaming Console", "target": 30000 },
+        { "name": "First Car", "target": 300000 }
+      ],
+      "narrative": "You just got your first allowance. Time to learn what money means."
+    },
+    {
+      "id": "student",
+      "name": "Student",
+      "ageRange": [18, 22],
+      "startingAge": 18,
+      "startingCash": 50000,
+      "monthlyIncome": 80000,
+      "incomeSource": "part_time",
+      "xpModifier": 1.1,
+      "availableAccountsAtStart": ["checking", "savings", "credit_card"],
+      "accountUnlocks": {
+        "investment": 4,
+        "mortgage": 6
+      },
+      "neverAvailable": [],
+      "startingDebt": {
+        "type": "student_loan",
+        "amount": 500000
+      },
+      "startingBills": [
+        { "name": "Rent", "amount": 40000, "category": "housing" },
+        { "name": "Groceries", "amount": 20000, "category": "groceries" },
+        { "name": "Phone", "amount": 2500, "category": "subscription" },
+        { "name": "Transport", "amount": 5000, "category": "transport" }
+      ],
+      "startingGoals": [
+        { "name": "Emergency Fund", "target": 100000 }
+      ],
+      "narrative": "Welcome to university. Your parents aren't paying for everything anymore."
+    },
+    {
+      "id": "young_adult",
+      "name": "Young Adult",
+      "ageRange": [23, 30],
+      "startingAge": 23,
+      "startingCash": 200000,
+      "monthlyIncome": 300000,
+      "incomeSource": "salary",
+      "xpModifier": 1.0,
+      "availableAccountsAtStart": ["checking", "savings", "credit_card", "investment"],
+      "accountUnlocks": {
+        "mortgage": 5
+      },
+      "neverAvailable": [],
+      "startingDebt": {
+        "type": "student_loan",
+        "amount": 1500000
+      },
+      "startingBills": [
+        { "name": "Rent", "amount": 80000, "category": "housing" },
+        { "name": "Utilities", "amount": 10000, "category": "housing" },
+        { "name": "Groceries", "amount": 30000, "category": "groceries" },
+        { "name": "Phone", "amount": 4000, "category": "subscription" },
+        { "name": "Transport", "amount": 15000, "category": "transport" },
+        { "name": "Insurance", "amount": 8000, "category": "insurance" }
+      ],
+      "startingGoals": [
+        { "name": "Emergency Fund (3 months)", "target": 900000 },
+        { "name": "Vacation Fund", "target": 200000 }
+      ],
+      "narrative": "First real job, first real paycheck, first real responsibilities."
+    },
+    {
+      "id": "parent",
+      "name": "Parent",
+      "ageRange": [30, 45],
+      "startingAge": 32,
+      "startingCash": 800000,
+      "monthlyIncome": 450000,
+      "incomeSource": "salary",
+      "xpModifier": 0.9,
+      "availableAccountsAtStart": ["checking", "savings", "credit_card", "investment", "mortgage", "auto_loan", "insurance"],
+      "accountUnlocks": {},
+      "neverAvailable": [],
+      "startingDebt": {
+        "mortgage": { "amount": 18000000, "monthlyPayment": 120000 },
+        "autoLoan": { "amount": 1200000, "monthlyPayment": 35000 }
+      },
+      "startingBills": [
+        { "name": "Mortgage", "amount": 120000, "category": "housing" },
+        { "name": "Utilities", "amount": 20000, "category": "housing" },
+        { "name": "Groceries", "amount": 50000, "category": "groceries" },
+        { "name": "Childcare", "amount": 80000, "category": "family" },
+        { "name": "Insurance", "amount": 20000, "category": "insurance" },
+        { "name": "Car Payment", "amount": 35000, "category": "transport" },
+        { "name": "Phone", "amount": 6000, "category": "subscription" }
+      ],
+      "startingGoals": [
+        { "name": "College Fund", "target": 5000000 },
+        { "name": "Emergency Fund (6 months)", "target": 2700000 }
+      ],
+      "narrative": "Family life is expensive. Every decision affects more than just you.",
+      "householdMembers": [
+        { "type": "partner", "name": "Partner", "incomeContribution": 300000, "expenseContribution": 0 },
+        { "type": "child", "name": "Child", "incomeContribution": 0, "expenseContribution": 80000 }
+      ]
+    }
+  ]
+}

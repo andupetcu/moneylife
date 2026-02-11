@@ -1,0 +1,164 @@
+{
+  "levels": [
+    {
+      "level": 1,
+      "name": "First Steps",
+      "theme": "Basic income and spending",
+      "durationMonths": 2,
+      "xpRequired": 500,
+      "cumulativeXp": 500,
+      "cardsPerDay": { "min": 1, "max": 1 },
+      "bonusCardChance": 0,
+      "unlockedMechanics": ["checking", "savings", "basic_budgeting"],
+      "newCardCategories": ["groceries", "shopping", "entertainment"],
+      "victoryConditions": [
+        { "type": "no_overdraft", "description": "Complete the month without overdrafting" },
+        { "type": "savings_min", "value": 5000, "description": "Save at least 50 CU" }
+      ],
+      "coinBonus": 100,
+      "xpBonus": 250,
+      "tutorialActive": true
+    },
+    {
+      "level": 2,
+      "name": "Building Habits",
+      "theme": "Recurring expenses and saving goals",
+      "durationMonths": 3,
+      "xpRequired": 1500,
+      "cumulativeXp": 2000,
+      "cardsPerDay": { "min": 1, "max": 2 },
+      "bonusCardChance": 0.2,
+      "unlockedMechanics": ["credit_card", "subscriptions", "savings_goals"],
+      "newCardCategories": ["transport", "subscription", "social"],
+      "victoryConditions": [
+        { "type": "savings_goal_complete", "value": 1, "description": "Complete any savings goal" },
+        { "type": "budget_adherence_min", "value": 60, "months": 2, "description": "Maintain ≥60% budget adherence for 2 months" }
+      ],
+      "coinBonus": 200,
+      "xpBonus": 500,
+      "tutorialActive": false
+    },
+    {
+      "level": 3,
+      "name": "Real World",
+      "theme": "Dealing with unexpected expenses",
+      "durationMonths": 4,
+      "xpRequired": 3000,
+      "cumulativeXp": 5000,
+      "cardsPerDay": { "min": 2, "max": 2 },
+      "bonusCardChance": 0.1,
+      "unlockedMechanics": ["emergency_fund", "overdraft_protection", "bnpl", "renters_insurance", "health_insurance"],
+      "newCardCategories": ["emergency", "health", "insurance"],
+      "victoryConditions": [
+        { "type": "emergency_fund_months", "value": 1, "description": "Build emergency fund ≥ 1 month expenses" },
+        { "type": "emergency_no_debt", "value": 1, "description": "Handle at least 1 emergency without new debt" }
+      ],
+      "coinBonus": 300,
+      "xpBonus": 750,
+      "tutorialActive": false
+    },
+    {
+      "level": 4,
+      "name": "Growing Up",
+      "theme": "Debt management and investment basics",
+      "durationMonths": 4,
+      "xpRequired": 5000,
+      "cumulativeXp": 10000,
+      "cardsPerDay": { "min": 2, "max": 3 },
+      "bonusCardChance": 0.2,
+      "unlockedMechanics": ["personal_loan", "auto_loan", "investment", "bnpl_expanded"],
+      "newCardCategories": ["career", "investment"],
+      "victoryConditions": [
+        { "type": "debt_reduction_pct_or_investment", "debtReduction": 0.2, "investmentMin": 100000, "chiMin": 650, "description": "Reduce debt by 20% OR grow investments to 1,000 CU AND maintain CHI ≥ 650" }
+      ],
+      "coinBonus": 400,
+      "xpBonus": 1000,
+      "tutorialActive": false
+    },
+    {
+      "level": 5,
+      "name": "Adulting",
+      "theme": "Major life decisions",
+      "durationMonths": 5,
+      "xpRequired": 8000,
+      "cumulativeXp": 18000,
+      "cardsPerDay": { "min": 2, "max": 3 },
+      "bonusCardChance": 0.3,
+      "unlockedMechanics": ["mortgage", "home_buying", "tax_filing", "disability_insurance", "all_investments"],
+      "newCardCategories": ["housing", "tax"],
+      "victoryConditions": [
+        { "type": "home_or_net_worth", "dtiMax": 0.3, "netWorthMin": 2000000, "description": "Buy home with ≤30% DTI OR build net worth ≥ 20,000 CU" }
+      ],
+      "coinBonus": 500,
+      "xpBonus": 1250,
+      "tutorialActive": false
+    },
+    {
+      "level": 6,
+      "name": "Building Wealth",
+      "theme": "Wealth building and protection",
+      "durationMonths": 5,
+      "xpRequired": 12000,
+      "cumulativeXp": 30000,
+      "cardsPerDay": { "min": 3, "max": 3 },
+      "bonusCardChance": 0.4,
+      "unlockedMechanics": ["life_insurance", "estate_planning", "diversified_portfolio", "side_hustle"],
+      "newCardCategories": ["debt", "savings"],
+      "victoryConditions": [
+        { "type": "compound", "conditions": [
+          { "type": "net_worth_min", "value": 5000000 },
+          { "type": "dti_max", "value": 0.36 },
+          { "type": "chi_min", "value": 700 }
+        ], "description": "Net worth ≥ 50,000 CU AND DTI ≤ 36% AND CHI ≥ 700" }
+      ],
+      "coinBonus": 600,
+      "xpBonus": 1500,
+      "tutorialActive": false
+    },
+    {
+      "level": 7,
+      "name": "Financial Freedom",
+      "theme": "Advanced strategies and giving back",
+      "durationMonths": 6,
+      "xpRequired": 18000,
+      "cumulativeXp": 48000,
+      "cardsPerDay": { "min": 3, "max": 3 },
+      "bonusCardChance": 0.1,
+      "unlockedMechanics": ["crypto", "charitable_giving", "refinancing", "rental_property"],
+      "newCardCategories": ["investment", "social"],
+      "victoryConditions": [
+        { "type": "compound", "conditions": [
+          { "type": "emergency_fund_months", "value": 6 },
+          { "type": "portfolio_income_ratio", "value": 3 },
+          { "type": "community_events", "value": 2 }
+        ], "description": "6-month emergency fund AND portfolio ≥ 3× monthly income AND help 2 community events" }
+      ],
+      "coinBonus": 700,
+      "xpBonus": 1750,
+      "tutorialActive": false
+    },
+    {
+      "level": 8,
+      "name": "Legacy",
+      "theme": "Long-term planning and mastery",
+      "durationMonths": 6,
+      "xpRequired": 25000,
+      "cumulativeXp": 73000,
+      "cardsPerDay": { "min": 3, "max": 4 },
+      "bonusCardChance": 0.2,
+      "unlockedMechanics": ["retirement_planning", "will_trust", "generational_wealth"],
+      "newCardCategories": ["tax", "savings"],
+      "victoryConditions": [
+        { "type": "compound", "conditions": [
+          { "type": "retirement_readiness", "value": 80 },
+          { "type": "net_worth_min", "value": 20000000 },
+          { "type": "chi_min", "value": 750 }
+        ], "description": "Retirement readiness ≥ 80% AND net worth ≥ 200,000 CU AND CHI ≥ 750" }
+      ],
+      "coinBonus": 800,
+      "xpBonus": 2000,
+      "endlessAfterCompletion": true,
+      "tutorialActive": false
+    }
+  ]
+}
