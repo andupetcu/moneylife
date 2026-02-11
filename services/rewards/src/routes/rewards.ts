@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { wrap } from '../utils/wrap';
 import * as xpController from '../controllers/xp';
 import * as coinsController from '../controllers/coins';
 import * as badgesController from '../controllers/badges';
@@ -7,18 +8,9 @@ import * as redemptionsController from '../controllers/redemptions';
 
 export const rewardsRouter = Router();
 
-// Summary
-rewardsRouter.get('/summary', xpController.getSummary);
-
-// Badges
-rewardsRouter.get('/badges', badgesController.getUserBadges);
-
-// Streaks
-rewardsRouter.get('/streaks', streaksController.getStreaks);
-
-// History
-rewardsRouter.get('/history', coinsController.getHistory);
-
-// Catalog & Redemption
-rewardsRouter.get('/catalog', redemptionsController.getCatalog);
-rewardsRouter.post('/redeem', redemptionsController.redeemReward);
+rewardsRouter.get('/summary', wrap(xpController.getSummary));
+rewardsRouter.get('/badges', wrap(badgesController.getUserBadges));
+rewardsRouter.get('/streaks', wrap(streaksController.getStreaks));
+rewardsRouter.get('/history', wrap(coinsController.getHistory));
+rewardsRouter.get('/catalog', wrap(redemptionsController.getCatalog));
+rewardsRouter.post('/redeem', wrap(redemptionsController.redeemReward));
