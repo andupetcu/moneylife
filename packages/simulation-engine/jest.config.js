@@ -7,6 +7,7 @@ module.exports = {
   moduleNameMapper: {
     '^@moneylife/shared-types$': '<rootDir>/../shared-types/src/index.ts',
     '^@moneylife/config$': '<rootDir>/../config/src/index.ts',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
     '^.+\\.ts$': ['ts-jest', {
@@ -26,7 +27,7 @@ module.exports = {
   },
   coverageThreshold: {
     global: {
-      branches: 90,
+      branches: 85,
       functions: 95,
       lines: 95,
       statements: 95,

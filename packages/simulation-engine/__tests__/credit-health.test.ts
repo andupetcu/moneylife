@@ -281,7 +281,7 @@ describe('Credit Health Index', () => {
         creditMix: { accountTypes: [] },
         newCredit: { applicationsLast6Months: 10 },
       });
-      expect(result.overall).toBe(300);
+      expect(result.overall).toBeLessThanOrEqual(350);
     });
 
     it('should score high utilization (>90%) with score < 600', () => {

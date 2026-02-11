@@ -19,11 +19,9 @@ describe('Time Engine', () => {
       expect(isLeapYear(2026)).toBe(false);
     });
 
-    // Simplified: no century rule per spec
+    // Simplified: no century rule per spec. 2100 % 4 === 0, so it IS leap.
     it('should treat century years as leap (simplified)', () => {
-      expect(isLeapYear(2100)).toBe(false); // 2100 not divisible by 4... actually 2100/4=525, so it IS divisible
-      // Actually 2100 IS divisible by 4, so with simplified rule it's leap
-      expect(isLeapYear(2100)).toBe(false); // Wait 2100/4 = 525, so yes divisible
+      expect(isLeapYear(2100)).toBe(true);
     });
   });
 
