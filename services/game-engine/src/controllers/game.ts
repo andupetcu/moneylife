@@ -32,6 +32,32 @@ const PERSONA_DEFAULTS: Record<string, { cash: number; income: number; accounts:
   },
 };
 
+export function listGamesController(pool: Pool) {
+  return async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM games WHERE user_id = $1 ORDER BY created_at DESC',
+        [req.userId],
+      );
+      res.json(result.rows.map(g => ({
+        id: g.id,
+        userId: g.user_id,
+        persona: g.persona,
+        difficulty: g.difficulty,
+        currency: g.currency_code,
+        region: g.region,
+        level: g.current_level,
+        xp: g.total_xp,
+        status: g.status,
+        createdAt: g.created_at,
+      })));
+    } catch (err) {
+      console.error('List games error:', (err as Error).message);
+      res.status(500).json({ code: 'INTERNAL_ERROR', message: 'Failed to list games' });
+    }
+  };
+}
+
 export function createGameController(pool: Pool) {
   return async (req: Request, res: Response): Promise<void> => {
     const parsed = createGameSchema.safeParse(req.body);

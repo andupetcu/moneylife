@@ -63,10 +63,10 @@ export const api = {
   },
   game: {
     list: () => request<GameResponse[]>('/api/game/games'),
-    create: (persona: string, difficulty: string, region: string, currency: string) =>
+    create: (persona: string, difficulty: string, region: string, currencyCode: string) =>
       request<GameResponse>('/api/game/games', {
         method: 'POST',
-        body: JSON.stringify({ persona, difficulty, region, currency }),
+        body: JSON.stringify({ persona, difficulty, region, currencyCode }),
       }),
     get: (id: string) => request<GameResponse>(`/api/game/games/${id}`),
   },
