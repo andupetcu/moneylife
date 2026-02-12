@@ -9,7 +9,8 @@ if [ -n "$DATABASE_URL" ]; then
   for f in /app/migrations/*.sql; do
     if [ -f "$f" ]; then
       echo "  Applying $(basename $f)..."
-      psql "$DATABASE_URL" -f "$f" 2>/dev/null || echo "  (already applied or skipped)"
+      # Only run the UP section (everything before "-- Down")
+      sed '/^-- Down/,$d' "$f" | psql "$DATABASE_URL" 2>/dev/null || echo "  (already applied or skipped)"
     fi
   done
   echo "Migrations complete."
