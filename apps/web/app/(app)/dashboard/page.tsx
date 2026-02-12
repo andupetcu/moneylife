@@ -135,8 +135,32 @@ export default function DashboardPage(): React.ReactElement {
           </div>
         )}
 
+        {/* Welcome card when no games */}
+        {games.length === 0 && !showNewGame && (
+          <div style={{
+            background: colors.surface, borderRadius: radius.xl, padding: 32,
+            boxShadow: shadows.elevated, textAlign: 'center', marginBottom: 24,
+            border: `1px solid ${colors.borderLight}`,
+          }}>
+            <span style={{ fontSize: 56 }}>🎮</span>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: colors.textPrimary, margin: '16px 0 8px' }}>
+              {t('dashboard.welcomeTitle') || 'Welcome to MoneyLife!'}
+            </h2>
+            <p style={{ fontSize: 15, color: colors.textSecondary, lineHeight: '1.6', margin: '0 0 24px', maxWidth: 360, marginLeft: 'auto', marginRight: 'auto' }}>
+              {t('dashboard.welcomeDesc') || 'Start your first financial journey. Choose a persona, make smart money decisions, and level up your financial skills!'}
+            </p>
+            <button onClick={() => setShowNewGame(true)} style={{
+              padding: '14px 32px', borderRadius: radius.md, background: colors.primaryGradient,
+              color: '#FFFFFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer',
+              height: 52,
+            }}>
+              {t('dashboard.createFirst') || 'Create Your First Game'}
+            </button>
+          </div>
+        )}
+
         {/* New Game button / panel */}
-        {!showNewGame ? (
+        {!showNewGame && games.length > 0 && (
           <button onClick={() => setShowNewGame(true)} style={{
             width: '100%', padding: 20, borderRadius: radius.lg,
             background: colors.surface, border: `2px dashed ${colors.border}`,
@@ -145,7 +169,8 @@ export default function DashboardPage(): React.ReactElement {
           }}>
             🎮 {t('home.startNewGame') || 'Start New Game'}
           </button>
-        ) : (
+        )}
+        {showNewGame && (
           <div style={{
             background: colors.surface, borderRadius: radius.xl, padding: 28,
             boxShadow: shadows.elevated, border: `1px solid ${colors.borderLight}`,
