@@ -8,20 +8,18 @@ RUN pnpm install --no-frozen-lockfile
 # Build auth + game-engine
 RUN npx turbo build --filter=@moneylife/auth --filter=@moneylife/game-engine
 
-# Create standalone bundles with all deps resolved
+# Create standalone bundles - strip workspace deps from package.json before npm install
 RUN mkdir -p /standalone/auth /standalone/game-engine
 
-# Auth: copy dist + install production deps standalone
 RUN cd /standalone/auth && \
-    cp /app/services/auth/package.json . && \
+    cat /app/services/auth/package.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const p=JSON.parse(d); Object.keys(p.dependencies||{}).forEach(k=>{if(k.startsWith('@moneylife/'))delete p.dependencies[k]}); console.log(JSON.stringify(p,null,2))" > package.json && \
     cp -r /app/services/auth/dist . && \
-    npm install --omit=dev --no-package-lock 2>/dev/null || true
+    npm install --omit=dev --no-package-lock
 
-# Game engine: same
 RUN cd /standalone/game-engine && \
-    cp /app/services/game-engine/package.json . && \
+    cat /app/services/game-engine/package.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const p=JSON.parse(d); Object.keys(p.dependencies||{}).forEach(k=>{if(k.startsWith('@moneylife/'))delete p.dependencies[k]}); console.log(JSON.stringify(p,null,2))" > package.json && \
     cp -r /app/services/game-engine/dist . && \
-    npm install --omit=dev --no-package-lock 2>/dev/null || true
+    npm install --omit=dev --no-package-lock
 
 FROM node:22-alpine
 RUN apk add --no-cache nginx postgresql-client
