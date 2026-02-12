@@ -357,5 +357,32 @@
     "badgeItem": "Insigna {{name}}, raritate {{rarity}}, {{status}}",
     "loading": "Se încarcă conținutul",
     "error": "A apărut o eroare"
+  },
+  "tutorial": {
+    "stepOf": "Pasul {{current}} din {{total}}",
+    "skip": "Sari peste tutorial",
+    "letsGo": "Hai să începem!",
+    "step1": "Bine ai venit la MoneyLife! Gestionezi finanțe virtuale prin scenarii reale.",
+    "step2": "Acesta este cardul tău de sold — arată averea ta netă totală.",
+    "step3": "În fiecare zi, primești carduri de decizie — alegeri financiare cu consecințe reale.",
+    "step4": "Alege cu înțelepciune! Fiecare opțiune îți afectează conturile, scorul de credit și fericirea.",
+    "step5": "Plătește facturile la timp pentru a menține o sănătate bună a creditului.",
+    "step6": "Setează bugete pentru diferite categorii pentru a-ți urmări cheltuielile.",
+    "step7": "Câștigă XP și avansează în nivel pentru a debloca noi instrumente financiare.",
+    "step8": "Pregătit? Avansează prima zi pentru a începe!"
+  },
+  "levelUp": {
+    "title": "Nivel Nou!",
+    "unlocked": "Deblocări noi",
+    "xpBonus": "+{{amount}} XP bonus!",
+    "continue": "Continuă"
+  },
+  "badges": {
+    "earned": "Insignă Câștigată!"
+  },
+  "dashboard": {
+    "welcomeTitle": "Bine ai venit la MoneyLife!",
+    "welcomeDesc": "Începe prima ta călătorie financiară. Alege un personaj, ia decizii inteligente despre bani și avansează-ți abilitățile financiare!",
+    "createFirst": "Creează Primul Tău Joc"
   }
 }

@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../../src/lib/auth-context';
-import { api, type GameResponse, type Transaction, type Bill } from '../../../../src/lib/api';
+import { api, type GameResponse, type Transaction, type Bill, type Badge } from '../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../src/lib/design-tokens';
+import Tutorial from '../../../../src/components/Tutorial';
+import LevelUpModal from '../../../../src/components/LevelUpModal';
+import BadgeNotification from '../../../../src/components/BadgeNotification';
 
 const PERSONAS: Record<string, string> = {
   teen: '🎒', student: '🎓', young_adult: '💼', parent: '👨‍👩‍👧',
@@ -52,6 +55,10 @@ export default function GamePage(): React.ReactElement {
   const [advancing, setAdvancing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showTutorial, setShowTutorial] = useState(true);
+  const [levelUpLevel, setLevelUpLevel] = useState<number | null>(null);
+  const [newBadges, setNewBadges] = useState<Badge[]>([]);
+  const prevLevelRef = useRef<number | null>(null);
 
   const fetchGame = useCallback(async () => {
     if (!gameId) return;
@@ -78,10 +85,21 @@ export default function GamePage(): React.ReactElement {
   const handleAdvanceDay = async (): Promise<void> => {
     setAdvancing(true);
     setError(null);
+    const prevLevel = game?.level ?? null;
     const res = await api.game.submitAction(gameId, { type: 'advance_day' });
     setAdvancing(false);
     if (res.ok) {
+      // Check for new badges from action response
+      const resData = res.data as Record<string, unknown> | undefined;
+      if (resData?.newBadges && Array.isArray(resData.newBadges) && (resData.newBadges as Badge[]).length > 0) {
+        setNewBadges(resData.newBadges as Badge[]);
+      }
       await fetchGame();
+      // Check level change after fetching updated game
+      const updatedGame = await api.game.get(gameId);
+      if (updatedGame.ok && updatedGame.data && prevLevel !== null && updatedGame.data.level > prevLevel) {
+        setLevelUpLevel(updatedGame.data.level);
+      }
     } else {
       setError(res.error || 'Failed to advance day');
     }
@@ -276,6 +294,17 @@ export default function GamePage(): React.ReactElement {
           </div>
         )}
       </div>
+
+      {/* Tutorial overlay */}
+      {showTutorial && <Tutorial gameId={gameId} onComplete={() => setShowTutorial(false)} />}
+
+      {/* Level up celebration */}
+      {levelUpLevel !== null && (
+        <LevelUpModal level={levelUpLevel} onDismiss={() => setLevelUpLevel(null)} />
+      )}
+
+      {/* Badge notifications */}
+      <BadgeNotification badges={newBadges} onClear={() => setNewBadges([])} />
 
       {/* Bottom Nav */}
       <div style={s.bottomNav}>

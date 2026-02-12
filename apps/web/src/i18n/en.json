@@ -357,5 +357,32 @@
     "badgeItem": "{{name}} badge, {{rarity}} rarity, {{status}}",
     "loading": "Loading content",
     "error": "Error occurred"
+  },
+  "tutorial": {
+    "stepOf": "Step {{current}} of {{total}}",
+    "skip": "Skip tutorial",
+    "letsGo": "Let's go!",
+    "step1": "Welcome to MoneyLife! You manage virtual finances through real scenarios.",
+    "step2": "This is your balance card — it shows your total net worth.",
+    "step3": "Every day, you get decision cards — financial choices with real consequences.",
+    "step4": "Choose wisely! Each option affects your accounts, credit score, and happiness.",
+    "step5": "Pay your bills on time to maintain good credit health.",
+    "step6": "Set budgets for different categories to track your spending.",
+    "step7": "Earn XP and level up to unlock new financial tools.",
+    "step8": "Ready? Advance your first day to begin!"
+  },
+  "levelUp": {
+    "title": "Level Up!",
+    "unlocked": "New unlocks",
+    "xpBonus": "+{{amount}} XP bonus!",
+    "continue": "Continue"
+  },
+  "badges": {
+    "earned": "Badge Earned!"
+  },
+  "dashboard": {
+    "welcomeTitle": "Welcome to MoneyLife!",
+    "welcomeDesc": "Start your first financial journey. Choose a persona, make smart money decisions, and level up your financial skills!",
+    "createFirst": "Create Your First Game"
   }
 }
