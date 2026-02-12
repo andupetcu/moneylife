@@ -1,6 +1,5 @@
 {
   "appTitle": "MoneyLife",
-
   "common": {
     "loading": "Loading…",
     "error": "Something went wrong",
@@ -25,7 +24,6 @@
     "apply": "Apply",
     "refresh": "Refresh"
   },
-
   "onboarding": {
     "welcomeTitle": "Welcome to MoneyLife",
     "welcomeSubtitle": "Learn money by living it",
@@ -51,7 +49,6 @@
     "tutorialSkip": "Skip tutorial",
     "tutorialNext": "Next tip"
   },
-
   "auth": {
     "login": "Log in",
     "register": "Create account",
@@ -78,16 +75,15 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "emailInUse": "This email is already registered",
     "logOut": "Log out",
-    "logOutConfirm": "Are you sure you want to log out?"
+    "logOutConfirm": "Are you sure you want to log out?",
+    "displayNameRequired": "Display name is required"
   },
-
   "tabs": {
     "home": "Home",
     "rewards": "Rewards",
     "social": "Social",
     "profile": "Profile"
   },
-
   "home": {
     "greeting": "Good {{timeOfDay}}, {{name}}",
     "greetingMorning": "morning",
@@ -106,14 +102,16 @@
     "pendingCards_other": "{{count}} pending decisions",
     "noPendingCards": "No pending decisions",
     "noActiveGame": "No active game",
-    "startNewGame": "Start a new game",
+    "startNewGame": "🎮 Start a new game",
     "continueGame": "Continue playing",
     "netWorth": "Net worth",
     "totalBalance": "Total balance",
     "monthlyIncome": "Monthly income",
-    "monthlyExpenses": "Monthly expenses"
+    "monthlyExpenses": "Monthly expenses",
+    "welcome": "Welcome",
+    "subtitle": "Manage your finances, make decisions, level up.",
+    "yourGames": "Your Games"
   },
-
   "game": {
     "dailySummary": "Day {{day}} of {{month}}",
     "dayTitle": "Day {{day}}",
@@ -143,7 +141,6 @@
     "budgetAdherence": "Budget adherence",
     "incomeVsSpending": "Income vs spending"
   },
-
   "accounts": {
     "title": "Accounts",
     "checking": "Checking account",
@@ -174,7 +171,6 @@
     "openAccount": "Open account",
     "closeAccount": "Close account"
   },
-
   "budget": {
     "title": "Budget",
     "createBudget": "Create budget",
@@ -193,7 +189,6 @@
     "noBudget": "No budget set",
     "setBudgetHint": "Set a budget to track your spending"
   },
-
   "monthlyReview": {
     "title": "Monthly review",
     "month": "{{month}} {{year}}",
@@ -216,7 +211,6 @@
     "greatMonth": "Great month!",
     "dismiss": "Continue"
   },
-
   "creditHealth": {
     "title": "Credit Health Index",
     "score": "{{score}}",
@@ -239,7 +233,6 @@
     "tipDontCloseOld": "Don't close old accounts",
     "tipMixTypes": "Maintain a healthy mix of account types"
   },
-
   "rewards": {
     "title": "Rewards",
     "xp": "XP",
@@ -276,7 +269,6 @@
     "dailyBonus": "Daily bonus",
     "dailyBonusClaimed": "Daily bonus claimed!"
   },
-
   "social": {
     "title": "Social",
     "friends": "Friends",
@@ -300,7 +292,6 @@
     "challengeEnds": "Ends in {{time}}",
     "headToHead": "Head to head"
   },
-
   "profile": {
     "title": "Profile",
     "settings": "Settings",
@@ -325,7 +316,6 @@
     "deleteAccountConfirm": "Are you sure? This action cannot be undone.",
     "exportData": "Export my data"
   },
-
   "banking": {
     "title": "Banking",
     "connect": "Connect bank account",
@@ -340,7 +330,6 @@
     "syncComplete": "Transactions synced",
     "noLinkedAccounts": "No linked accounts"
   },
-
   "error": {
     "network": "Connection lost. Your progress is saved locally.",
     "bankrupt": "You've gone bankrupt. But don't worry — every failure is a lesson.",
@@ -353,14 +342,12 @@
     "syncFailed": "Sync failed. We'll try again automatically.",
     "generic": "Something went wrong. Please try again."
   },
-
   "empty": {
     "noData": "No data available",
     "noGames": "No games yet. Start your first financial journey!",
     "noTransactions": "No transactions yet",
     "noNotifications": "No notifications"
   },
-
   "accessibility": {
     "balanceCard": "Balance card showing {{accountType}} with {{balance}}",
     "creditGauge": "Credit Health Index: {{score}} out of 850, rated {{rating}}",

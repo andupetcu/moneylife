@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../src/lib/auth-context';
 import { api, type GameResponse } from '../../../src/lib/api';
+import { colors, radius, shadows } from '../../../src/lib/design-tokens';
 
 const PERSONAS = [
   { id: 'teen', emoji: '🎒' },
@@ -53,98 +54,181 @@ export default function DashboardPage(): React.ReactElement {
     }
   };
 
-  if (loading) return <div style={styles.container}><p>Loading...</p></div>;
-  if (!user) return <div style={styles.container}><p>Redirecting...</p></div>;
+  if (loading) return <div style={{ minHeight: '100vh', background: colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: colors.textSecondary }}>Loading...</p></div>;
+  if (!user) return <div style={{ minHeight: '100vh', background: colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: colors.textSecondary }}>Redirecting...</p></div>;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>👋 {t('home.welcome') || 'Welcome'}, {user.displayName}!</h1>
-          <p style={styles.subtitle}>{t('home.subtitle') || 'Your financial journey starts here'}</p>
+    <div style={{ minHeight: '100vh', background: colors.background }}>
+      {/* Purple gradient header */}
+      <div style={{
+        background: colors.primaryGradient,
+        padding: '40px 24px 32px',
+        borderRadius: `0 0 ${radius.xl}px ${radius.xl}px`,
+      }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
+              Hi, {user.displayName}! 👋
+            </h1>
+            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.75)', marginTop: 4 }}>
+              {t('home.subtitle') || 'Your financial journey starts here'}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ width: 40, height: 40, borderRadius: 20, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+              🔔
+            </div>
+            <button onClick={logout} style={{
+              padding: '8px 16px', borderRadius: radius.sm, border: '1px solid rgba(255,255,255,0.3)',
+              background: 'rgba(255,255,255,0.1)', cursor: 'pointer', color: '#FFFFFF', fontSize: 14, fontWeight: 500,
+            }}>
+              Logout
+            </button>
+          </div>
         </div>
-        <button onClick={logout} style={styles.logoutBtn}>Logout</button>
       </div>
 
-      {games.length > 0 && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>{t('home.yourGames') || 'Your Games'}</h2>
-          {games.map(game => (
-            <div key={game.id} style={styles.gameCard} onClick={() => router.push(`/game/${game.id}`)}>
-              <div style={styles.gameInfo}>
-                <span style={styles.gameEmoji}>{PERSONAS.find(p => p.id === game.persona)?.emoji || '🎮'}</span>
-                <div>
-                  <p style={styles.gameName}>{game.persona} · Level {game.level}</p>
-                  <p style={styles.gameDetail}>{game.currency} · {game.difficulty} · {game.xp} XP</p>
+      {/* Content */}
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: '24px 24px 100px' }}>
+        {/* Game cards */}
+        {games.length > 0 && (
+          <div style={{ marginBottom: 28 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.textPrimary, marginBottom: 16 }}>
+              {t('home.yourGames') || 'Your Games'}
+            </h2>
+            {games.map(game => (
+              <div key={game.id} onClick={() => router.push(`/game/${game.id}`)} style={{
+                background: colors.cardGradient,
+                borderRadius: radius.lg,
+                padding: 20,
+                marginBottom: 14,
+                cursor: 'pointer',
+                boxShadow: shadows.bankCard,
+                color: '#FFFFFF',
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+                {/* Decorative circles */}
+                <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: 40, background: 'rgba(255,255,255,0.08)' }} />
+                <div style={{ position: 'absolute', bottom: -30, right: 40, width: 100, height: 100, borderRadius: 50, background: 'rgba(255,255,255,0.05)' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <span style={{ fontSize: 36 }}>{PERSONAS.find(p => p.id === game.persona)?.emoji || '🎮'}</span>
+                    <div>
+                      <p style={{ fontWeight: 600, fontSize: 17, margin: 0, textTransform: 'capitalize' }}>{game.persona.replace('_', ' ')}</p>
+                      <p style={{ fontSize: 13, opacity: 0.8, margin: '2px 0 0' }}>Level {game.level} · {game.xp} XP</p>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: 13, opacity: 0.7, margin: 0 }}>{game.currency}</p>
+                    <span style={{
+                      display: 'inline-block', marginTop: 4, padding: '3px 10px', borderRadius: radius.pill,
+                      fontSize: 12, fontWeight: 500,
+                      background: game.status === 'active' ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.15)',
+                    }}>
+                      {game.status}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <span style={{...styles.statusBadge, backgroundColor: game.status === 'active' ? '#D1FAE5' : '#F3F4F6'}}>
-                {game.status}
-              </span>
+            ))}
+          </div>
+        )}
+
+        {/* New Game button / panel */}
+        {!showNewGame ? (
+          <button onClick={() => setShowNewGame(true)} style={{
+            width: '100%', padding: 20, borderRadius: radius.lg,
+            background: colors.surface, border: `2px dashed ${colors.border}`,
+            cursor: 'pointer', fontSize: 16, fontWeight: 600, color: colors.primary,
+            boxShadow: shadows.card,
+          }}>
+            🎮 {t('home.startNewGame') || 'Start New Game'}
+          </button>
+        ) : (
+          <div style={{
+            background: colors.surface, borderRadius: radius.xl, padding: 28,
+            boxShadow: shadows.elevated, border: `1px solid ${colors.borderLight}`,
+          }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.textPrimary, marginBottom: 20 }}>
+              {t('onboarding.personaSelect') || 'Choose Your Persona'}
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+              {PERSONAS.map(p => (
+                <button key={p.id} onClick={() => setSelectedPersona(p.id)} style={{
+                  display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 8,
+                  padding: 18, borderRadius: radius.md,
+                  border: `2px solid ${selectedPersona === p.id ? colors.primary : colors.border}`,
+                  background: selectedPersona === p.id ? '#EEF2FF' : colors.surface,
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}>
+                  <span style={{ fontSize: 32 }}>{p.emoji}</span>
+                  <span style={{ fontWeight: 600, fontSize: 14, color: selectedPersona === p.id ? colors.primary : colors.textPrimary, textTransform: 'capitalize' }}>
+                    {t(`onboarding.persona${p.id.charAt(0).toUpperCase() + p.id.slice(1).replace('_a', 'A')}`) || p.id.replace('_', ' ')}
+                  </span>
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
 
-      {!showNewGame ? (
-        <button onClick={() => setShowNewGame(true)} style={styles.newGameBtn}>
-          🎮 {t('home.startNewGame') || 'Start New Game'}
-        </button>
-      ) : (
-        <div style={styles.newGamePanel}>
-          <h2 style={styles.sectionTitle}>{t('onboarding.personaSelect') || 'Choose Your Persona'}</h2>
-          <div style={styles.personaGrid}>
-            {PERSONAS.map(p => (
-              <button key={p.id} onClick={() => setSelectedPersona(p.id)}
-                style={{...styles.personaCard, borderColor: selectedPersona === p.id ? '#2563EB' : '#E5E7EB', backgroundColor: selectedPersona === p.id ? '#EFF6FF' : '#FFF'}}>
-                <span style={{fontSize: 32}}>{p.emoji}</span>
-                <span style={{fontWeight: 600}}>{t(`onboarding.persona${p.id.charAt(0).toUpperCase() + p.id.slice(1).replace('_a', 'A')}`) || p.id}</span>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: colors.textPrimary, margin: '24px 0 12px' }}>
+              {t('onboarding.selectDifficulty') || 'Difficulty'}
+            </h3>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {DIFFICULTIES.map(d => (
+                <button key={d} onClick={() => setSelectedDifficulty(d)} style={{
+                  flex: 1, padding: '12px 16px', borderRadius: radius.pill,
+                  border: `2px solid ${selectedDifficulty === d ? colors.primary : colors.border}`,
+                  background: selectedDifficulty === d ? '#EEF2FF' : colors.surface,
+                  cursor: 'pointer', fontWeight: 600, fontSize: 14, transition: 'all 0.2s',
+                  color: selectedDifficulty === d ? colors.primary : colors.textSecondary,
+                  textTransform: 'capitalize',
+                }}>
+                  {t(`onboarding.difficulty${d.charAt(0).toUpperCase() + d.slice(1)}`) || d}
+                </button>
+              ))}
+            </div>
+
+            {error && <p style={{ color: colors.danger, marginTop: 16, fontSize: 14, padding: '10px 14px', background: '#FEF2F2', borderRadius: radius.sm }}>{error}</p>}
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              <button onClick={handleCreateGame} disabled={creating} style={{
+                flex: 1, height: 52, borderRadius: radius.md, background: colors.primaryGradient,
+                color: '#FFFFFF', fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer',
+                opacity: creating ? 0.7 : 1,
+              }}>
+                {creating ? 'Creating...' : (t('onboarding.startGame') || '🚀 Start Game')}
               </button>
-            ))}
-          </div>
-
-          <h3 style={{...styles.sectionTitle, marginTop: 24}}>{t('onboarding.selectDifficulty') || 'Difficulty'}</h3>
-          <div style={{display: 'flex', gap: 12}}>
-            {DIFFICULTIES.map(d => (
-              <button key={d} onClick={() => setSelectedDifficulty(d)}
-                style={{...styles.diffBtn, borderColor: selectedDifficulty === d ? '#2563EB' : '#E5E7EB', backgroundColor: selectedDifficulty === d ? '#EFF6FF' : '#FFF'}}>
-                {t(`onboarding.difficulty${d.charAt(0).toUpperCase() + d.slice(1)}`) || d}
+              <button onClick={() => setShowNewGame(false)} style={{
+                padding: '0 24px', height: 52, borderRadius: radius.md,
+                background: colors.borderLight, color: colors.textSecondary,
+                fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer',
+              }}>
+                Cancel
               </button>
-            ))}
+            </div>
           </div>
+        )}
+      </div>
 
-          {error && <p style={{color: '#EF4444', marginTop: 12}}>{error}</p>}
-
-          <div style={{display: 'flex', gap: 12, marginTop: 24}}>
-            <button onClick={handleCreateGame} disabled={creating} style={{...styles.newGameBtn, opacity: creating ? 0.7 : 1}}>
-              {creating ? 'Creating...' : (t('onboarding.startGame') || '🚀 Start Game')}
-            </button>
-            <button onClick={() => setShowNewGame(false)} style={styles.cancelBtn}>Cancel</button>
+      {/* Bottom tab nav placeholder */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: colors.surface, borderTop: `1px solid ${colors.border}`,
+        padding: '12px 0', display: 'flex', justifyContent: 'space-around',
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
+      }}>
+        {[
+          { icon: '🏠', label: 'Home' },
+          { icon: '📊', label: 'Stats' },
+          { icon: '🎓', label: 'Learn' },
+          { icon: '👤', label: 'Profile' },
+        ].map(tab => (
+          <div key={tab.label} style={{ textAlign: 'center', cursor: 'pointer' }}>
+            <div style={{ fontSize: 22 }}>{tab.icon}</div>
+            <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>{tab.label}</div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 800, margin: '40px auto', padding: 24 },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 },
-  title: { fontSize: 28, fontWeight: 700, color: '#111827', margin: 0 },
-  subtitle: { fontSize: 16, color: '#6B7280', marginTop: 4 },
-  logoutBtn: { padding: '8px 16px', borderRadius: 8, border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', color: '#6B7280' },
-  section: { marginBottom: 32 },
-  sectionTitle: { fontSize: 20, fontWeight: 600, color: '#111827', marginBottom: 16 },
-  gameCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 16, border: '1px solid #E5E7EB', borderRadius: 12, marginBottom: 12, cursor: 'pointer', transition: 'border-color 0.2s' },
-  gameInfo: { display: 'flex', alignItems: 'center', gap: 12 },
-  gameEmoji: { fontSize: 32 },
-  gameName: { fontWeight: 600, color: '#111827', margin: 0 },
-  gameDetail: { color: '#6B7280', fontSize: 14, margin: 0 },
-  statusBadge: { padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 500 },
-  newGameBtn: { padding: '14px 28px', borderRadius: 12, backgroundColor: '#2563EB', color: '#FFF', fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer' },
-  cancelBtn: { padding: '14px 28px', borderRadius: 12, backgroundColor: '#F3F4F6', color: '#6B7280', fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer' },
-  newGamePanel: { padding: 24, border: '1px solid #E5E7EB', borderRadius: 16, background: '#FAFAFA' },
-  personaGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 },
-  personaCard: { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 8, padding: 16, borderRadius: 12, border: '2px solid', cursor: 'pointer', transition: 'all 0.2s' },
-  diffBtn: { flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' },
-};

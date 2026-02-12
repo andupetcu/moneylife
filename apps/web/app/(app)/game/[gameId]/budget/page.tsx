@@ -4,8 +4,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../src/lib/auth-context';
 import { api, type GameResponse, type Transaction } from '../../../../../src/lib/api';
+import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
 
 const CATEGORIES = ['Housing', 'Food', 'Transport', 'Entertainment', 'Savings', 'Other'];
+const CAT_COLORS: Record<string, string> = {
+  housing: '#7C3AED', food: '#EA580C', transport: '#6B7280',
+  entertainment: '#DB2777', savings: '#059669', other: '#9CA3AF',
+};
 
 function fmt(amount: number, currency: string): string {
   return (amount / 100).toLocaleString('en-US', { style: 'currency', currency: currency || 'USD' });
@@ -77,88 +82,115 @@ export default function BudgetPage(): React.ReactElement {
     }
   };
 
-  if (loading || authLoading) return <div style={s.container}><p style={{ color: '#9CA3AF' }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
 
   const currency = game?.currency || 'USD';
   const income = game?.monthlyIncome ?? 0;
+  const budgetScore = game?.budgetScore ?? 0;
+  const scorePct = Math.min(100, Math.max(0, budgetScore));
 
   return (
-    <div style={s.container}>
-      <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>← Back to Game</button>
-
-      <h1 style={s.title}>📊 Monthly Budget</h1>
-      {income > 0 && <p style={s.muted}>Monthly income: {fmt(income, currency)}</p>}
-
-      <div style={s.totalBar}>
-        <span>Total: {totalPct}%</span>
-        <span style={{ color: totalPct === 100 ? '#10B981' : '#EF4444' }}>{totalPct === 100 ? '✓' : `${100 - totalPct}% remaining`}</span>
+    <div style={s.page}>
+      {/* Header */}
+      <div style={s.headerBar}>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
+        <span style={s.headerTitle}>Budget</span>
+        <div style={{ width: 32 }} />
       </div>
 
-      {CATEGORIES.map(cat => {
-        const key = cat.toLowerCase();
-        const pct = allocations[key] || 0;
-        const budgeted = income > 0 ? Math.round(income * pct / 100) : 0;
-        const spent = spendingByCategory[key] || 0;
-        return (
-          <div key={cat} style={s.catRow}>
-            <div style={s.catHeader}>
-              <span style={{ fontWeight: 600, color: '#111827' }}>{cat}</span>
-              <span style={{ fontSize: 13, color: '#6B7280' }}>
-                {income > 0 ? `${fmt(spent, currency)} / ${fmt(budgeted, currency)}` : `${pct}%`}
-              </span>
+      <div style={s.content}>
+        {/* Budget Score Circle */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={s.scoreCircle}>
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" fill="none" stroke={colors.borderLight} strokeWidth="8" />
+              <circle cx="60" cy="60" r="52" fill="none" stroke={colors.primary} strokeWidth="8"
+                strokeDasharray={`${scorePct * 3.27} 327`} strokeLinecap="round"
+                transform="rotate(-90 60 60)" />
+            </svg>
+            <div style={s.scoreText}>
+              <span style={{ fontSize: 28, fontWeight: 700, color: colors.textPrimary }}>{budgetScore}%</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={pct}
-                onChange={e => handleChange(key, e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={pct}
-                onChange={e => handleChange(key, e.target.value)}
-                style={s.pctInput}
-              />
-              <span style={{ fontSize: 13, color: '#6B7280' }}>%</span>
-            </div>
-            {income > 0 && spent > 0 && (
-              <div style={s.progressTrack}>
-                <div style={{ ...s.progressFill, width: `${Math.min(100, budgeted > 0 ? (spent / budgeted) * 100 : 0)}%`, backgroundColor: spent > budgeted ? '#EF4444' : '#10B981' }} />
-              </div>
-            )}
           </div>
-        );
-      })}
+          <p style={{ color: colors.textSecondary, fontSize: 14, margin: '8px 0 0' }}>Budget Score</p>
+          {income > 0 && <p style={{ color: colors.textMuted, fontSize: 13, margin: '4px 0 0' }}>Monthly income: {fmt(income, currency)}</p>}
+        </div>
 
-      {error && <p style={{ color: '#EF4444', margin: '12px 0' }}>{error}</p>}
-      {success && <p style={{ color: '#10B981', margin: '12px 0' }}>✓ Budget saved!</p>}
+        {/* Total allocation bar */}
+        <div style={s.totalBar}>
+          <span style={{ fontWeight: 600, color: colors.textPrimary }}>Total: {totalPct}%</span>
+          <span style={{ color: totalPct === 100 ? colors.success : colors.danger, fontWeight: 600, fontSize: 13 }}>
+            {totalPct === 100 ? '✓ Balanced' : `${100 - totalPct}% remaining`}
+          </span>
+        </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={submitting || totalPct !== 100}
-        style={{ ...s.submitBtn, opacity: submitting || totalPct !== 100 ? 0.5 : 1 }}
-      >
-        {submitting ? 'Saving...' : '💾 Save Budget'}
-      </button>
+        {/* Category Breakdown */}
+        {CATEGORIES.map(cat => {
+          const key = cat.toLowerCase();
+          const pct = allocations[key] || 0;
+          const budgeted = income > 0 ? Math.round(income * pct / 100) : 0;
+          const spent = spendingByCategory[key] || 0;
+          const catColor = CAT_COLORS[key] || colors.textMuted;
+          const overBudget = budgeted > 0 && spent > budgeted;
+          return (
+            <div key={cat} style={s.catCard}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: catColor }} />
+                  <span style={{ fontWeight: 600, color: colors.textPrimary }}>{cat}</span>
+                </div>
+                <span style={{ fontSize: 13, color: colors.textSecondary }}>
+                  {income > 0 ? `${fmt(spent, currency)} / ${fmt(budgeted, currency)}` : `${pct}%`}
+                </span>
+              </div>
+              {income > 0 && spent > 0 && (
+                <div style={s.progressTrack}>
+                  <div style={{ height: '100%', borderRadius: 3, width: `${Math.min(100, budgeted > 0 ? (spent / budgeted) * 100 : 0)}%`, backgroundColor: overBudget ? colors.danger : catColor, transition: 'width 0.3s' }} />
+                </div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+                <input
+                  type="range" min="0" max="100" value={pct}
+                  onChange={e => handleChange(key, e.target.value)}
+                  style={{ flex: 1, accentColor: colors.primary }}
+                />
+                <input
+                  type="number" min="0" max="100" value={pct}
+                  onChange={e => handleChange(key, e.target.value)}
+                  style={s.pctInput}
+                />
+                <span style={{ fontSize: 13, color: colors.textMuted }}>%</span>
+              </div>
+            </div>
+          );
+        })}
+
+        {error && <p style={{ color: colors.danger, margin: '12px 0', fontSize: 14 }}>{error}</p>}
+        {success && <p style={{ color: colors.success, margin: '12px 0', fontSize: 14 }}>✓ Budget saved!</p>}
+
+        <button
+          onClick={handleSubmit}
+          disabled={submitting || totalPct !== 100}
+          style={{ ...s.primaryBtn, opacity: submitting || totalPct !== 100 ? 0.5 : 1 }}
+        >
+          {submitting ? 'Saving...' : '💾 Save Budget'}
+        </button>
+      </div>
     </div>
   );
 }
 
 const s: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 600, margin: '40px auto', padding: 24 },
-  backBtn: { padding: '8px 16px', borderRadius: 8, border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginBottom: 24, display: 'inline-block', textDecoration: 'none' },
-  title: { fontSize: 24, fontWeight: 700, color: '#111827', marginBottom: 4 },
-  muted: { color: '#9CA3AF', margin: '0 0 24px' },
-  totalBar: { display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #E5E7EB', marginBottom: 20, fontSize: 14, fontWeight: 600 },
-  catRow: { marginBottom: 20, padding: 16, borderRadius: 12, border: '1px solid #E5E7EB' },
-  catHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 },
-  pctInput: { width: 52, padding: '4px 8px', borderRadius: 6, border: '1px solid #D1D5DB', textAlign: 'center' as const, fontSize: 14 },
-  progressTrack: { height: 4, borderRadius: 2, backgroundColor: '#E5E7EB', marginTop: 8, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 2, transition: 'width 0.3s' },
-  submitBtn: { width: '100%', padding: '14px 28px', borderRadius: 12, backgroundColor: '#2563EB', color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 8 },
+  page: { minHeight: '100vh', backgroundColor: colors.background },
+  headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  headerBack: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer' },
+  headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
+  content: { padding: 20 },
+  scoreCircle: { position: 'relative' as const, display: 'inline-block', width: 120, height: 120 },
+  scoreText: { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  totalBar: { display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderRadius: radius.md, background: colors.surface, boxShadow: shadows.card, marginBottom: 16 },
+  catCard: { padding: 16, borderRadius: radius.md, background: colors.surface, boxShadow: shadows.card, marginBottom: 12 },
+  progressTrack: { height: 6, borderRadius: 3, backgroundColor: colors.borderLight, overflow: 'hidden' },
+  pctInput: { width: 52, padding: '6px 8px', borderRadius: radius.sm, border: `1px solid ${colors.border}`, textAlign: 'center' as const, fontSize: 14, backgroundColor: colors.inputBg },
+  primaryBtn: { width: '100%', height: 52, borderRadius: radius.md, background: colors.primaryGradient, color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 8 },
 };

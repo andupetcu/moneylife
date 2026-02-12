@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../../src/lib/auth-context';
 import { api, type GameResponse, type Account, type Transaction } from '../../../../../../src/lib/api';
+import { colors, radius, shadows } from '../../../../../../src/lib/design-tokens';
 
 function fmt(amount: number, currency: string): string {
   return (amount / 100).toLocaleString('en-US', { style: 'currency', currency: currency || 'USD' });
@@ -42,67 +43,83 @@ export default function AccountDetailPage(): React.ReactElement {
     if (user) fetchData();
   }, [user, authLoading, router, fetchData]);
 
-  if (loading || authLoading) return <div style={s.container}><p style={{ color: '#9CA3AF' }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
 
   const account = game?.accounts?.find(a => a.id === accountId);
   if (!account) return (
-    <div style={s.container}>
-      <p style={{ color: '#EF4444' }}>Account not found</p>
-      <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>← Back</button>
+    <div style={s.page}>
+      <div style={s.headerBar}>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
+        <span style={s.headerTitle}>Account</span>
+        <div style={{ width: 32 }} />
+      </div>
+      <div style={s.content}><p style={{ color: colors.danger }}>Account not found</p></div>
     </div>
   );
 
   const currency = game?.currency || 'USD';
 
   return (
-    <div style={s.container}>
-      <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>← Back to Game</button>
+    <div style={s.page}>
+      {/* Header */}
+      <div style={s.headerBar}>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
+        <span style={s.headerTitle}>{account.name}</span>
+        <div style={{ width: 32 }} />
+      </div>
 
-      <div style={s.header}>
-        <span style={{ fontSize: 48 }}>{ACCOUNT_ICONS[account.type] || '🏦'}</span>
-        <div>
-          <h1 style={s.title}>{account.name}</h1>
-          <p style={s.muted}>{account.type}{account.interestRate ? ` · ${account.interestRate}% APR` : ''}</p>
+      <div style={s.content}>
+        {/* Balance Card */}
+        <div style={s.balanceCard}>
+          <span style={{ fontSize: 40 }}>{ACCOUNT_ICONS[account.type] || '🏦'}</span>
+          <p style={{ margin: '12px 0 4px', fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Current Balance</p>
+          <p style={{ margin: 0, fontSize: 32, fontWeight: 700, color: '#FFF' }}>
+            {fmt(account.balance, currency)}
+          </p>
+          <p style={{ margin: '8px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
+            {account.type}{account.interestRate ? ` · ${account.interestRate}% APR` : ''}
+          </p>
         </div>
-      </div>
 
-      <div style={s.balanceCard}>
-        <p style={{ margin: 0, fontSize: 14, color: '#6B7280' }}>Current Balance</p>
-        <p style={{ margin: '8px 0 0', fontSize: 36, fontWeight: 700, color: account.balance >= 0 ? '#111827' : '#EF4444' }}>
-          {fmt(account.balance, currency)}
-        </p>
-      </div>
+        {/* Transfer Button */}
+        <button onClick={() => router.push(`/game/${gameId}/transfer`)} style={s.primaryBtn}>
+          💸 Transfer Money
+        </button>
 
-      <button onClick={() => router.push(`/game/${gameId}/transfer`)} style={s.transferBtn}>💸 Transfer Money</button>
-
-      <div style={s.section}>
-        <h2 style={s.sectionTitle}>Transaction History</h2>
-        {transactions.length === 0 && <p style={s.muted}>No transactions yet</p>}
-        {transactions.map(tx => (
-          <div key={tx.id} style={s.txRow}>
-            <div>
-              <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{tx.description}</p>
-              <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>{tx.date} · {tx.category}</p>
+        {/* Transactions */}
+        <div style={{ marginTop: 24 }}>
+          <h2 style={{ fontSize: 17, fontWeight: 600, color: colors.textPrimary, marginBottom: 12 }}>Transaction History</h2>
+          {transactions.length === 0 && <p style={{ color: colors.textMuted, fontSize: 14 }}>No transactions yet</p>}
+          {transactions.map(tx => (
+            <div key={tx.id} style={s.txRow}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={s.txIcon}>
+                  <span style={{ fontSize: 14 }}>{tx.amount >= 0 ? '↓' : '↑'}</span>
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontWeight: 500, color: colors.textPrimary, fontSize: 14 }}>{tx.description}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>{tx.date} · {tx.category}</p>
+                </div>
+              </div>
+              <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: tx.amount >= 0 ? colors.success : colors.danger }}>
+                {tx.amount >= 0 ? '+' : ''}{fmt(tx.amount, currency)}
+              </p>
             </div>
-            <p style={{ margin: 0, fontWeight: 600, color: tx.amount >= 0 ? '#10B981' : '#EF4444' }}>
-              {tx.amount >= 0 ? '+' : ''}{fmt(tx.amount, currency)}
-            </p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
 const s: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 600, margin: '40px auto', padding: 24 },
-  backBtn: { padding: '8px 16px', borderRadius: 8, border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginBottom: 24, display: 'inline-block', textDecoration: 'none' },
-  header: { display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 },
-  title: { fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 },
-  muted: { color: '#9CA3AF', margin: 0 },
-  balanceCard: { padding: 24, border: '1px solid #E5E7EB', borderRadius: 16, background: '#FAFAFA', textAlign: 'center' as const, marginBottom: 20 },
-  transferBtn: { width: '100%', padding: '14px 28px', borderRadius: 12, backgroundColor: '#2563EB', color: '#FFF', fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer', marginBottom: 32 },
-  section: { marginBottom: 28 },
-  sectionTitle: { fontSize: 18, fontWeight: 600, color: '#111827', marginBottom: 12 },
-  txRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottom: '1px solid #F3F4F6' },
+  page: { minHeight: '100vh', backgroundColor: colors.background },
+  headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  headerBack: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer' },
+  headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
+  content: { padding: 20 },
+  balanceCard: { margin: '-8px 0 20px', padding: 24, borderRadius: radius.lg, background: colors.cardGradient, boxShadow: shadows.bankCard, textAlign: 'center' as const },
+  primaryBtn: { width: '100%', height: 52, borderRadius: radius.md, background: colors.primaryGradient, color: '#FFF', fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer' },
+  txRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${colors.borderLight}` },
+  txIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.primary },
 };

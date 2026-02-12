@@ -21,5 +21,26 @@ export function createRoutes(pool: Pool): Router {
   router.get('/games/:id/monthly-report/:year/:month', getMonthlyReportController(pool));
   router.get('/games/:id/transactions', getTransactionsController(pool));
 
+  // Bills endpoint
+  router.get('/games/:id/bills', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = (req as any).userId;
+      // Verify game ownership
+      const gameResult = await pool.query('SELECT id FROM games WHERE id = $1 AND user_id = $2', [id, userId]);
+      if (gameResult.rows.length === 0) {
+        return res.status(404).json({ code: 'GAME_NOT_FOUND', message: 'Game not found' });
+      }
+      const billsResult = await pool.query(
+        'SELECT id, name, amount, next_due_date as "dueDate", category, auto_pay as "isAutopay", is_active as "isActive", frequency FROM scheduled_bills WHERE game_id = $1 ORDER BY next_due_date',
+        [id]
+      );
+      res.json(billsResult.rows);
+    } catch (err: any) {
+      console.error('Get bills error:', err.message);
+      res.status(500).json({ code: 'INTERNAL_ERROR', message: 'Failed to get bills' });
+    }
+  });
+
   return router;
 }

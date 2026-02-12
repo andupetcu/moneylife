@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../../src/lib/auth-context';
 import { api, type PendingCard } from '../../../../../../src/lib/api';
+import { colors, radius, shadows } from '../../../../../../src/lib/design-tokens';
 
 const CATEGORY_STYLES: Record<string, { icon: string; color: string; bg: string }> = {
   housing: { icon: '🏠', color: '#7C3AED', bg: '#F5F3FF' },
@@ -32,10 +33,10 @@ function getEffectLabel(effect: { type: string; amount?: number; label?: string 
 }
 
 function getEffectColor(effect: { type: string; amount?: number }): string {
-  if (effect.type === 'balance') return (effect.amount ?? 0) >= 0 ? '#10B981' : '#EF4444';
-  if (effect.type === 'xp') return '#2563EB';
-  if (effect.type === 'happiness') return '#F59E0B';
-  return '#6B7280';
+  if (effect.type === 'balance') return (effect.amount ?? 0) >= 0 ? colors.success : colors.danger;
+  if (effect.type === 'xp') return colors.primary;
+  if (effect.type === 'happiness') return colors.warning;
+  return colors.textSecondary;
 }
 
 export default function CardPage(): React.ReactElement {
@@ -90,73 +91,99 @@ export default function CardPage(): React.ReactElement {
     }
   };
 
-  if (loading || authLoading) return <div style={s.container}><p style={s.muted}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
   if (!card) return (
-    <div style={s.container}>
-      <p style={{ color: '#EF4444' }}>{error || 'Card not found'}</p>
-      <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>← Back to Game</button>
+    <div style={s.page}>
+      <div style={s.headerBar}>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
+        <span style={s.headerTitle}>Decision</span>
+        <div style={{ width: 32 }} />
+      </div>
+      <div style={s.content}>
+        <p style={{ color: colors.danger }}>{error || 'Card not found'}</p>
+      </div>
     </div>
   );
 
-  const catStyle = CATEGORY_STYLES[(card.category || '').toLowerCase()] || { icon: '📋', color: '#2563EB', bg: '#EFF6FF' };
+  const catStyle = CATEGORY_STYLES[(card.category || '').toLowerCase()] || { icon: '📋', color: colors.primary, bg: '#EEF2FF' };
 
   if (confirmed && outcome) {
     return (
-      <div style={{ ...s.container, textAlign: 'center' as const, paddingTop: 80 }}>
-        <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
-        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#111827', marginBottom: 8 }}>Decision Made!</h2>
-        <p style={{ fontSize: 16, color: '#6B7280', marginBottom: 24 }}>{outcome}</p>
-        <p style={{ fontSize: 14, color: '#9CA3AF' }}>Returning to game...</p>
+      <div style={s.page}>
+        <div style={s.headerBar} />
+        <div style={{ ...s.content, textAlign: 'center' as const, paddingTop: 60 }}>
+          <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: colors.textPrimary, marginBottom: 8 }}>Decision Made!</h2>
+          <p style={{ fontSize: 16, color: colors.textSecondary, marginBottom: 24 }}>{outcome}</p>
+          <p style={{ fontSize: 14, color: colors.textMuted }}>Returning to game...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={s.container}>
-      <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>← Back to Game</button>
+    <div style={s.page}>
+      {/* Purple Header */}
+      <div style={s.headerBar}>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
+        <span style={s.headerTitle}>{card.title}</span>
+        <div style={{ width: 32 }} />
+      </div>
 
-      <div style={{ ...s.cardBox, borderColor: catStyle.color }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <span style={{ ...s.categoryBadge, backgroundColor: catStyle.bg, color: catStyle.color }}>
+      <div style={s.content}>
+        {/* Category Badge */}
+        <div style={{ marginBottom: 16 }}>
+          <span style={{ display: 'inline-block', padding: '4px 14px', borderRadius: radius.pill, backgroundColor: catStyle.bg, color: catStyle.color, fontSize: 13, fontWeight: 600 }}>
             {catStyle.icon} {card.category}
           </span>
         </div>
 
-        <h1 style={s.title}>{card.title}</h1>
-        <p style={s.desc}>{card.description}</p>
-
-        <div style={s.optionsContainer}>
-          {(card.options || []).map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => setSelectedOption(opt.id)}
-              style={{
-                ...s.optionBtn,
-                borderColor: selectedOption === opt.id ? catStyle.color : '#E5E7EB',
-                backgroundColor: selectedOption === opt.id ? catStyle.bg : '#FFF',
-              }}
-            >
-              <p style={{ margin: 0, fontWeight: 600, color: '#111827' }}>{opt.label}</p>
-              {opt.description && <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6B7280' }}>{opt.description}</p>}
-              {opt.effects && opt.effects.length > 0 && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' as const }}>
-                  {opt.effects.map((eff, i) => (
-                    <span key={i} style={{ ...s.effectTag, color: getEffectColor(eff) }}>
-                      {getEffectLabel(eff)}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </button>
-          ))}
+        {/* Description Card */}
+        <div style={s.descCard}>
+          <p style={{ margin: 0, fontSize: 15, color: colors.textSecondary, lineHeight: 1.6 }}>{card.description}</p>
         </div>
 
-        {error && <p style={{ color: '#EF4444', marginTop: 12 }}>{error}</p>}
+        {/* Options */}
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10 }}>
+          {(card.options || []).map((opt, idx) => {
+            const isSelected = selectedOption === opt.id;
+            const isPrimary = idx === 0;
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setSelectedOption(opt.id)}
+                style={{
+                  width: '100%',
+                  padding: 16,
+                  borderRadius: radius.md,
+                  border: isSelected ? `2px solid ${colors.primary}` : `2px solid ${colors.border}`,
+                  background: isSelected ? '#EEF2FF' : (isPrimary ? colors.surface : colors.surface),
+                  cursor: 'pointer',
+                  textAlign: 'left' as const,
+                }}
+              >
+                <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{opt.label}</p>
+                {opt.description && <p style={{ margin: '4px 0 0', fontSize: 13, color: colors.textSecondary }}>{opt.description}</p>}
+                {opt.effects && opt.effects.length > 0 && (
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' as const }}>
+                    {opt.effects.map((eff, i) => (
+                      <span key={i} style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 6, backgroundColor: colors.inputBg, fontSize: 12, fontWeight: 600, color: getEffectColor(eff) }}>
+                        {getEffectLabel(eff)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {error && <p style={{ color: colors.danger, marginTop: 12, fontSize: 14 }}>{error}</p>}
 
         <button
           onClick={handleSubmit}
           disabled={!selectedOption || submitting}
-          style={{ ...s.submitBtn, opacity: !selectedOption || submitting ? 0.5 : 1, backgroundColor: catStyle.color }}
+          style={{ ...s.primaryBtn, marginTop: 24, opacity: !selectedOption || submitting ? 0.5 : 1 }}
         >
           {submitting ? 'Submitting...' : '✅ Confirm Decision'}
         </button>
@@ -166,15 +193,11 @@ export default function CardPage(): React.ReactElement {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 600, margin: '40px auto', padding: 24 },
-  muted: { color: '#9CA3AF' },
-  backBtn: { padding: '8px 16px', borderRadius: 8, border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginBottom: 24, display: 'inline-block', textDecoration: 'none' },
-  cardBox: { padding: 28, border: '2px solid', borderRadius: 16, background: '#FAFAFA' },
-  categoryBadge: { display: 'inline-block', padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600 },
-  title: { fontSize: 24, fontWeight: 700, color: '#111827', margin: '0 0 8px' },
-  desc: { fontSize: 15, color: '#6B7280', lineHeight: 1.6, margin: '0 0 24px' },
-  optionsContainer: { display: 'flex', flexDirection: 'column' as const, gap: 10 },
-  optionBtn: { padding: 16, borderRadius: 12, border: '2px solid', cursor: 'pointer', textAlign: 'left' as const, background: '#FFF', transition: 'all 0.15s' },
-  effectTag: { display: 'inline-block', padding: '2px 8px', borderRadius: 6, backgroundColor: '#F9FAFB', fontSize: 12, fontWeight: 600 },
-  submitBtn: { marginTop: 24, width: '100%', padding: '14px 28px', borderRadius: 12, color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer' },
+  page: { minHeight: '100vh', backgroundColor: colors.background },
+  headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  headerBack: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer' },
+  headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
+  content: { padding: 20 },
+  descCard: { padding: 20, borderRadius: radius.lg, background: colors.surface, boxShadow: shadows.card, marginBottom: 20 },
+  primaryBtn: { width: '100%', height: 52, borderRadius: radius.md, background: colors.primaryGradient, color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer' },
 };

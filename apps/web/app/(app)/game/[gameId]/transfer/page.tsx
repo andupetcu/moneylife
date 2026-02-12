@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../src/lib/auth-context';
 import { api, type GameResponse } from '../../../../../src/lib/api';
+import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
 
 function fmt(amount: number, currency: string): string {
   return (amount / 100).toLocaleString('en-US', { style: 'currency', currency: currency || 'USD' });
@@ -53,70 +54,83 @@ export default function TransferPage(): React.ReactElement {
     }
   };
 
-  if (loading || authLoading) return <div style={s.container}><p style={{ color: '#9CA3AF' }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
 
   const accounts = game?.accounts || [];
   const currency = game?.currency || 'USD';
 
   return (
-    <div style={s.container}>
-      <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>← Back to Game</button>
-
-      <h1 style={s.title}>💸 Transfer Money</h1>
-
-      <div style={s.field}>
-        <label style={s.label}>From Account</label>
-        <select value={fromId} onChange={e => setFromId(e.target.value)} style={s.select}>
-          <option value="">Select account...</option>
-          {accounts.map(a => (
-            <option key={a.id} value={a.id}>{a.name} ({fmt(a.balance, currency)})</option>
-          ))}
-        </select>
+    <div style={s.page}>
+      {/* Header */}
+      <div style={s.headerBar}>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
+        <span style={s.headerTitle}>Transfer</span>
+        <div style={{ width: 32 }} />
       </div>
 
-      <div style={s.field}>
-        <label style={s.label}>To Account</label>
-        <select value={toId} onChange={e => setToId(e.target.value)} style={s.select}>
-          <option value="">Select account...</option>
-          {accounts.filter(a => a.id !== fromId).map(a => (
-            <option key={a.id} value={a.id}>{a.name} ({fmt(a.balance, currency)})</option>
-          ))}
-        </select>
+      <div style={s.content}>
+        {/* Amount Display */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <p style={{ margin: '0 0 8px', fontSize: 14, color: colors.textMuted }}>Amount ({currency})</p>
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            placeholder="0.00"
+            style={s.amountInput}
+          />
+        </div>
+
+        <div style={s.formCard}>
+          <div style={s.field}>
+            <label style={s.label}>From Account</label>
+            <select value={fromId} onChange={e => setFromId(e.target.value)} style={s.select}>
+              <option value="">Select account...</option>
+              {accounts.map(a => (
+                <option key={a.id} value={a.id}>{a.name} ({fmt(a.balance, currency)})</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ textAlign: 'center', margin: '4px 0', color: colors.textMuted, fontSize: 20 }}>↓</div>
+
+          <div style={s.field}>
+            <label style={s.label}>To Account</label>
+            <select value={toId} onChange={e => setToId(e.target.value)} style={s.select}>
+              <option value="">Select account...</option>
+              {accounts.filter(a => a.id !== fromId).map(a => (
+                <option key={a.id} value={a.id}>{a.name} ({fmt(a.balance, currency)})</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {error && <p style={{ color: colors.danger, margin: '12px 0', fontSize: 14 }}>{error}</p>}
+
+        <button
+          onClick={handleSubmit}
+          disabled={submitting || !fromId || !toId || !amount}
+          style={{ ...s.primaryBtn, opacity: submitting || !fromId || !toId || !amount ? 0.5 : 1 }}
+        >
+          {submitting ? 'Transferring...' : '✅ Confirm Transfer'}
+        </button>
       </div>
-
-      <div style={s.field}>
-        <label style={s.label}>Amount ({currency})</label>
-        <input
-          type="number"
-          min="0.01"
-          step="0.01"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-          placeholder="0.00"
-          style={s.input}
-        />
-      </div>
-
-      {error && <p style={{ color: '#EF4444', margin: '12px 0' }}>{error}</p>}
-
-      <button
-        onClick={handleSubmit}
-        disabled={submitting || !fromId || !toId || !amount}
-        style={{ ...s.submitBtn, opacity: submitting || !fromId || !toId || !amount ? 0.5 : 1 }}
-      >
-        {submitting ? 'Transferring...' : '✅ Confirm Transfer'}
-      </button>
     </div>
   );
 }
 
 const s: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 500, margin: '40px auto', padding: 24 },
-  backBtn: { padding: '8px 16px', borderRadius: 8, border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginBottom: 24, display: 'inline-block', textDecoration: 'none' },
-  title: { fontSize: 24, fontWeight: 700, color: '#111827', marginBottom: 24 },
-  field: { marginBottom: 20 },
-  label: { display: 'block', fontSize: 14, fontWeight: 600, color: '#374151', marginBottom: 6 },
-  select: { width: '100%', padding: '12px 16px', borderRadius: 10, border: '1px solid #D1D5DB', fontSize: 15, color: '#111827', backgroundColor: '#FFF' },
-  input: { width: '100%', padding: '12px 16px', borderRadius: 10, border: '1px solid #D1D5DB', fontSize: 15, color: '#111827', boxSizing: 'border-box' as const },
-  submitBtn: { width: '100%', padding: '14px 28px', borderRadius: 12, backgroundColor: '#2563EB', color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 8 },
+  page: { minHeight: '100vh', backgroundColor: colors.background },
+  headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  headerBack: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer' },
+  headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
+  content: { padding: 20 },
+  amountInput: { width: 200, fontSize: 36, fontWeight: 700, textAlign: 'center' as const, color: colors.textPrimary, border: 'none', borderBottom: `2px solid ${colors.primary}`, background: 'transparent', outline: 'none', padding: '8px 0' },
+  formCard: { padding: 20, borderRadius: radius.lg, background: colors.surface, boxShadow: shadows.card, marginBottom: 24 },
+  field: { marginBottom: 16 },
+  label: { display: 'block', fontSize: 13, fontWeight: 600, color: colors.textSecondary, marginBottom: 6 },
+  select: { width: '100%', padding: '14px 16px', borderRadius: radius.md, border: `1px solid ${colors.border}`, fontSize: 15, color: colors.textPrimary, backgroundColor: colors.inputBg },
+  primaryBtn: { width: '100%', height: 52, borderRadius: radius.md, background: colors.primaryGradient, color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer' },
 };

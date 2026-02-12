@@ -4,16 +4,17 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../../../src/lib/auth-context';
 import { api, type MonthlyReport } from '../../../../../../../src/lib/api';
+import { colors, radius, shadows } from '../../../../../../../src/lib/design-tokens';
 
 function fmt(amount: number, currency: string): string {
   return (amount / 100).toLocaleString('en-US', { style: 'currency', currency: currency || 'USD' });
 }
 
 function chiColor(score: number): string {
-  if (score >= 750) return '#10B981';
+  if (score >= 750) return colors.success;
   if (score >= 650) return '#3B82F6';
-  if (score >= 500) return '#F59E0B';
-  return '#EF4444';
+  if (score >= 500) return colors.warning;
+  return colors.danger;
 }
 
 function chiLabel(score: number): string {
@@ -47,11 +48,17 @@ export default function MonthlyReportPage(): React.ReactElement {
     if (user) fetchReport();
   }, [user, authLoading, router, fetchReport]);
 
-  if (loading || authLoading) return <div style={s.container}><p style={{ color: '#9CA3AF' }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
   if (error || !report) return (
-    <div style={s.container}>
-      <p style={{ color: '#EF4444' }}>{error || 'No report data'}</p>
-      <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>← Back to Game</button>
+    <div style={s.page}>
+      <div style={s.headerBar}>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
+        <span style={s.headerTitle}>Monthly Report</span>
+        <div style={{ width: 32 }} />
+      </div>
+      <div style={s.content}>
+        <p style={{ color: colors.danger }}>{error || 'No report data'}</p>
+      </div>
     </div>
   );
 
@@ -59,104 +66,118 @@ export default function MonthlyReportPage(): React.ReactElement {
   const monthName = new Date(year, month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const xpPct = report.xpToNextLevel ? Math.min(100, (report.xp / report.xpToNextLevel) * 100) : 0;
   const chiPct = Math.min(100, (report.creditHealthIndex / 850) * 100);
+  const maxBar = Math.max(report.totalIncome, report.totalExpenses, 1);
 
   return (
-    <div style={s.container}>
-      <h1 style={s.title}>📊 Monthly Report</h1>
-      <p style={s.subtitle}>{monthName}</p>
-
-      {/* Income vs Expenses */}
-      <div style={s.summaryGrid}>
-        <div style={{ ...s.summaryCard, borderLeft: '4px solid #10B981' }}>
-          <p style={s.summaryLabel}>Income</p>
-          <p style={{ ...s.summaryValue, color: '#10B981' }}>{fmt(report.totalIncome, currency)}</p>
-        </div>
-        <div style={{ ...s.summaryCard, borderLeft: '4px solid #EF4444' }}>
-          <p style={s.summaryLabel}>Expenses</p>
-          <p style={{ ...s.summaryValue, color: '#EF4444' }}>{fmt(report.totalExpenses, currency)}</p>
-        </div>
+    <div style={s.page}>
+      {/* Header */}
+      <div style={s.headerBar}>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
+        <span style={s.headerTitle}>{monthName}</span>
+        <div style={{ width: 32 }} />
       </div>
 
-      {/* Savings Rate */}
-      <div style={s.card}>
-        <p style={s.cardLabel}>Savings Rate</p>
-        <p style={{ ...s.bigNumber, color: report.savingsRate >= 20 ? '#10B981' : report.savingsRate >= 0 ? '#F59E0B' : '#EF4444' }}>
-          {report.savingsRate.toFixed(1)}%
-        </p>
-      </div>
+      <div style={s.content}>
+        {/* Bank Card */}
+        <div style={s.bankCard}>
+          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Net Balance</p>
+          <p style={{ margin: '8px 0 0', fontSize: 28, fontWeight: 700, color: '#FFF' }}>
+            {fmt(report.totalIncome - report.totalExpenses, currency)}
+          </p>
+        </div>
 
-      {/* Category Breakdown */}
-      {report.categoryBreakdown && Object.keys(report.categoryBreakdown).length > 0 && (
-        <div style={s.section}>
-          <h2 style={s.sectionTitle}>Category Breakdown</h2>
-          {Object.entries(report.categoryBreakdown).sort((a, b) => b[1] - a[1]).map(([cat, amount]) => (
-            <div key={cat} style={s.catRow}>
-              <span style={{ fontWeight: 500, color: '#111827', textTransform: 'capitalize' as const }}>{cat}</span>
-              <span style={{ fontWeight: 600, color: '#111827' }}>{fmt(amount, currency)}</span>
+        {/* Income vs Expenses Bars */}
+        <div style={s.card}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: colors.success }}>Income</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: colors.success }}>{fmt(report.totalIncome, currency)}</span>
             </div>
-          ))}
+            <div style={s.barTrack}>
+              <div style={{ height: '100%', borderRadius: 4, width: `${(report.totalIncome / maxBar) * 100}%`, backgroundColor: colors.success }} />
+            </div>
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: colors.danger }}>Expenses</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: colors.danger }}>{fmt(report.totalExpenses, currency)}</span>
+            </div>
+            <div style={s.barTrack}>
+              <div style={{ height: '100%', borderRadius: 4, width: `${(report.totalExpenses / maxBar) * 100}%`, backgroundColor: colors.danger }} />
+            </div>
+          </div>
         </div>
-      )}
 
-      {/* Credit Health Gauge */}
-      <div style={s.card}>
-        <p style={s.cardLabel}>Credit Health Index</p>
-        <p style={{ ...s.bigNumber, color: chiColor(report.creditHealthIndex) }}>{report.creditHealthIndex}</p>
-        <p style={{ margin: '4px 0 8px', fontSize: 14, color: chiColor(report.creditHealthIndex), fontWeight: 600 }}>
-          {chiLabel(report.creditHealthIndex)}
-        </p>
-        <div style={s.gaugeTrack}>
-          <div style={{ ...s.gaugeFill, width: `${chiPct}%`, backgroundColor: chiColor(report.creditHealthIndex) }} />
+        {/* Savings Rate */}
+        <div style={s.card}>
+          <p style={s.cardLabel}>Savings Rate</p>
+          <p style={{ margin: 0, fontSize: 32, fontWeight: 700, color: report.savingsRate >= 20 ? colors.success : report.savingsRate >= 0 ? colors.warning : colors.danger }}>
+            {report.savingsRate.toFixed(1)}%
+          </p>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>
-          <span>0</span><span>425</span><span>850</span>
+
+        {/* Category Breakdown */}
+        {report.categoryBreakdown && Object.keys(report.categoryBreakdown).length > 0 && (
+          <div style={s.card}>
+            <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600, color: colors.textPrimary }}>Category Breakdown</h2>
+            {Object.entries(report.categoryBreakdown).sort((a, b) => b[1] - a[1]).map(([cat, amount]) => (
+              <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${colors.borderLight}` }}>
+                <span style={{ fontWeight: 500, color: colors.textPrimary, textTransform: 'capitalize' as const }}>{cat}</span>
+                <span style={{ fontWeight: 600, color: colors.textPrimary }}>{fmt(amount, currency)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Credit Health */}
+        <div style={s.card}>
+          <p style={s.cardLabel}>Credit Health Index</p>
+          <p style={{ margin: '4px 0', fontSize: 32, fontWeight: 700, color: chiColor(report.creditHealthIndex) }}>{report.creditHealthIndex}</p>
+          <p style={{ margin: '0 0 8px', fontSize: 13, color: chiColor(report.creditHealthIndex), fontWeight: 600 }}>{chiLabel(report.creditHealthIndex)}</p>
+          <div style={s.gaugeTrack}>
+            <div style={{ height: '100%', borderRadius: 5, width: `${chiPct}%`, backgroundColor: chiColor(report.creditHealthIndex), transition: 'width 0.5s' }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: colors.textMuted, marginTop: 4 }}>
+            <span>0</span><span>425</span><span>850</span>
+          </div>
         </div>
-      </div>
 
-      {/* Budget Adherence */}
-      <div style={s.card}>
-        <p style={s.cardLabel}>Budget Adherence</p>
-        <p style={s.bigNumber}>{report.budgetAdherence}%</p>
-      </div>
+        {/* Budget Adherence */}
+        <div style={s.card}>
+          <p style={s.cardLabel}>Budget Adherence</p>
+          <p style={{ margin: 0, fontSize: 32, fontWeight: 700, color: colors.textPrimary }}>{report.budgetAdherence}%</p>
+        </div>
 
-      {/* XP & Level */}
-      <div style={s.card}>
-        <p style={s.cardLabel}>XP Earned This Month</p>
-        <p style={{ ...s.bigNumber, color: '#2563EB' }}>+{report.xpEarned} XP</p>
-        <div style={{ marginTop: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#6B7280', marginBottom: 4 }}>
+        {/* XP & Level */}
+        <div style={s.card}>
+          <p style={s.cardLabel}>XP Earned This Month</p>
+          <p style={{ margin: '4px 0 12px', fontSize: 28, fontWeight: 700, color: colors.primary }}>+{report.xpEarned} XP</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: colors.textSecondary, marginBottom: 4 }}>
             <span>Level {report.level}</span>
             <span>{report.xp} / {report.xpToNextLevel} XP</span>
           </div>
-          <div style={s.xpTrack}><div style={{ ...s.xpFill, width: `${xpPct}%` }} /></div>
+          <div style={s.xpTrack}><div style={{ height: '100%', borderRadius: 4, width: `${xpPct}%`, backgroundColor: colors.primary, transition: 'width 0.3s' }} /></div>
         </div>
-      </div>
 
-      <button onClick={() => router.push(`/game/${gameId}`)} style={s.continueBtn}>
-        🎮 Continue Playing
-      </button>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.primaryBtn}>
+          🎮 Continue Playing
+        </button>
+      </div>
     </div>
   );
 }
 
 const s: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 600, margin: '40px auto', padding: 24 },
-  backBtn: { padding: '8px 16px', borderRadius: 8, border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', color: '#6B7280', fontSize: 14, display: 'inline-block', textDecoration: 'none' },
-  title: { fontSize: 28, fontWeight: 700, color: '#111827', margin: '0 0 4px', textAlign: 'center' as const },
-  subtitle: { fontSize: 16, color: '#6B7280', textAlign: 'center' as const, marginBottom: 28 },
-  summaryGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 },
-  summaryCard: { padding: 16, borderRadius: 12, background: '#FAFAFA' },
-  summaryLabel: { margin: 0, fontSize: 13, color: '#6B7280' },
-  summaryValue: { margin: '4px 0 0', fontSize: 24, fontWeight: 700 },
-  card: { padding: 20, border: '1px solid #E5E7EB', borderRadius: 14, marginBottom: 16, textAlign: 'center' as const },
-  cardLabel: { margin: '0 0 4px', fontSize: 14, color: '#6B7280' },
-  bigNumber: { margin: 0, fontSize: 36, fontWeight: 700, color: '#111827' },
-  section: { marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 600, color: '#111827', marginBottom: 10 },
-  catRow: { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F3F4F6' },
-  gaugeTrack: { height: 10, borderRadius: 5, backgroundColor: '#E5E7EB', overflow: 'hidden' },
-  gaugeFill: { height: '100%', borderRadius: 5, transition: 'width 0.5s' },
-  xpTrack: { height: 8, borderRadius: 4, backgroundColor: '#E5E7EB', overflow: 'hidden' },
-  xpFill: { height: '100%', borderRadius: 4, backgroundColor: '#2563EB', transition: 'width 0.3s' },
-  continueBtn: { width: '100%', padding: '16px 28px', borderRadius: 14, backgroundColor: '#2563EB', color: '#FFF', fontSize: 18, fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 8 },
+  page: { minHeight: '100vh', backgroundColor: colors.background },
+  headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  headerBack: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer' },
+  headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
+  content: { padding: 20 },
+  bankCard: { margin: '-8px 0 20px', padding: 24, borderRadius: radius.lg, background: colors.cardGradient, boxShadow: shadows.bankCard },
+  card: { padding: 20, borderRadius: radius.lg, background: colors.surface, boxShadow: shadows.card, marginBottom: 16, textAlign: 'center' as const },
+  cardLabel: { margin: '0 0 4px', fontSize: 13, color: colors.textMuted },
+  barTrack: { height: 8, borderRadius: 4, backgroundColor: colors.borderLight, overflow: 'hidden' },
+  gaugeTrack: { height: 10, borderRadius: 5, backgroundColor: colors.borderLight, overflow: 'hidden' },
+  xpTrack: { height: 8, borderRadius: 4, backgroundColor: colors.borderLight, overflow: 'hidden' },
+  primaryBtn: { width: '100%', height: 52, borderRadius: radius.md, background: colors.primaryGradient, color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 8 },
 };

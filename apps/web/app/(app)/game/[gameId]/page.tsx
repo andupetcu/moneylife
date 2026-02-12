@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../../src/lib/auth-context';
 import { api, type GameResponse, type Transaction, type Bill } from '../../../../src/lib/api';
+import { colors, radius, shadows } from '../../../../src/lib/design-tokens';
 
 const PERSONAS: Record<string, string> = {
   teen: '🎒', student: '🎓', young_adult: '💼', parent: '👨‍👩‍👧',
@@ -14,14 +15,20 @@ const ACCOUNT_ICONS: Record<string, string> = {
   checking: '🏦', savings: '💰', credit_card: '💳', loan: '📋', investment: '📈',
 };
 
+const TX_CATEGORY_COLORS: Record<string, string> = {
+  housing: '#7C3AED', food: '#EA580C', transport: '#6B7280', entertainment: '#DB2777',
+  health: '#059669', savings: '#2563EB', education: '#7C3AED', income: '#10B981',
+  salary: '#10B981', investment: '#059669', insurance: '#0891B2', other: '#9CA3AF',
+};
+
 function fmt(amount: number, currency: string): string {
   return (amount / 100).toLocaleString('en-US', { style: 'currency', currency: currency || 'USD' });
 }
 
 function getCreditColor(score: number): string {
-  if (score >= 80) return '#10B981';
-  if (score >= 60) return '#F59E0B';
-  return '#EF4444';
+  if (score >= 80) return colors.success;
+  if (score >= 60) return colors.warning;
+  return colors.danger;
 }
 
 function isLastDay(dateStr?: string): boolean {
@@ -44,8 +51,10 @@ export default function GamePage(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [advancing, setAdvancing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const fetchGame = useCallback(async () => {
+    if (!gameId) return;
     const [gameRes, txRes, billsRes] = await Promise.all([
       api.game.get(gameId),
       api.game.getTransactions(gameId),
@@ -83,9 +92,9 @@ export default function GamePage(): React.ReactElement {
     setBills(prev => prev.map(b => b.id === billId ? { ...b, autopay: !current } : b));
   };
 
-  if (loading || authLoading) return <div style={s.container}><p style={s.muted}>Loading...</p></div>;
-  if (error && !game) return <div style={s.container}><p style={{ color: '#EF4444' }}>{error}</p></div>;
-  if (!game) return <div style={s.container}><p style={s.muted}>Game not found</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
+  if (error && !game) return <div style={s.page}><p style={{ color: colors.danger, textAlign: 'center', paddingTop: 80 }}>{error}</p></div>;
+  if (!game) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Game not found</p></div>;
 
   const currency = game.currency || 'USD';
   const xpPct = game.xpToNextLevel ? Math.min(100, (game.xp / game.xpToNextLevel) * 100) : 0;
@@ -94,188 +103,231 @@ export default function GamePage(): React.ReactElement {
   const netWorth = game.netWorth ?? 0;
   const income = game.monthlyIncome ?? 0;
 
-  // Parse current date
-  const dateParts = game.currentDate?.split('-');
   const dateDisplay = game.currentDate ? new Date(game.currentDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Day 1';
 
   return (
-    <div style={s.container}>
-      {/* Header */}
+    <div style={s.page}>
+      {/* Purple Gradient Header */}
       <div style={s.header}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 40 }}>{PERSONAS[game.persona] || '🎮'}</span>
-          <div>
-            <h1 style={s.title}>Level {game.level}</h1>
-            <p style={s.muted}>{game.difficulty} mode</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <button onClick={() => router.push('/dashboard')} style={s.headerBackBtn}>←</button>
+          <div style={{ textAlign: 'center', flex: 1 }}>
+            <span style={{ fontSize: 44 }}>{PERSONAS[game.persona] || '🎮'}</span>
+            <h1 style={{ margin: '8px 0 4px', fontSize: 22, fontWeight: 700, color: '#FFF' }}>Level {game.level}</h1>
+            <span style={s.diffBadge}>{game.difficulty}</span>
+          </div>
+          <div style={{ width: 32 }} />
+        </div>
+        {/* XP Bar in header */}
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>⭐ XP</span>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{game.xp}{game.xpToNextLevel ? ` / ${game.xpToNextLevel}` : ''}</span>
+          </div>
+          <div style={s.xpTrack}><div style={{ ...s.xpFill, width: `${xpPct}%` }} /></div>
+        </div>
+      </div>
+
+      <div style={s.content}>
+        {/* Bank Card - Net Worth */}
+        <div style={s.bankCard}>
+          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Total Net Worth</p>
+          <p style={{ margin: '8px 0 0', fontSize: 32, fontWeight: 700, color: '#FFF' }}>{fmt(netWorth, currency)}</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', letterSpacing: 2 }}>•••• •••• •••• {Math.abs(netWorth % 10000).toString().padStart(4, '0')}</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#FFF', letterSpacing: 1 }}>VISA</span>
           </div>
         </div>
-        <button onClick={() => router.push('/dashboard')} style={s.backBtn}>← Back</button>
-      </div>
 
-      {/* XP Bar */}
-      <div style={s.xpContainer}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 13, color: '#6B7280' }}>⭐ XP</span>
-          <span style={{ fontSize: 13, color: '#6B7280' }}>{game.xp}{game.xpToNextLevel ? ` / ${game.xpToNextLevel}` : ''}</span>
+        {/* Stats Grid */}
+        <div style={s.statsGrid}>
+          <div style={s.statCard}>
+            <p style={s.statLabel}>Net Worth</p>
+            <p style={s.statValue}>{fmt(netWorth, currency)}</p>
+            <p style={{ margin: 0, fontSize: 12, color: netWorth >= 0 ? colors.success : colors.danger }}>{netWorth >= 0 ? '↑ Positive' : '↓ Negative'}</p>
+          </div>
+          <div style={s.statCard}>
+            <p style={s.statLabel}>Monthly Income</p>
+            <p style={s.statValue}>{fmt(income, currency)}</p>
+          </div>
+          <div style={s.statCard}>
+            <p style={s.statLabel}>Budget Score</p>
+            <p style={s.statValue}>{game.budgetScore ?? 0}%</p>
+          </div>
+          <div style={s.statCard}>
+            <p style={s.statLabel}>Credit Health</p>
+            <p style={{ ...s.statValue, color: getCreditColor(creditScore) }}>{creditScore}</p>
+          </div>
         </div>
-        <div style={s.xpTrack}><div style={{ ...s.xpFill, width: `${xpPct}%` }} /></div>
-      </div>
 
-      {/* Financial Dashboard */}
-      <div style={s.statsGrid}>
-        <div style={s.statCard}>
-          <p style={s.statLabel}>Net Worth</p>
-          <p style={s.statValue}>{fmt(netWorth, currency)}</p>
-          <p style={{ margin: 0, fontSize: 12, color: netWorth >= 0 ? '#10B981' : '#EF4444' }}>{netWorth >= 0 ? '↑' : '↓'}</p>
-        </div>
-        <div style={s.statCard}>
-          <p style={s.statLabel}>Monthly Income</p>
-          <p style={s.statValue}>{fmt(income, currency)}</p>
-        </div>
-        <div style={s.statCard}>
-          <p style={s.statLabel}>Budget Score</p>
-          <p style={s.statValue}>{game.budgetScore ?? 0}%</p>
-        </div>
-        <div style={s.statCard}>
-          <p style={s.statLabel}>Credit Health</p>
-          <p style={{ ...s.statValue, color: getCreditColor(creditScore) }}>{creditScore}</p>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div style={s.quickActions}>
-        <Link href={`/game/${gameId}/transfer`} style={s.quickBtn}>💸 Transfer</Link>
-        <Link href={`/game/${gameId}/budget`} style={s.quickBtn}>📊 Budget</Link>
-        <Link href={`/game/${gameId}/rewards`} style={s.quickBtn}>🏆 Rewards</Link>
-      </div>
-
-      {/* Advance Day */}
-      <div style={s.daySection}>
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 600, color: '#111827' }}>📅 {dateDisplay}</p>
-          {monthEnd && <span style={s.monthEndBadge}>🎉 Month End!</span>}
-        </div>
-        {error && <p style={{ color: '#EF4444', textAlign: 'center', margin: '8px 0' }}>{error}</p>}
-        <button onClick={handleAdvanceDay} disabled={advancing} style={{ ...s.advanceBtn, opacity: advancing ? 0.7 : 1 }}>
-          {advancing ? '⏳ Advancing...' : '☀️ Advance Day'}
-        </button>
-      </div>
-
-      {/* Pending Cards */}
-      {game.pendingCards && game.pendingCards.length > 0 && (
-        <div style={s.section}>
-          <h2 style={s.sectionTitle}>📋 Decisions Needed</h2>
-          {game.pendingCards.map(card => (
-            <div key={card.id} style={s.cardRow} onClick={() => router.push(`/game/${gameId}/card/${card.id}`)}>
-              <div>
-                <p style={{ margin: 0, fontWeight: 600, color: '#111827' }}>{card.title || card.cardId}</p>
-                <p style={{ margin: 0, fontSize: 13, color: '#6B7280', marginTop: 2 }}>{card.description || 'Make a decision'}</p>
-              </div>
-              <span style={s.decideBtn}>Decide →</span>
-            </div>
+        {/* Quick Actions */}
+        <div style={s.quickGrid}>
+          {[
+            { href: `/game/${gameId}/transfer`, icon: '💸', label: 'Transfer' },
+            { href: `/game/${gameId}/budget`, icon: '📊', label: 'Budget' },
+            { href: `/game/${gameId}/rewards`, icon: '🏆', label: 'Rewards' },
+            { href: `/game/${gameId}`, icon: '📬', label: 'Bills', scroll: true },
+            { href: `/game/${gameId}/monthly-report/${game.currentDate?.split('-')[0]}/${game.currentDate?.split('-')[1]}`, icon: '📋', label: 'Report' },
+            { href: `/game/${gameId}`, icon: '⚙️', label: 'Settings' },
+          ].map(item => (
+            <Link key={item.label} href={item.href} style={s.quickItem}>
+              <div style={s.quickIcon}><span style={{ fontSize: 22 }}>{item.icon}</span></div>
+              <span style={{ fontSize: 12, color: colors.textSecondary, fontWeight: 500 }}>{item.label}</span>
+            </Link>
           ))}
         </div>
-      )}
 
-      {/* Accounts */}
-      {game.accounts && game.accounts.length > 0 && (
-        <div style={s.section}>
-          <h2 style={s.sectionTitle}>💰 Accounts</h2>
-          {game.accounts.map(acc => (
-            <div key={acc.id} style={s.accountRow} onClick={() => router.push(`/game/${gameId}/account/${acc.id}`)}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 24 }}>{ACCOUNT_ICONS[acc.type] || '🏦'}</span>
-                <div>
-                  <p style={{ margin: 0, fontWeight: 600, color: '#111827' }}>{acc.name}</p>
-                  <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>{acc.type}{acc.interestRate ? ` · ${acc.interestRate}% APR` : ''}</p>
+        {/* Date + Advance Day */}
+        <div style={s.dayCard}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: colors.textPrimary }}>📅 {dateDisplay}</p>
+            {monthEnd && <span style={s.monthEndBadge}>🎉 Month End!</span>}
+          </div>
+          {error && <p style={{ color: colors.danger, textAlign: 'center', margin: '8px 0', fontSize: 13 }}>{error}</p>}
+          <button onClick={handleAdvanceDay} disabled={advancing} style={{ ...s.primaryBtn, opacity: advancing ? 0.7 : 1, marginTop: 12 }}>
+            {advancing ? '⏳ Advancing...' : '☀️ Advance Day'}
+          </button>
+        </div>
+
+        {/* Pending Cards */}
+        {game.pendingCards && game.pendingCards.length > 0 && (
+          <div style={s.section}>
+            <h2 style={s.sectionTitle}>📋 Decisions Needed</h2>
+            {game.pendingCards.map(card => (
+              <div key={card.id} style={s.pendingCard} onClick={() => router.push(`/game/${gameId}/card/${card.id}`)}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{card.title || card.cardId}</p>
+                  <p style={{ margin: '4px 0 0', fontSize: 13, color: colors.textSecondary }}>{card.description || 'Make a decision'}</p>
+                </div>
+                <span style={s.decidePill}>Decide →</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Accounts */}
+        {game.accounts && game.accounts.length > 0 && (
+          <div style={s.section}>
+            <h2 style={s.sectionTitle}>💰 Accounts</h2>
+            {game.accounts.map(acc => (
+              <div key={acc.id} style={s.accountCard} onClick={() => router.push(`/game/${gameId}/account/${acc.id}`)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={s.accountIcon}><span style={{ fontSize: 20 }}>{ACCOUNT_ICONS[acc.type] || '🏦'}</span></div>
+                  <div>
+                    <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{acc.name}</p>
+                    <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>{acc.type}{acc.interestRate ? ` · ${acc.interestRate}% APR` : ''}</p>
+                  </div>
+                </div>
+                <p style={{ margin: 0, fontWeight: 700, fontSize: 16, color: acc.balance >= 0 ? colors.textPrimary : colors.danger }}>
+                  {fmt(acc.balance, acc.currency || currency)}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Bills */}
+        {bills.length > 0 && (
+          <div style={s.section}>
+            <h2 style={s.sectionTitle}>📬 Upcoming Bills</h2>
+            {bills.map(bill => (
+              <div key={bill.id} style={s.billCard}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{bill.name}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>Due day {bill.dueDay} · {bill.category}</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{fmt(bill.amount, currency)}</p>
+                  <button
+                    onClick={() => handleToggleAutopay(bill.id, bill.autopay)}
+                    style={{ ...s.autopayBtn, backgroundColor: bill.autopay ? '#D1FAE5' : colors.borderLight, color: bill.autopay ? '#059669' : colors.textMuted }}
+                  >
+                    {bill.autopay ? '✓ Auto' : 'Manual'}
+                  </button>
                 </div>
               </div>
-              <p style={{ margin: 0, fontWeight: 700, fontSize: 16, color: acc.balance >= 0 ? '#111827' : '#EF4444' }}>
-                {fmt(acc.balance, acc.currency || currency)}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
 
-      {/* Bills */}
-      {bills.length > 0 && (
-        <div style={s.section}>
-          <h2 style={s.sectionTitle}>📬 Upcoming Bills</h2>
-          {bills.map(bill => (
-            <div key={bill.id} style={s.billRow}>
-              <div>
-                <p style={{ margin: 0, fontWeight: 600, color: '#111827' }}>{bill.name}</p>
-                <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>Due day {bill.dueDay} · {bill.category}</p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <p style={{ margin: 0, fontWeight: 600, color: '#111827' }}>{fmt(bill.amount, currency)}</p>
-                <button
-                  onClick={() => handleToggleAutopay(bill.id, bill.autopay)}
-                  style={{ ...s.autopayBtn, backgroundColor: bill.autopay ? '#D1FAE5' : '#F3F4F6', color: bill.autopay ? '#059669' : '#9CA3AF' }}
-                >
-                  {bill.autopay ? '✓ Auto' : 'Manual'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Recent Transactions */}
-      {transactions.length > 0 && (
-        <div style={s.section}>
-          <h2 style={s.sectionTitle}>📊 Recent Activity</h2>
-          {transactions.map(tx => (
-            <div key={tx.id} style={s.txRow}>
-              <div>
-                <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{tx.description}</p>
-                <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>{tx.date} · {tx.category}</p>
-              </div>
-              <p style={{ margin: 0, fontWeight: 600, color: tx.amount >= 0 ? '#10B981' : '#EF4444' }}>
-                {tx.amount >= 0 ? '+' : ''}{fmt(tx.amount, currency)}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+        {/* Recent Transactions */}
+        {transactions.length > 0 && (
+          <div style={s.section}>
+            <h2 style={s.sectionTitle}>📊 Recent Activity</h2>
+            {transactions.map(tx => {
+              const catColor = TX_CATEGORY_COLORS[(tx.category || '').toLowerCase()] || colors.textMuted;
+              return (
+                <div key={tx.id} style={s.txRow}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ ...s.txIcon, backgroundColor: catColor + '18', color: catColor }}>
+                      <span style={{ fontSize: 16 }}>{tx.amount >= 0 ? '↓' : '↑'}</span>
+                    </div>
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 500, color: colors.textPrimary, fontSize: 14 }}>{tx.description}</p>
+                      <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>{tx.date} · {tx.category}</p>
+                    </div>
+                  </div>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: tx.amount >= 0 ? colors.success : colors.danger }}>
+                    {tx.amount >= 0 ? '+' : ''}{fmt(tx.amount, currency)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Bottom Nav */}
       <div style={s.bottomNav}>
-        <Link href={`/game/${gameId}`} style={s.navItem}>🏠<span>Dashboard</span></Link>
-        <Link href={`/game/${gameId}/budget`} style={s.navItem}>📊<span>Budget</span></Link>
-        <Link href={`/game/${gameId}/rewards`} style={s.navItem}>🏆<span>Rewards</span></Link>
+        {[
+          { key: 'dashboard', icon: '🏠', label: 'Dashboard', href: `/game/${gameId}` },
+          { key: 'budget', icon: '📊', label: 'Budget', href: `/game/${gameId}/budget` },
+          { key: 'rewards', icon: '🏆', label: 'Rewards', href: `/game/${gameId}/rewards` },
+          { key: 'bills', icon: '📬', label: 'Bills', href: `/game/${gameId}` },
+        ].map(tab => (
+          <Link
+            key={tab.key}
+            href={tab.href}
+            style={{ ...s.navTab, color: activeTab === tab.key ? colors.primary : colors.textMuted }}
+          >
+            <span style={{ fontSize: 20 }}>{tab.icon}</span>
+            <span style={{ fontSize: 11, fontWeight: activeTab === tab.key ? 600 : 400 }}>{tab.label}</span>
+          </Link>
+        ))}
       </div>
     </div>
   );
 }
 
 const s: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 800, margin: '40px auto', padding: '24px 24px 100px' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  title: { fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 },
-  muted: { color: '#9CA3AF', margin: 0 },
-  backBtn: { padding: '8px 16px', borderRadius: 8, border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', color: '#6B7280', fontSize: 14 },
-  xpContainer: { marginBottom: 24 },
-  xpTrack: { height: 8, borderRadius: 4, backgroundColor: '#E5E7EB', overflow: 'hidden' },
-  xpFill: { height: '100%', borderRadius: 4, backgroundColor: '#2563EB', transition: 'width 0.3s' },
+  page: { minHeight: '100vh', backgroundColor: colors.background },
+  header: { background: colors.primaryGradient, padding: '20px 24px 24px', borderRadius: `0 0 ${radius.xl}px ${radius.xl}px` },
+  headerBackBtn: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  diffBadge: { display: 'inline-block', padding: '3px 12px', borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 12, fontWeight: 600, textTransform: 'capitalize' as const },
+  xpTrack: { height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
+  xpFill: { height: '100%', borderRadius: 3, backgroundColor: '#FFF', transition: 'width 0.3s' },
+  content: { padding: '0 20px 120px' },
+  bankCard: { margin: '-8px 0 20px', padding: 24, borderRadius: radius.lg, background: colors.cardGradient, boxShadow: shadows.bankCard },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 24 },
-  statCard: { padding: 16, border: '1px solid #E5E7EB', borderRadius: 12, background: '#FAFAFA' },
-  statLabel: { margin: 0, fontSize: 13, color: '#6B7280', marginBottom: 4 },
-  statValue: { margin: 0, fontSize: 22, fontWeight: 700, color: '#111827' },
-  quickActions: { display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' as const },
-  quickBtn: { flex: 1, padding: '12px 16px', borderRadius: 10, border: '1px solid #E5E7EB', background: '#FFF', textAlign: 'center' as const, textDecoration: 'none', color: '#111827', fontWeight: 600, fontSize: 14, minWidth: 100 },
-  daySection: { textAlign: 'center' as const, margin: '24px 0', padding: 20, border: '1px solid #E5E7EB', borderRadius: 16, background: '#FAFAFA' },
-  monthEndBadge: { display: 'inline-block', padding: '4px 12px', borderRadius: 20, backgroundColor: '#FEF3C7', color: '#92400E', fontSize: 13, fontWeight: 600 },
-  advanceBtn: { marginTop: 12, padding: '14px 36px', borderRadius: 12, backgroundColor: '#2563EB', color: '#FFF', fontSize: 17, fontWeight: 700, border: 'none', cursor: 'pointer' },
+  statCard: { padding: 16, borderRadius: radius.md, background: colors.surface, boxShadow: shadows.card },
+  statLabel: { margin: 0, fontSize: 12, color: colors.textMuted, marginBottom: 4 },
+  statValue: { margin: 0, fontSize: 20, fontWeight: 700, color: colors.textPrimary },
+  quickGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 },
+  quickItem: { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 8, textDecoration: 'none' },
+  quickIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  dayCard: { padding: 20, borderRadius: radius.lg, background: colors.surface, boxShadow: shadows.card, marginBottom: 24 },
+  monthEndBadge: { display: 'inline-block', marginTop: 6, padding: '4px 12px', borderRadius: radius.pill, backgroundColor: '#FEF3C7', color: '#92400E', fontSize: 12, fontWeight: 600 },
+  primaryBtn: { width: '100%', padding: '14px 28px', borderRadius: radius.md, background: colors.primaryGradient, color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer', height: 52 },
   section: { marginBottom: 28 },
-  sectionTitle: { fontSize: 18, fontWeight: 600, color: '#111827', marginBottom: 12 },
-  accountRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 14, border: '1px solid #E5E7EB', borderRadius: 10, marginBottom: 8, cursor: 'pointer' },
-  cardRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 14, border: '2px solid #2563EB', borderRadius: 12, marginBottom: 8, background: '#EFF6FF', cursor: 'pointer' },
-  decideBtn: { padding: '8px 20px', borderRadius: 8, backgroundColor: '#2563EB', color: '#FFF', fontSize: 14, fontWeight: 600 },
-  billRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 14, border: '1px solid #E5E7EB', borderRadius: 10, marginBottom: 8 },
-  autopayBtn: { padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600 },
-  txRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottom: '1px solid #F3F4F6' },
-  bottomNav: { position: 'fixed' as const, bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-around', padding: '12px 0', background: '#FFF', borderTop: '1px solid #E5E7EB', zIndex: 50 },
-  navItem: { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 2, textDecoration: 'none', color: '#6B7280', fontSize: 12, fontWeight: 500 },
+  sectionTitle: { fontSize: 17, fontWeight: 600, color: colors.textPrimary, marginBottom: 12 },
+  pendingCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 16, border: `2px solid ${colors.primaryLight}`, borderRadius: radius.lg, marginBottom: 8, background: '#EEF2FF', cursor: 'pointer' },
+  decidePill: { padding: '8px 18px', borderRadius: radius.pill, background: colors.primaryGradient, color: '#FFF', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' as const },
+  accountCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: radius.lg, marginBottom: 8, background: colors.surface, boxShadow: shadows.card, cursor: 'pointer' },
+  accountIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  billCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: radius.lg, marginBottom: 8, background: colors.surface, boxShadow: shadows.card },
+  autopayBtn: { padding: '4px 12px', borderRadius: radius.sm, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600 },
+  txRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: `1px solid ${colors.borderLight}` },
+  txIcon: { width: 36, height: 36, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  bottomNav: { position: 'fixed' as const, bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-around', padding: '10px 0 14px', background: colors.surface, borderTop: `1px solid ${colors.border}`, zIndex: 50 },
+  navTab: { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 2, textDecoration: 'none' },
 };

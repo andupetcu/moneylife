@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../src/lib/auth-context';
 import { api, type GameResponse, type Badge } from '../../../../../src/lib/api';
+import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
 
 export default function RewardsPage(): React.ReactElement {
   const params = useParams();
@@ -30,85 +31,96 @@ export default function RewardsPage(): React.ReactElement {
     if (user) fetchData();
   }, [user, authLoading, router, fetchData]);
 
-  if (loading || authLoading) return <div style={s.container}><p style={{ color: '#9CA3AF' }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
 
   const xpPct = game?.xpToNextLevel ? Math.min(100, ((game?.xp ?? 0) / game.xpToNextLevel) * 100) : 0;
   const earned = badges.filter(b => b.earned);
 
   return (
-    <div style={s.container}>
-      <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>← Back to Game</button>
-
-      <h1 style={s.title}>🏆 Rewards & Badges</h1>
-
-      {/* Level & XP */}
-      {game && (
-        <div style={s.levelCard}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Level {game.level}</span>
-            <span style={{ fontSize: 14, color: '#2563EB', fontWeight: 600 }}>⭐ {game.xp} XP</span>
-          </div>
-          <div style={s.xpTrack}><div style={{ ...s.xpFill, width: `${xpPct}%` }} /></div>
-          {game.xpToNextLevel && (
-            <p style={{ margin: '6px 0 0', fontSize: 12, color: '#9CA3AF', textAlign: 'right' as const }}>
-              {game.xpToNextLevel - (game.xp ?? 0)} XP to next level
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Stats */}
-      <div style={s.statsRow}>
-        <div style={s.statBox}>
-          <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#2563EB' }}>{earned.length}</p>
-          <p style={{ margin: 0, fontSize: 12, color: '#6B7280' }}>Earned</p>
-        </div>
-        <div style={s.statBox}>
-          <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#9CA3AF' }}>{badges.length - earned.length}</p>
-          <p style={{ margin: 0, fontSize: 12, color: '#6B7280' }}>Locked</p>
-        </div>
-        <div style={s.statBox}>
-          <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#111827' }}>{badges.length}</p>
-          <p style={{ margin: 0, fontSize: 12, color: '#6B7280' }}>Total</p>
-        </div>
+    <div style={s.page}>
+      {/* Header */}
+      <div style={s.headerBar}>
+        <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
+        <span style={s.headerTitle}>Rewards & Badges</span>
+        <div style={{ width: 32 }} />
       </div>
 
-      {/* Badge Grid */}
-      {badges.length === 0 ? (
-        <div style={{ textAlign: 'center' as const, padding: 40 }}>
-          <p style={{ fontSize: 48 }}>🏅</p>
-          <p style={{ color: '#6B7280' }}>Badges will appear here as you play!</p>
-          <p style={{ color: '#9CA3AF', fontSize: 13 }}>Make financial decisions and hit milestones to earn badges.</p>
-        </div>
-      ) : (
-        <div style={s.badgeGrid}>
-          {badges.map(badge => (
-            <div key={badge.id} style={{ ...s.badgeCard, opacity: badge.earned ? 1 : 0.4, borderColor: badge.earned ? '#2563EB' : '#E5E7EB' }}>
-              <span style={{ fontSize: 36 }}>{badge.icon || '🏅'}</span>
-              <p style={{ margin: '8px 0 2px', fontWeight: 600, color: '#111827', fontSize: 14 }}>{badge.name}</p>
-              <p style={{ margin: 0, fontSize: 12, color: '#6B7280', lineHeight: 1.4 }}>{badge.description}</p>
-              {badge.earned && badge.earnedAt && (
-                <p style={{ margin: '6px 0 0', fontSize: 11, color: '#2563EB', fontWeight: 500 }}>
-                  ✓ {new Date(badge.earnedAt).toLocaleDateString()}
-                </p>
-              )}
+      <div style={s.content}>
+        {/* Level & XP */}
+        {game && (
+          <div style={s.levelCard}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Level {game.level}</span>
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>⭐ {game.xp} XP</span>
             </div>
-          ))}
+            <div style={s.xpTrack}><div style={{ ...s.xpFill, width: `${xpPct}%` }} /></div>
+            {game.xpToNextLevel && (
+              <p style={{ margin: '8px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.6)', textAlign: 'right' as const }}>
+                {game.xpToNextLevel - (game.xp ?? 0)} XP to next level
+              </p>
+            )}
+            <div style={{ textAlign: 'center', marginTop: 12 }}>
+              <span style={{ fontSize: 48, fontWeight: 700, color: '#FFF' }}>{game.level}</span>
+              <p style={{ margin: '4px 0 0', fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Current Level</p>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Row */}
+        <div style={s.statsRow}>
+          <div style={s.statBox}>
+            <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: colors.primary }}>{earned.length}</p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: colors.textSecondary }}>Earned</p>
+          </div>
+          <div style={s.statBox}>
+            <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: colors.textMuted }}>{badges.length - earned.length}</p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: colors.textSecondary }}>Locked</p>
+          </div>
+          <div style={s.statBox}>
+            <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: colors.textPrimary }}>{badges.length}</p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: colors.textSecondary }}>Total</p>
+          </div>
         </div>
-      )}
+
+        {/* Badge Grid */}
+        {badges.length === 0 ? (
+          <div style={{ textAlign: 'center' as const, padding: 40 }}>
+            <p style={{ fontSize: 48 }}>🏅</p>
+            <p style={{ color: colors.textSecondary }}>Badges will appear here as you play!</p>
+            <p style={{ color: colors.textMuted, fontSize: 13 }}>Make financial decisions and hit milestones to earn badges.</p>
+          </div>
+        ) : (
+          <div style={s.badgeGrid}>
+            {badges.map(badge => (
+              <div key={badge.id} style={{ ...s.badgeCard, opacity: badge.earned ? 1 : 0.4, borderColor: badge.earned ? colors.primary : colors.border }}>
+                <span style={{ fontSize: 36 }}>{badge.icon || '🏅'}</span>
+                <p style={{ margin: '8px 0 2px', fontWeight: 600, color: colors.textPrimary, fontSize: 14 }}>{badge.name}</p>
+                <p style={{ margin: 0, fontSize: 12, color: colors.textSecondary, lineHeight: 1.4 }}>{badge.description}</p>
+                {badge.earned && badge.earnedAt && (
+                  <p style={{ margin: '6px 0 0', fontSize: 11, color: colors.primary, fontWeight: 500 }}>
+                    ✓ {new Date(badge.earnedAt).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 const s: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 700, margin: '40px auto', padding: 24 },
-  backBtn: { padding: '8px 16px', borderRadius: 8, border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer', color: '#6B7280', fontSize: 14, marginBottom: 24, display: 'inline-block', textDecoration: 'none' },
-  title: { fontSize: 28, fontWeight: 700, color: '#111827', marginBottom: 24, textAlign: 'center' as const },
-  levelCard: { padding: 20, border: '1px solid #E5E7EB', borderRadius: 14, background: '#FAFAFA', marginBottom: 20 },
-  xpTrack: { height: 10, borderRadius: 5, backgroundColor: '#E5E7EB', overflow: 'hidden' },
-  xpFill: { height: '100%', borderRadius: 5, backgroundColor: '#2563EB', transition: 'width 0.3s' },
+  page: { minHeight: '100vh', backgroundColor: colors.background },
+  headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  headerBack: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer' },
+  headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
+  content: { padding: 20 },
+  levelCard: { padding: 24, borderRadius: radius.lg, background: colors.cardGradient, boxShadow: shadows.bankCard, marginBottom: 20 },
+  xpTrack: { height: 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
+  xpFill: { height: '100%', borderRadius: 5, backgroundColor: '#FFF', transition: 'width 0.3s' },
   statsRow: { display: 'flex', gap: 12, marginBottom: 24 },
-  statBox: { flex: 1, textAlign: 'center' as const, padding: 16, border: '1px solid #E5E7EB', borderRadius: 12 },
+  statBox: { flex: 1, textAlign: 'center' as const, padding: 16, borderRadius: radius.md, background: colors.surface, boxShadow: shadows.card },
   badgeGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 14 },
-  badgeCard: { padding: 16, border: '2px solid', borderRadius: 14, textAlign: 'center' as const, background: '#FFF' },
+  badgeCard: { padding: 16, border: '2px solid', borderRadius: radius.lg, textAlign: 'center' as const, background: colors.surface, boxShadow: shadows.card },
 };

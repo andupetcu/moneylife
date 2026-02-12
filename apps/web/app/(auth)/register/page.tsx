@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../src/lib/auth-context';
+import { colors, radius, shadows } from '../../../src/lib/design-tokens';
 
 export default function RegisterPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -34,46 +35,63 @@ export default function RegisterPage(): React.ReactElement {
     }
   };
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%', height: 52, padding: '0 16px', borderRadius: radius.md,
+    border: `1px solid ${colors.border}`, fontSize: 16, outline: 'none',
+    background: colors.inputBg, color: colors.textPrimary,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 13, fontWeight: 600, color: colors.textSecondary, display: 'block', marginBottom: 6,
+  };
+
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>{t('auth.register') || 'Create Account'}</h1>
+    <div style={{ minHeight: '100vh', background: colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ width: '100%', maxWidth: 420, background: colors.surface, borderRadius: radius.xl, boxShadow: shadows.elevated, overflow: 'hidden' }}>
+        {/* Purple header */}
+        <div style={{ background: colors.primaryGradient, padding: '36px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>💰</div>
+          <h1 style={{ fontSize: 26, fontWeight: 700, color: '#FFFFFF', margin: 0 }}>{t('auth.register') || 'Create Account'}</h1>
+        </div>
 
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <label style={styles.label}>{t('auth.displayName') || 'Display Name'}</label>
-        <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" style={styles.input} />
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={labelStyle}>{t('auth.displayName') || 'Display Name'}</label>
+            <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" style={inputStyle} />
+          </div>
 
-        <label style={styles.label}>{t('auth.email') || 'Email'}</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" style={styles.input} />
+          <div>
+            <label style={labelStyle}>{t('auth.email') || 'Email'}</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" style={inputStyle} />
+          </div>
 
-        <label style={styles.label}>{t('auth.password') || 'Password'}</label>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" style={styles.input} />
+          <div>
+            <label style={labelStyle}>{t('auth.password') || 'Password'}</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters" style={inputStyle} />
+          </div>
 
-        <label style={styles.label}>{t('auth.confirmPassword') || 'Confirm Password'}</label>
-        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm password" style={styles.input} />
+          <div>
+            <label style={labelStyle}>{t('auth.confirmPassword') || 'Confirm Password'}</label>
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm password" style={inputStyle} />
+          </div>
 
-        {error && <p style={styles.error}>{error}</p>}
+          {error && <p style={{ color: colors.danger, fontSize: 14, padding: '10px 14px', background: '#FEF2F2', borderRadius: radius.sm, margin: 0 }}>{error}</p>}
 
-        <button type="submit" disabled={isLoading} style={{...styles.button, opacity: isLoading ? 0.7 : 1}}>
-          {isLoading ? (t('common.loading') || 'Loading...') : (t('auth.register') || 'Create Account')}
-        </button>
-      </form>
+          <button type="submit" disabled={isLoading} style={{
+            width: '100%', height: 52, borderRadius: radius.md, background: colors.primaryGradient, color: '#FFFFFF',
+            fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer', marginTop: 4,
+            opacity: isLoading ? 0.7 : 1,
+          }}>
+            {isLoading ? (t('common.loading') || 'Loading...') : (t('auth.register') || 'Create Account')}
+          </button>
+        </form>
 
-      <p style={styles.footer}>
-        {t('auth.hasAccount') || 'Already have an account?'}{' '}
-        <a href="/login" style={styles.link}>{t('auth.signIn') || 'Sign In'}</a>
-      </p>
+        <p style={{ textAlign: 'center', padding: '0 28px 28px', color: colors.textSecondary, fontSize: 14, margin: 0 }}>
+          {t('auth.hasAccount') || 'Already have an account?'}{' '}
+          <a href="/login" style={{ color: colors.primary, fontWeight: 600 }}>{t('auth.signIn') || 'Sign In'}</a>
+        </p>
+      </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 400, margin: '80px auto', padding: 24 },
-  title: { textAlign: 'center', color: '#2563EB', fontSize: 32, marginBottom: 32 },
-  form: { display: 'flex', flexDirection: 'column', gap: 12 },
-  label: { fontSize: 14, fontWeight: 600, color: '#374151' },
-  input: { padding: 12, borderRadius: 8, border: '1px solid #D1D5DB', fontSize: 16, outline: 'none' },
-  error: { color: '#EF4444', fontSize: 14, padding: '8px 12px', background: '#FEF2F2', borderRadius: 8 },
-  button: { padding: 14, borderRadius: 8, backgroundColor: '#2563EB', color: '#FFF', fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer', marginTop: 8 },
-  footer: { textAlign: 'center', marginTop: 24, color: '#6B7280' },
-  link: { color: '#2563EB', fontWeight: 600 },
-};

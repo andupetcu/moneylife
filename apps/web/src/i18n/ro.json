@@ -1,6 +1,5 @@
 {
   "appTitle": "MoneyLife",
-
   "common": {
     "loading": "Se încarcă…",
     "error": "Ceva nu a mers bine",
@@ -25,7 +24,6 @@
     "apply": "Aplică",
     "refresh": "Reîmprospătează"
   },
-
   "onboarding": {
     "welcomeTitle": "Bine ai venit la MoneyLife",
     "welcomeSubtitle": "Învață despre bani trăindu-i",
@@ -51,7 +49,6 @@
     "tutorialSkip": "Sari peste tutorial",
     "tutorialNext": "Următorul sfat"
   },
-
   "auth": {
     "login": "Conectare",
     "register": "Creează cont",
@@ -78,16 +75,15 @@
     "passwordsDoNotMatch": "Parolele nu coincid",
     "emailInUse": "Acest email este deja înregistrat",
     "logOut": "Deconectare",
-    "logOutConfirm": "Ești sigur că vrei să te deconectezi?"
+    "logOutConfirm": "Ești sigur că vrei să te deconectezi?",
+    "displayNameRequired": "Numele este obligatoriu"
   },
-
   "tabs": {
     "home": "Acasă",
     "rewards": "Recompense",
     "social": "Social",
     "profile": "Profil"
   },
-
   "home": {
     "greeting": "Bună {{timeOfDay}}, {{name}}",
     "greetingMorning": "dimineața",
@@ -106,14 +102,16 @@
     "pendingCards_other": "{{count}} decizii în așteptare",
     "noPendingCards": "Nicio decizie în așteptare",
     "noActiveGame": "Niciun joc activ",
-    "startNewGame": "Începe un joc nou",
+    "startNewGame": "🎮 Începe un joc nou",
     "continueGame": "Continuă jocul",
     "netWorth": "Avere netă",
     "totalBalance": "Sold total",
     "monthlyIncome": "Venit lunar",
-    "monthlyExpenses": "Cheltuieli lunare"
+    "monthlyExpenses": "Cheltuieli lunare",
+    "welcome": "Bine ai venit",
+    "subtitle": "Gestionează-ți finanțele, ia decizii, avansează.",
+    "yourGames": "Jocurile Tale"
   },
-
   "game": {
     "dailySummary": "Ziua {{day}} din {{month}}",
     "dayTitle": "Ziua {{day}}",
@@ -143,7 +141,6 @@
     "budgetAdherence": "Respectarea bugetului",
     "incomeVsSpending": "Venituri vs cheltuieli"
   },
-
   "accounts": {
     "title": "Conturi",
     "checking": "Cont curent",
@@ -174,7 +171,6 @@
     "openAccount": "Deschide cont",
     "closeAccount": "Închide cont"
   },
-
   "budget": {
     "title": "Buget",
     "createBudget": "Creează buget",
@@ -193,7 +189,6 @@
     "noBudget": "Niciun buget setat",
     "setBudgetHint": "Setează un buget pentru a-ți urmări cheltuielile"
   },
-
   "monthlyReview": {
     "title": "Raport lunar",
     "month": "{{month}} {{year}}",
@@ -216,7 +211,6 @@
     "greatMonth": "Lună excelentă!",
     "dismiss": "Continuă"
   },
-
   "creditHealth": {
     "title": "Indicele de Sănătate a Creditului",
     "score": "{{score}}",
@@ -239,7 +233,6 @@
     "tipDontCloseOld": "Nu închide conturile vechi",
     "tipMixTypes": "Menține un mix sănătos de tipuri de conturi"
   },
-
   "rewards": {
     "title": "Recompense",
     "xp": "XP",
@@ -276,7 +269,6 @@
     "dailyBonus": "Bonus zilnic",
     "dailyBonusClaimed": "Bonus zilnic revendicat!"
   },
-
   "social": {
     "title": "Social",
     "friends": "Prieteni",
@@ -300,7 +292,6 @@
     "challengeEnds": "Se termină în {{time}}",
     "headToHead": "Unu la unu"
   },
-
   "profile": {
     "title": "Profil",
     "settings": "Setări",
@@ -325,7 +316,6 @@
     "deleteAccountConfirm": "Ești sigur? Această acțiune nu poate fi anulată.",
     "exportData": "Exportă datele mele"
   },
-
   "banking": {
     "title": "Banking",
     "connect": "Conectează cont bancar",
@@ -340,7 +330,6 @@
     "syncComplete": "Tranzacții sincronizate",
     "noLinkedAccounts": "Niciun cont conectat"
   },
-
   "error": {
     "network": "Conexiune pierdută. Progresul tău este salvat local.",
     "bankrupt": "Ai dat faliment. Dar nu-ți face griji — fiecare eșec e o lecție.",
@@ -353,14 +342,12 @@
     "syncFailed": "Sincronizarea a eșuat. Vom încerca din nou automat.",
     "generic": "Ceva nu a mers bine. Te rugăm să încerci din nou."
   },
-
   "empty": {
     "noData": "Nicio informație disponibilă",
     "noGames": "Niciun joc încă. Începe prima ta călătorie financiară!",
     "noTransactions": "Nicio tranzacție încă",
     "noNotifications": "Nicio notificare"
   },
-
   "accessibility": {
     "balanceCard": "Card sold care arată {{accountType}} cu {{balance}}",
     "creditGauge": "Indicele de Sănătate a Creditului: {{score}} din 850, evaluat {{rating}}",
