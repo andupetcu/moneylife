@@ -36,6 +36,7 @@ WORKDIR /app
 COPY --from=builder /standalone/auth /app/auth
 COPY --from=builder /standalone/game-engine /app/game-engine
 COPY --from=builder /app/packages/db-migrations/migrations /app/migrations
+COPY --from=builder /app/packages/db-migrations/seeds /app/seeds
 
 COPY infra/docker/api-gateway.conf /etc/nginx/http.d/default.conf
 COPY infra/docker/start-api.sh /app/start-api.sh

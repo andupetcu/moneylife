@@ -14,6 +14,13 @@ if [ -n "$DATABASE_URL" ]; then
     fi
   done
   echo "Migrations complete."
+
+  # Seed decision cards
+  if [ -f /app/seeds/all_scenarios.sql ]; then
+    echo "Seeding decision cards..."
+    psql "$DATABASE_URL" < /app/seeds/all_scenarios.sql 2>/dev/null || echo "  (seed skipped)"
+    echo "Seeding complete."
+  fi
 fi
 
 # Start services with explicit ports (override Coolify's PORT=3000)
