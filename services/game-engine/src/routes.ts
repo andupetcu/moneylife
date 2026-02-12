@@ -6,6 +6,7 @@ import { submitActionController } from './controllers/actions.js';
 import { getPendingCardsController } from './controllers/cards.js';
 import { getMonthlyReportController } from './controllers/monthly-report.js';
 import { getTransactionsController } from './controllers/transactions.js';
+import { getXpHistoryController, getBadgesController, getRewardsSummaryController, spendCoinsController } from './controllers/rewards.js';
 
 export function createRoutes(pool: Pool): Router {
   const router = Router();
@@ -20,6 +21,12 @@ export function createRoutes(pool: Pool): Router {
   router.get('/games/:id/cards', getPendingCardsController(pool));
   router.get('/games/:id/monthly-report/:year/:month', getMonthlyReportController(pool));
   router.get('/games/:id/transactions', getTransactionsController(pool));
+
+  // Rewards endpoints
+  router.get('/games/:id/xp-history', getXpHistoryController(pool));
+  router.get('/games/:id/badges', getBadgesController(pool));
+  router.get('/games/:id/rewards-summary', getRewardsSummaryController(pool));
+  router.post('/games/:id/spend-coins', spendCoinsController(pool));
 
   // Bills endpoint
   router.get('/games/:id/bills', async (req, res) => {

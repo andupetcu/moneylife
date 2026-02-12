@@ -1,5 +1,5 @@
 import { Pool, PoolClient } from 'pg';
-import type { GameAction, GameActionResult, GameDate } from '@moneylife/shared-types';
+import type { GameAction, GameActionResult, GameDate, RewardGrant } from '@moneylife/shared-types';
 import {
   advanceDay,
   isLastDayOfMonth,
@@ -22,6 +22,7 @@ import type { DifficultyConfig, RegionConfig, LevelConfig } from '@moneylife/con
 import type { GameRow } from '../models/game.js';
 import { findAccountsByGameId, type AccountRow } from '../models/account.js';
 import { buildGameState } from './game-state.js';
+import { evaluateBadges } from './badge-evaluator.js';
 
 // ---------- levels config (from @moneylife/config) ----------
 
@@ -166,6 +167,83 @@ function getNextDueDate(current: string, frequency: string): string {
     default:
       return gameDateStr(addDays(date, 30));
   }
+}
+
+// ---------- streak tracking ----------
+
+async function updateStreak(client: PoolClient, game: GameRow): Promise<void> {
+  const now = new Date();
+  const lastActionAt = game.updated_at instanceof Date ? game.updated_at : new Date(game.updated_at);
+  const hoursSinceLastAction = (now.getTime() - lastActionAt.getTime()) / (1000 * 60 * 60);
+
+  // Check for streak shield (grace period from coin purchase)
+  let hasShield = false;
+  const shieldRes = await client.query(
+    "SELECT id FROM game_events WHERE game_id = $1 AND type = 'streak_shield_active' AND created_at > NOW() - interval '48 hours' LIMIT 1",
+    [game.id],
+  );
+  if (shieldRes.rows.length > 0) {
+    hasShield = true;
+  }
+
+  if (hoursSinceLastAction > 24 && !hasShield) {
+    // Reset streak
+    await client.query(
+      'UPDATE games SET streak_current = 1, updated_at = NOW() WHERE id = $1',
+      [game.id],
+    );
+    // Consume shield if present
+    if (shieldRes.rows.length > 0) {
+      await client.query("DELETE FROM game_events WHERE id = $1", [shieldRes.rows[0].id]);
+    }
+  } else {
+    // Increment streak
+    await client.query(
+      'UPDATE games SET streak_current = streak_current + 1, streak_longest = GREATEST(streak_longest, streak_current + 1), updated_at = NOW() WHERE id = $1',
+      [game.id],
+    );
+  }
+}
+
+// ---------- XP ledger ----------
+
+async function writeXpLedger(
+  client: PoolClient,
+  userId: string,
+  gameId: string,
+  partnerId: string | null,
+  amount: number,
+  reason: string,
+): Promise<void> {
+  // Get current total XP for balance_after
+  const res = await client.query('SELECT total_xp FROM games WHERE id = $1', [gameId]);
+  const balanceAfter = res.rows[0]?.total_xp ?? 0;
+
+  await client.query(
+    `INSERT INTO xp_ledger (user_id, game_id, partner_id, amount, balance_after, reason)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [userId, gameId, partnerId, amount, balanceAfter, reason],
+  );
+}
+
+// ---------- coin ledger ----------
+
+async function writeCoinLedger(
+  client: PoolClient,
+  userId: string,
+  gameId: string,
+  partnerId: string | null,
+  amount: number,
+  reason: string,
+): Promise<void> {
+  const res = await client.query('SELECT total_coins FROM games WHERE id = $1', [gameId]);
+  const balanceAfter = res.rows[0]?.total_coins ?? 0;
+
+  await client.query(
+    `INSERT INTO coin_ledger (user_id, partner_id, amount, balance_after, reason)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [userId, partnerId, amount, balanceAfter, reason],
+  );
 }
 
 // ---------- month-end processing ----------
@@ -335,8 +413,39 @@ async function processMonthEnd(
     ],
   );
 
-  // 10. Month-end XP bonus (scaled by difficulty xpMultiplier)
-  await awardXp(client, gameId, 50, 'month-end bonus', dateStr, difficultyConfig.xpMultiplier);
+  // 10. Month-end XP bonus
+  await awardXp(client, gameId, 50, 'month-end bonus', dateStr);
+  await writeXpLedger(client, game.user_id, gameId, game.partner_id, 50, 'month-end bonus');
+
+  // 11. Record streak ticks for monthly metrics
+  const streakMetrics: Array<{ metric: string; passes: boolean }> = [
+    { metric: 'chi_750_plus', passes: chiResult.overall >= 750 },
+    { metric: 'budget_score_90', passes: budgetScore >= 90 },
+    { metric: 'budget_score_95', passes: budgetScore >= 95 },
+    { metric: 'utilization_under_10', passes: totalCreditAvailable > 0 ? (totalCreditUsed / totalCreditAvailable) < 0.10 : true },
+  ];
+
+  // Check savings rate
+  const savingsThisMonth = savingsChange;
+  const savingsRate = incomeTotal > 0 ? savingsThisMonth / incomeTotal : 0;
+  streakMetrics.push({ metric: 'savings_rate_20pct', passes: savingsRate >= 0.20 });
+  streakMetrics.push({ metric: 'monthly_savings_deposit', passes: savingsChange > 0 });
+
+  for (const sm of streakMetrics) {
+    // Get current streak value
+    const prevRes = await client.query(
+      "SELECT data->>'value' as val FROM game_events WHERE game_id = $1 AND type = 'streak_tick' AND data->>'metric' = $2 ORDER BY created_at DESC LIMIT 1",
+      [gameId, sm.metric],
+    );
+    const prevStreak = prevRes.rows.length > 0 ? parseInt(prevRes.rows[0].val, 10) : 0;
+    const newStreak = sm.passes ? prevStreak + 1 : 0;
+
+    await client.query(
+      `INSERT INTO game_events (game_id, type, game_date, description, data)
+       VALUES ($1, 'streak_tick', $2, $3, $4)`,
+      [gameId, dateStr, `Streak tick: ${sm.metric}`, JSON.stringify({ metric: sm.metric, value: newStreak, passes: sm.passes })],
+    );
+  }
 
   events.push({
     type: 'month_end_processed',
@@ -494,23 +603,36 @@ export async function processAction(
       // Award daily XP (10 base, scaled by difficulty xpMultiplier)
       const xpResult = await awardXp(client, game.id, 10, 'daily advance', dateStr, diffConfig.xpMultiplier);
 
+      // Update streak
+      await updateStreak(client, game);
+
       await client.query(
         'UPDATE games SET current_game_date = $1, state_version = state_version + 1, updated_at = NOW() WHERE id = $2',
         [dateStr, game.id],
       );
-
-      await client.query('COMMIT');
 
       allEvents.push({ type: 'day_advanced', description: 'Day advanced', timestamp: nextDate, data: {} });
       if (xpResult.leveledUp) {
         allEvents.push({ type: 'level_up', description: `Leveled up to ${xpResult.newLevel}!`, timestamp: nextDate, data: { newLevel: xpResult.newLevel } });
       }
 
+      // Evaluate badges after all state changes
+      const triggeredEvents = allEvents.map(e => e.type);
+      if (xpResult.leveledUp) triggeredEvents.push('level_up', `level_${xpResult.newLevel}_reached`);
+      // Re-read game to get updated state
+      const updatedGame = await client.query('SELECT * FROM games WHERE id = $1', [game.id]);
+      const badgeResult = await evaluateBadges(client, updatedGame.rows[0], 'advance_day', triggeredEvents);
+
+      // Write XP ledger entry for daily advance
+      await writeXpLedger(client, game.user_id, game.id, game.partner_id, 10, 'daily advance');
+
+      await client.query('COMMIT');
+
       return {
         success: true,
         newState: { currentDate: nextDate },
         events: allEvents,
-        rewards: [],
+        rewards: [...badgeResult.rewards],
       };
 
     } else if (action.type === 'decide_card') {
@@ -604,15 +726,47 @@ export async function processAction(
       }
 
       await client.query('UPDATE games SET state_version = state_version + 1, updated_at = NOW() WHERE id = $1', [game.id]);
-      await client.query('COMMIT');
 
       events.push({ type: 'card_decided', description: `Decided card ${cardId}: ${chosenOption.label}`, timestamp: currentDate, data: { cardId, optionId, cost, xpAwarded, coinsAwarded } });
+
+      // Determine triggered events for badge evaluation
+      const cardEvents = ['card_decided', `card_category_${pendingCard.category}`];
+      // Check if this was the first card decision
+      const cardCount = await client.query(
+        "SELECT COUNT(*) FROM game_pending_cards WHERE game_id = $1 AND status = 'resolved'",
+        [game.id],
+      );
+      if (parseInt(cardCount.rows[0].count, 10) === 1) {
+        cardEvents.push('first_card_decided');
+      }
+      // Check event-type triggers based on card category
+      if (pendingCard.category === 'investment') cardEvents.push('investment_purchased');
+      if (pendingCard.category === 'savings') cardEvents.push('savings_deposit_via_card');
+
+      // Write XP ledger for card decision
+      if (xpAwarded > 0) {
+        await writeXpLedger(client, game.user_id, game.id, game.partner_id, xpAwarded, `card decision: ${pendingCard.title}`);
+      }
+      // Write coin ledger for card decision
+      if (coinsAwarded > 0) {
+        await writeCoinLedger(client, game.user_id, game.id, game.partner_id, coinsAwarded, `card decision: ${pendingCard.title}`);
+      }
+
+      // Evaluate badges
+      const updatedGameForCard = await client.query('SELECT * FROM games WHERE id = $1', [game.id]);
+      const cardBadgeResult = await evaluateBadges(client, updatedGameForCard.rows[0], 'decide_card', cardEvents);
+
+      await client.query('COMMIT');
+
+      const allCardRewards: RewardGrant[] = [];
+      if (coinsAwarded > 0) allCardRewards.push({ type: 'coins' as const, amount: coinsAwarded, reason: 'card decision' });
+      allCardRewards.push(...cardBadgeResult.rewards);
 
       return {
         success: true,
         newState: {},
         events,
-        rewards: coinsAwarded > 0 ? [{ type: 'coins' as const, amount: coinsAwarded, reason: `card decision` }] : [],
+        rewards: allCardRewards,
       };
 
     } else if (action.type === 'transfer') {
