@@ -33,6 +33,31 @@ export interface AuthResponse {
   user: { id: string; email: string; displayName: string; role: string };
 }
 
+export interface Account {
+  id: string;
+  name: string;
+  type: string;
+  balance: number;
+  currency: string;
+}
+
+export interface PendingCard {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  options: { id: string; label: string; description?: string }[];
+}
+
+export interface Transaction {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  category: string;
+  accountId: string;
+}
+
 export interface GameResponse {
   id: string;
   userId: string;
@@ -42,8 +67,16 @@ export interface GameResponse {
   currency: string;
   level: number;
   xp: number;
+  xpToNextLevel?: number;
   status: string;
   createdAt: string;
+  currentDate?: string;
+  netWorth?: number;
+  monthlyIncome?: number;
+  budgetScore?: number;
+  creditHealthIndex?: number;
+  accounts?: Account[];
+  pendingCards?: PendingCard[];
 }
 
 export const api = {
@@ -69,5 +102,12 @@ export const api = {
         body: JSON.stringify({ persona, difficulty, region, currencyCode }),
       }),
     get: (id: string) => request<GameResponse>(`/api/game/games/${id}`),
+    submitAction: (gameId: string, action: Record<string, unknown>) =>
+      request<GameResponse>(`/api/game/games/${gameId}/actions`, {
+        method: 'POST',
+        body: JSON.stringify(action),
+      }),
+    getCards: (gameId: string) => request<PendingCard[]>(`/api/game/games/${gameId}/cards`),
+    getTransactions: (gameId: string) => request<Transaction[]>(`/api/game/games/${gameId}/transactions`),
   },
 };
