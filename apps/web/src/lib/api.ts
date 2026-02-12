@@ -15,7 +15,33 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
   };
 
   try {
-    const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    let res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+    // Auto-refresh on 401
+    if (res.status === 401 && token) {
+      const refreshToken = localStorage.getItem('ml_refresh');
+      if (refreshToken) {
+        const refreshRes = await fetch(`${API_BASE}/api/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+        if (refreshRes.ok) {
+          const refreshData = await refreshRes.json();
+          localStorage.setItem('ml_token', refreshData.accessToken);
+          localStorage.setItem('ml_refresh', refreshData.refreshToken);
+          // Retry original request with new token
+          headers.Authorization = `Bearer ${refreshData.accessToken}`;
+          res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+        } else {
+          localStorage.removeItem('ml_token');
+          localStorage.removeItem('ml_refresh');
+          if (typeof window !== 'undefined') window.location.href = '/login';
+          return { ok: false, error: 'Session expired' };
+        }
+      }
+    }
+
     const data = await res.json().catch(() => null);
     if (!res.ok) {
       return { ok: false, error: data?.message || data?.code || `HTTP ${res.status}` };
@@ -147,7 +173,7 @@ export const api = {
     submitAction: (gameId: string, action: Record<string, unknown>) =>
       request(`/api/game/games/${gameId}/actions`, {
         method: 'POST',
-        body: JSON.stringify(action),
+        body: JSON.stringify({ ...action, idempotencyKey: crypto.randomUUID() }),
       }),
     getCards: (gameId: string) => request<{ cards: PendingCard[] }>(`/api/game/games/${gameId}/cards`),
     getTransactions: (gameId: string) => request<{ transactions: Transaction[] }>(`/api/game/games/${gameId}/transactions`),
