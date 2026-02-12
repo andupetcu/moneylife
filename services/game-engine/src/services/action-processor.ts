@@ -3,6 +3,7 @@ import type { GameAction, GameActionResult, GameDate, RewardGrant } from '@money
 import {
   advanceDay,
   isLastDayOfMonth,
+  isLastDayOfQuarter,
   formatDate,
   addDays,
   createRng,
@@ -14,8 +15,19 @@ import {
   calculateCreditHealthIndex,
   calculateBudgetScore,
   daysInMonth,
+  rollDailyEvents,
+  getInsuranceForEvent,
+  INSURANCE_CONFIGS,
+  adjustedPremium,
+  assessBankruptcy,
+  calculateTaxAssessment,
+  isTaxFilingDay,
+  processClaim,
   type ScenarioEntry,
   type ScenarioData,
+  type TriggeredEvent,
+  type InsuranceCategory,
+  type InsurancePremiumConfig,
 } from '@moneylife/simulation-engine';
 import { getAllLevels, getLevelConfig, getDifficultyConfig, getRegionConfig } from '@moneylife/config';
 import type { DifficultyConfig, RegionConfig, LevelConfig } from '@moneylife/config';
@@ -246,6 +258,616 @@ async function writeCoinLedger(
   );
 }
 
+// ---------- random events processing ----------
+
+async function processRandomEvents(
+  client: PoolClient,
+  game: GameRow,
+  currentDate: GameDate,
+  isMonthEnd: boolean,
+  isQuarterEnd: boolean,
+): Promise<Array<{ type: string; description: string; timestamp: GameDate; data: Record<string, unknown> }>> {
+  const dateStr = gameDateStr(currentDate);
+  const gameId = game.id;
+  const events: Array<{ type: string; description: string; timestamp: GameDate; data: Record<string, unknown> }> = [];
+  const monthlyIncome = parseInt(game.monthly_income, 10);
+
+  // Use event-specific RNG seed
+  const seed = `${game.random_seed}-events-${dateStr}`;
+  const rng = createRng(seed);
+
+  const triggered = rollDailyEvents(
+    rng,
+    currentDate,
+    game.difficulty,
+    game.persona,
+    game.current_level,
+    monthlyIncome,
+    isMonthEnd,
+    isQuarterEnd,
+  );
+
+  for (const evt of triggered) {
+    // Check insurance coverage for insurable events
+    let playerPays = evt.amount;
+    let insuranceCovered = 0;
+    let hadInsurance = false;
+
+    if (evt.insuranceType && !evt.isPositive) {
+      const insResult = await checkAndApplyInsurance(client, gameId, evt, dateStr);
+      playerPays = insResult.playerPays;
+      insuranceCovered = insResult.insuranceCovered;
+      hadInsurance = insResult.hadInsurance;
+    }
+
+    if (evt.requiresDecision) {
+      // Create as a decision card for large events
+      await createEventDecisionCard(client, gameId, evt, currentDate, playerPays, hadInsurance, insuranceCovered);
+      events.push({
+        type: 'random_event_card',
+        description: evt.description,
+        timestamp: currentDate,
+        data: { eventType: evt.type, amount: playerPays, insured: hadInsurance },
+      });
+    } else {
+      // Auto-apply small events and positive events
+      await applyRandomEvent(client, gameId, evt, currentDate, playerPays);
+      events.push({
+        type: 'random_event',
+        description: evt.description,
+        timestamp: currentDate,
+        data: {
+          eventType: evt.type,
+          amount: evt.isPositive ? evt.amount : -playerPays,
+          insured: hadInsurance,
+          insuranceCovered,
+        },
+      });
+    }
+  }
+
+  return events;
+}
+
+async function checkAndApplyInsurance(
+  client: PoolClient,
+  gameId: string,
+  evt: TriggeredEvent,
+  dateStr: string,
+): Promise<{ playerPays: number; insuranceCovered: number; hadInsurance: boolean }> {
+  if (!evt.insuranceType) return { playerPays: evt.amount, insuranceCovered: 0, hadInsurance: false };
+
+  // Look for an active insurance account of the matching type
+  const insuranceAcct = await client.query(
+    "SELECT * FROM game_accounts WHERE game_id = $1 AND type = 'insurance' AND status = 'active' AND name ILIKE $2 LIMIT 1",
+    [gameId, `%${evt.insuranceType}%`],
+  );
+
+  if (insuranceAcct.rows.length === 0) {
+    return { playerPays: evt.amount, insuranceCovered: 0, hadInsurance: false };
+  }
+
+  const config = getInsuranceForEvent(evt.type);
+  if (!config) return { playerPays: evt.amount, insuranceCovered: 0, hadInsurance: false };
+
+  // Use the simulation-engine processClaim
+  const claimResult = processClaim(
+    {
+      type: config.type as 'health' | 'auto' | 'renters' | 'homeowners' | 'life' | 'disability',
+      monthlyPremium: config.basePremium,
+      deductible: config.deductible,
+      coverageRate: config.coverageRate,
+      isActive: true,
+      monthsActive: 1,
+      monthsUnpaid: 0,
+      claimsThisYear: 0,
+      basePremium: config.basePremium,
+    },
+    evt.amount,
+  );
+
+  if (claimResult.covered) {
+    // Record the insurance claim transaction
+    await createTransaction(
+      client, gameId, insuranceAcct.rows[0].id, dateStr,
+      'insurance_claim', evt.category, claimResult.insurancePaid,
+      parseInt(insuranceAcct.rows[0].balance, 10), // Insurance account balance unchanged
+      `Insurance claim: ${evt.description}`,
+      undefined, true,
+    );
+
+    // Log event
+    await client.query(
+      `INSERT INTO game_events (game_id, type, game_date, description, data)
+       VALUES ($1, 'insurance_claim', $2, $3, $4)`,
+      [gameId, dateStr, `Insurance covered ${claimResult.insurancePaid} of ${evt.amount}`,
+        JSON.stringify({ eventType: evt.type, totalCost: evt.amount, covered: claimResult.insurancePaid, playerPays: claimResult.playerPays })],
+    );
+  }
+
+  return {
+    playerPays: claimResult.playerPays,
+    insuranceCovered: claimResult.insurancePaid,
+    hadInsurance: true,
+  };
+}
+
+async function createEventDecisionCard(
+  client: PoolClient,
+  gameId: string,
+  evt: TriggeredEvent,
+  currentDate: GameDate,
+  playerPays: number,
+  hadInsurance: boolean,
+  insuranceCovered: number,
+): Promise<void> {
+  const dateStr = gameDateStr(currentDate);
+  const expiresDate = addDays(currentDate, 3);
+  const cardId = `EVT-${evt.type}-${dateStr}`;
+
+  // Build options for the event decision card
+  const insuranceNote = hadInsurance ? ` (insurance covers ${insuranceCovered})` : '';
+  const options = [
+    {
+      id: 'A',
+      label: 'Pay the full amount',
+      cost: playerPays,
+      xp: 10,
+      coins: 5,
+      happiness: -5,
+    },
+    {
+      id: 'B',
+      label: 'Pay with credit card',
+      cost: 0, // Deferred to credit card
+      xp: 5,
+      coins: 2,
+      happiness: -3,
+      effects: { balance_change: 0 },
+    },
+    {
+      id: 'C',
+      label: 'Try to negotiate / defer',
+      cost: Math.round(playerPays * 0.7),
+      xp: 15,
+      coins: 8,
+      happiness: -2,
+    },
+  ];
+
+  // Insert as a dynamic decision card
+  await client.query(
+    `INSERT INTO decision_cards (id, category, title, description, persona_tags, level_range_min, level_range_max, frequency_weight, options, is_active)
+     VALUES ($1, $2, $3, $4, $5, 1, 8, 1, $6, true)
+     ON CONFLICT (id) DO UPDATE SET options = EXCLUDED.options, description = EXCLUDED.description`,
+    [
+      cardId, evt.category, evt.description,
+      `${evt.description}${insuranceNote}. How do you want to handle this?`,
+      ['teen', 'student', 'young_adult', 'parent'],
+      JSON.stringify(options),
+    ],
+  );
+
+  // Create the pending card
+  await client.query(
+    `INSERT INTO game_pending_cards (game_id, card_id, presented_game_date, expires_game_date, status)
+     VALUES ($1, $2, $3, $4, 'pending')`,
+    [gameId, cardId, dateStr, gameDateStr(expiresDate)],
+  );
+}
+
+async function applyRandomEvent(
+  client: PoolClient,
+  gameId: string,
+  evt: TriggeredEvent,
+  currentDate: GameDate,
+  playerPays: number,
+): Promise<void> {
+  const dateStr = gameDateStr(currentDate);
+  const checking = await getCheckingAccount(client, gameId);
+  if (!checking) return;
+
+  if (evt.type === 'market_crash') {
+    // evt.amount is a percentage — apply to investment balance
+    const investAcct = await client.query(
+      "SELECT * FROM game_accounts WHERE game_id = $1 AND type = 'investment_brokerage' AND status = 'active' LIMIT 1",
+      [gameId],
+    );
+    if (investAcct.rows.length > 0) {
+      const investBal = parseInt(investAcct.rows[0].balance, 10);
+      if (investBal > 0) {
+        const loss = Math.round(investBal * (evt.amount / 100));
+        const newBal = await updateAccountBalance(client, investAcct.rows[0].id, -loss);
+        await createTransaction(client, gameId, investAcct.rows[0].id, dateStr, 'expense', 'investment', -loss, newBal, `Market crash: lost ${evt.amount}% of investments`, undefined, true);
+      }
+    }
+  } else if (evt.type === 'promotion') {
+    // evt.amount is a percentage salary increase
+    const currentIncome = await client.query('SELECT monthly_income FROM games WHERE id = $1', [gameId]);
+    const income = parseInt(currentIncome.rows[0].monthly_income, 10);
+    const increase = Math.round(income * (evt.amount / 100));
+    await client.query('UPDATE games SET monthly_income = monthly_income + $1, updated_at = NOW() WHERE id = $2', [increase, gameId]);
+    await client.query(
+      `INSERT INTO game_events (game_id, type, game_date, description, data)
+       VALUES ($1, 'promotion', $2, $3, $4)`,
+      [gameId, dateStr, `Promotion! Salary increased by ${evt.amount}%`, JSON.stringify({ percentIncrease: evt.amount, absoluteIncrease: increase })],
+    );
+  } else if (evt.type === 'rent_increase') {
+    // Increase rent bill by percentage
+    const rentBill = await client.query(
+      "SELECT * FROM scheduled_bills WHERE game_id = $1 AND is_active = true AND category = 'housing' LIMIT 1",
+      [gameId],
+    );
+    if (rentBill.rows.length > 0) {
+      const currentAmt = parseInt(rentBill.rows[0].amount, 10);
+      const increase = Math.round(currentAmt * (evt.amount / 100));
+      await client.query('UPDATE scheduled_bills SET amount = amount + $1, updated_at = NOW() WHERE id = $2', [increase, rentBill.rows[0].id]);
+      await client.query(
+        `INSERT INTO game_events (game_id, type, game_date, description, data)
+         VALUES ($1, 'rent_increase', $2, $3, $4)`,
+        [gameId, dateStr, `Rent increased by ${evt.amount}%`, JSON.stringify({ percentIncrease: evt.amount, absoluteIncrease: increase })],
+      );
+    }
+  } else if (evt.type === 'utility_price_hike') {
+    // Increase utility bills by percentage
+    const utilBills = await client.query(
+      "SELECT * FROM scheduled_bills WHERE game_id = $1 AND is_active = true AND (category = 'utilities' OR name ILIKE '%utilit%')",
+      [gameId],
+    );
+    for (const bill of utilBills.rows) {
+      const currentAmt = parseInt(bill.amount, 10);
+      const increase = Math.round(currentAmt * (evt.amount / 100));
+      await client.query('UPDATE scheduled_bills SET amount = amount + $1, updated_at = NOW() WHERE id = $2', [increase, bill.id]);
+    }
+  } else if (evt.type === 'job_loss') {
+    // Reduce income to 0 temporarily — set a game event to restore in 2 months
+    const currentIncome = await client.query('SELECT monthly_income FROM games WHERE id = $1', [gameId]);
+    const originalIncome = parseInt(currentIncome.rows[0].monthly_income, 10);
+    await client.query('UPDATE games SET monthly_income = 0, updated_at = NOW() WHERE id = $1', [gameId]);
+    // Schedule recovery
+    const recoveryDate = addDays(currentDate, 60);
+    await client.query(
+      `INSERT INTO game_events (game_id, type, game_date, description, data)
+       VALUES ($1, 'job_loss', $2, $3, $4)`,
+      [gameId, dateStr, 'Lost job — income set to 0',
+        JSON.stringify({ originalIncome, recoveryDate: gameDateStr(recoveryDate) })],
+    );
+  } else if (evt.isPositive) {
+    // Positive events: add money to checking
+    const newBal = await updateAccountBalance(client, checking.id, evt.amount);
+    await createTransaction(client, gameId, checking.id, dateStr, 'income', evt.category, evt.amount, newBal, evt.description, undefined, true);
+  } else {
+    // Negative events: deduct from checking
+    const newBal = await updateAccountBalance(client, checking.id, -playerPays);
+    await createTransaction(client, gameId, checking.id, dateStr, 'expense', evt.category, -playerPays, newBal, evt.description, undefined, true);
+  }
+
+  // Update happiness for events
+  const happinessDelta = evt.isPositive ? 3 : -5;
+  await client.query(
+    'UPDATE games SET happiness = GREATEST(0, LEAST(100, happiness + $1)) WHERE id = $2',
+    [happinessDelta, gameId],
+  );
+}
+
+// ---------- job loss recovery check ----------
+
+async function checkJobLossRecovery(
+  client: PoolClient,
+  gameId: string,
+  currentDate: GameDate,
+): Promise<boolean> {
+  const dateStr = gameDateStr(currentDate);
+  const jobLossEvents = await client.query(
+    "SELECT data FROM game_events WHERE game_id = $1 AND type = 'job_loss' ORDER BY game_date DESC LIMIT 1",
+    [gameId],
+  );
+  if (jobLossEvents.rows.length === 0) return false;
+
+  const data = jobLossEvents.rows[0].data as { originalIncome?: number; recoveryDate?: string };
+  if (!data.recoveryDate || !data.originalIncome) return false;
+
+  if (dateStr >= data.recoveryDate) {
+    // Check current income is still 0 (hasn't been restored already)
+    const game = await client.query('SELECT monthly_income FROM games WHERE id = $1', [gameId]);
+    if (parseInt(game.rows[0].monthly_income, 10) === 0) {
+      await client.query('UPDATE games SET monthly_income = $1, updated_at = NOW() WHERE id = $2', [data.originalIncome, gameId]);
+      await client.query(
+        `INSERT INTO game_events (game_id, type, game_date, description, data)
+         VALUES ($1, 'job_recovery', $2, 'Found new job — income restored!', $3)`,
+        [gameId, dateStr, JSON.stringify({ restoredIncome: data.originalIncome })],
+      );
+      return true;
+    }
+  }
+  return false;
+}
+
+// ---------- insurance premium processing ----------
+
+async function processInsurancePremiums(
+  client: PoolClient,
+  gameId: string,
+  difficulty: string,
+  currentDate: GameDate,
+): Promise<{ premiumsPaid: number; events: Array<{ type: string; description: string; timestamp: GameDate; data: Record<string, unknown> }> }> {
+  const dateStr = gameDateStr(currentDate);
+  let premiumsPaid = 0;
+  const events: Array<{ type: string; description: string; timestamp: GameDate; data: Record<string, unknown> }> = [];
+
+  // Find all active insurance accounts
+  const insuranceAccts = await client.query(
+    "SELECT * FROM game_accounts WHERE game_id = $1 AND type = 'insurance' AND status = 'active'",
+    [gameId],
+  );
+
+  const checking = await getCheckingAccount(client, gameId);
+  if (!checking) return { premiumsPaid: 0, events };
+
+  for (const acct of insuranceAccts.rows) {
+    const premium = parseInt(acct.balance, 10); // Premium stored in balance field as metadata
+    if (premium > 0) {
+      const adjustedAmt = adjustedPremium(premium, difficulty);
+      const newBal = await updateAccountBalance(client, checking.id, -adjustedAmt);
+      await createTransaction(client, gameId, checking.id, dateStr, 'insurance_premium', 'insurance', -adjustedAmt, newBal, `Insurance premium: ${acct.name}`, undefined, true);
+      premiumsPaid += adjustedAmt;
+      events.push({
+        type: 'insurance_premium_paid',
+        description: `Paid ${adjustedAmt} for ${acct.name}`,
+        timestamp: currentDate,
+        data: { accountId: acct.id, amount: adjustedAmt },
+      });
+    }
+  }
+
+  return { premiumsPaid, events };
+}
+
+// ---------- bankruptcy processing ----------
+
+async function processBankruptcyCheck(
+  client: PoolClient,
+  game: GameRow,
+  netWorth: number,
+  currentDate: GameDate,
+): Promise<Array<{ type: string; description: string; timestamp: GameDate; data: Record<string, unknown> }>> {
+  const dateStr = gameDateStr(currentDate);
+  const gameId = game.id;
+  const monthlyIncome = parseInt(game.monthly_income, 10);
+  const events: Array<{ type: string; description: string; timestamp: GameDate; data: Record<string, unknown> }> = [];
+
+  // Count consecutive months of negative net worth
+  const recentReports = await client.query(
+    "SELECT net_worth FROM monthly_reports WHERE game_id = $1 ORDER BY game_month DESC LIMIT 6",
+    [gameId],
+  );
+  let consecutiveNegativeMonths = 0;
+  let monthsPositive = 0;
+  for (const report of recentReports.rows) {
+    const nw = parseInt(report.net_worth, 10);
+    if (nw < 0) {
+      consecutiveNegativeMonths++;
+    } else {
+      break;
+    }
+  }
+  // For recovery: count consecutive positive months
+  if (game.bankruptcy_active) {
+    monthsPositive = 0;
+    for (const report of recentReports.rows) {
+      const nw = parseInt(report.net_worth, 10);
+      if (nw >= 0) {
+        monthsPositive++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  const assessment = assessBankruptcy(netWorth, monthlyIncome, consecutiveNegativeMonths, game.bankruptcy_active, monthsPositive);
+
+  if (assessment.shouldTriggerBankruptcy && !game.bankruptcy_active) {
+    // Enter bankruptcy
+    const bankruptcyEndDate = addDays(currentDate, 180); // 6 months recovery period
+    await client.query(
+      `UPDATE games SET bankruptcy_active = true, bankruptcy_count = bankruptcy_count + 1,
+       bankruptcy_end_date = $1, chi_score = 300, status = 'active', updated_at = NOW() WHERE id = $2`,
+      [gameDateStr(bankruptcyEndDate), gameId],
+    );
+
+    // Freeze investment accounts
+    await client.query(
+      "UPDATE game_accounts SET status = 'frozen' WHERE game_id = $1 AND type IN ('investment_brokerage', 'investment_retirement') AND status = 'active'",
+      [gameId],
+    );
+
+    // Close credit cards
+    await client.query(
+      "UPDATE game_accounts SET status = 'frozen' WHERE game_id = $1 AND type = 'credit_card' AND status = 'active'",
+      [gameId],
+    );
+
+    events.push({
+      type: 'bankruptcy_triggered',
+      description: 'Bankruptcy declared — investments frozen, credit cards suspended, CHI dropped to 300',
+      timestamp: currentDate,
+      data: { netWorth, consecutiveNegativeMonths, bankruptcyEndDate: gameDateStr(bankruptcyEndDate) },
+    });
+
+    await client.query(
+      `INSERT INTO game_events (game_id, type, game_date, description, data)
+       VALUES ($1, 'bankruptcy', $2, 'Bankruptcy declared', $3)`,
+      [gameId, dateStr, JSON.stringify({ netWorth, ratio: assessment.netWorthToIncomeRatio })],
+    );
+  } else if (assessment.shouldExitBankruptcy) {
+    // Exit bankruptcy
+    await client.query(
+      `UPDATE games SET bankruptcy_active = false, bankruptcy_end_date = NULL, updated_at = NOW() WHERE id = $1`,
+      [gameId],
+    );
+
+    // Unfreeze investment accounts
+    await client.query(
+      "UPDATE game_accounts SET status = 'active' WHERE game_id = $1 AND type IN ('investment_brokerage', 'investment_retirement') AND status = 'frozen'",
+      [gameId],
+    );
+
+    events.push({
+      type: 'bankruptcy_exited',
+      description: 'Exited bankruptcy — investments unfrozen, beginning financial recovery',
+      timestamp: currentDate,
+      data: { monthsPositive },
+    });
+
+    await client.query(
+      `INSERT INTO game_events (game_id, type, game_date, description, data)
+       VALUES ($1, 'bankruptcy_exit', $2, 'Exited bankruptcy', $3)`,
+      [gameId, dateStr, JSON.stringify({ monthsPositive })],
+    );
+  } else if (assessment.stage === 'financial_stress' || assessment.stage === 'financial_distress') {
+    events.push({
+      type: `financial_warning_${assessment.stage}`,
+      description: assessment.stage === 'financial_stress'
+        ? 'Warning: You are under financial stress. Net worth is significantly negative.'
+        : 'Danger: Financial distress — you may face bankruptcy if this continues.',
+      timestamp: currentDate,
+      data: { stage: assessment.stage, ratio: assessment.netWorthToIncomeRatio },
+    });
+  }
+
+  return events;
+}
+
+// ---------- tax filing ----------
+
+async function processTaxFiling(
+  client: PoolClient,
+  game: GameRow,
+  currentDate: GameDate,
+): Promise<Array<{ type: string; description: string; timestamp: GameDate; data: Record<string, unknown> }>> {
+  const dateStr = gameDateStr(currentDate);
+  const gameId = game.id;
+  const events: Array<{ type: string; description: string; timestamp: GameDate; data: Record<string, unknown> }> = [];
+
+  // Only for level 5+
+  if (game.current_level < 5) return events;
+
+  if (!isTaxFilingDay(currentDate)) return events;
+
+  // Check we haven't already filed this year
+  const existingFiling = await client.query(
+    "SELECT id FROM game_events WHERE game_id = $1 AND type = 'tax_filing' AND game_date >= $2",
+    [gameId, `${currentDate.year}-01-01`],
+  );
+  if (existingFiling.rows.length > 0) return events;
+
+  const monthlyIncome = parseInt(game.monthly_income, 10);
+  // Default 25% tax rate, withholding at 23% (slight under-withholding)
+  const taxRate = 0.25;
+  const withholdingRate = 0.23;
+
+  const assessment = calculateTaxAssessment(monthlyIncome, 12, taxRate, withholdingRate);
+
+  // Create a tax filing decision card
+  const cardId = `TAX-FILING-${currentDate.year}`;
+  const refundOrBill = assessment.refundOrBill;
+  const isRefund = refundOrBill >= 0;
+
+  const options = isRefund
+    ? [
+        {
+          id: 'A',
+          label: 'File carefully (get full refund)',
+          cost: -refundOrBill, // Negative cost = income
+          xp: 20,
+          coins: 10,
+          happiness: 5,
+        },
+        {
+          id: 'B',
+          label: 'Quick file (get 90% refund)',
+          cost: -Math.round(refundOrBill * 0.9),
+          xp: 10,
+          coins: 5,
+          happiness: 3,
+        },
+        {
+          id: 'C',
+          label: 'Hire tax preparer (get 105% via deductions, costs $50)',
+          cost: -(Math.round(refundOrBill * 1.05) - 5000),
+          xp: 15,
+          coins: 8,
+          happiness: 4,
+        },
+      ]
+    : [
+        {
+          id: 'A',
+          label: 'Pay tax bill in full',
+          cost: Math.abs(refundOrBill),
+          xp: 20,
+          coins: 10,
+          happiness: -3,
+        },
+        {
+          id: 'B',
+          label: 'Set up payment plan (+10% penalty)',
+          cost: Math.round(Math.abs(refundOrBill) * 0.5), // Pay half now
+          xp: 10,
+          coins: 5,
+          happiness: -2,
+        },
+        {
+          id: 'C',
+          label: 'Hire tax preparer (reduce bill by 15%, costs $50)',
+          cost: Math.round(Math.abs(refundOrBill) * 0.85) + 5000,
+          xp: 15,
+          coins: 8,
+          happiness: -1,
+        },
+      ];
+
+  await client.query(
+    `INSERT INTO decision_cards (id, category, title, description, persona_tags, level_range_min, level_range_max, frequency_weight, options, is_active)
+     VALUES ($1, 'tax', $2, $3, $4, 5, 8, 1, $5, true)
+     ON CONFLICT (id) DO UPDATE SET options = EXCLUDED.options, description = EXCLUDED.description`,
+    [
+      cardId,
+      'Annual Tax Filing',
+      isRefund
+        ? `It's tax season! You're owed a refund of ${refundOrBill}. How do you want to file?`
+        : `It's tax season! You owe ${Math.abs(refundOrBill)} in taxes. How do you want to handle it?`,
+      ['teen', 'student', 'young_adult', 'parent'],
+      JSON.stringify(options),
+    ],
+  );
+
+  const expiresDate = addDays(currentDate, 5);
+  await client.query(
+    `INSERT INTO game_pending_cards (game_id, card_id, presented_game_date, expires_game_date, status)
+     VALUES ($1, $2, $3, $4, 'pending')`,
+    [gameId, cardId, dateStr, gameDateStr(expiresDate)],
+  );
+
+  await client.query(
+    `INSERT INTO game_events (game_id, type, game_date, description, data)
+     VALUES ($1, 'tax_filing', $2, $3, $4)`,
+    [gameId, dateStr, 'Tax filing season',
+      JSON.stringify({ ...assessment, isRefund })],
+  );
+
+  events.push({
+    type: 'tax_filing',
+    description: isRefund
+      ? `Tax season: you're owed a refund of ${refundOrBill}!`
+      : `Tax season: you owe ${Math.abs(refundOrBill)} in taxes.`,
+    timestamp: currentDate,
+    data: { ...assessment, isRefund },
+  });
+
+  return events;
+}
+
 // ---------- month-end processing ----------
 
 async function processMonthEnd(
@@ -447,6 +1069,15 @@ async function processMonthEnd(
     );
   }
 
+  // 11. Insurance premiums
+  const insuranceResult = await processInsurancePremiums(client, gameId, game.difficulty, currentDate);
+  expenseTotal += insuranceResult.premiumsPaid;
+  events.push(...insuranceResult.events);
+
+  // 12. Bankruptcy check
+  const bankruptcyEvents = await processBankruptcyCheck(client, game, netWorth, currentDate);
+  events.push(...bankruptcyEvents);
+
   events.push({
     type: 'month_end_processed',
     description: `Month-end processed: income ${incomeTotal}, expenses ${expenseTotal}`,
@@ -583,6 +1214,7 @@ export async function processAction(
       }
 
       const isMonthEnd = isLastDayOfMonth(currentDate);
+      const isQuarterEnd = isLastDayOfQuarter(currentDate);
 
       // Process month-end BEFORE advancing day
       const allEvents: Array<{ type: string; description: string; timestamp: GameDate; data: Record<string, unknown> }> = [];
@@ -596,6 +1228,17 @@ export async function processAction(
 
       // Process daily autopay bills
       await processDailyBills(client, game.id, nextDate);
+
+      // Check job loss recovery
+      await checkJobLossRecovery(client, game.id, nextDate);
+
+      // Roll for random events
+      const randomEventResults = await processRandomEvents(client, game, nextDate, isMonthEnd, isQuarterEnd);
+      allEvents.push(...randomEventResults);
+
+      // Check for tax filing (April 15, level 5+)
+      const taxEvents = await processTaxFiling(client, game, nextDate);
+      allEvents.push(...taxEvents);
 
       // Generate daily decision cards
       await generateDailyCards(client, game, nextDate);
@@ -1030,6 +1673,130 @@ export async function processAction(
       return {
         success: true, newState: {},
         events: [{ type: 'investment_sold', description: `Sold ${amount} in investments`, timestamp: currentDate, data: { amount } }],
+        rewards: [],
+      };
+
+    } else if (action.type === 'buy_insurance') {
+      const insuranceType = action.payload.insuranceType as string;
+      if (!insuranceType) {
+        await client.query('ROLLBACK');
+        return { success: false, newState: {}, events: [], rewards: [], errors: [{ code: 'VALIDATION_ERROR', message: 'insuranceType is required' }] };
+      }
+
+      const config = INSURANCE_CONFIGS.find((c: InsurancePremiumConfig) => c.type === insuranceType);
+      if (!config) {
+        await client.query('ROLLBACK');
+        return { success: false, newState: {}, events: [], rewards: [], errors: [{ code: 'VALIDATION_ERROR', message: `Invalid insurance type: ${insuranceType}. Valid: ${INSURANCE_CONFIGS.map((c: InsurancePremiumConfig) => c.type).join(', ')}` }] };
+      }
+
+      // Check if already insured
+      const existing = await client.query(
+        "SELECT id FROM game_accounts WHERE game_id = $1 AND type = 'insurance' AND name = $2 AND status = 'active'",
+        [game.id, config.name],
+      );
+      if (existing.rows.length > 0) {
+        await client.query('ROLLBACK');
+        return { success: false, newState: {}, events: [], rewards: [], errors: [{ code: 'ALREADY_INSURED', message: `Already have active ${config.name}` }] };
+      }
+
+      // Check if can afford first premium
+      const premium = adjustedPremium(config.basePremium, game.difficulty);
+      const checking = await getCheckingAccount(client, game.id);
+      if (!checking || parseInt(checking.balance, 10) < premium) {
+        await client.query('ROLLBACK');
+        return { success: false, newState: {}, events: [], rewards: [], errors: [{ code: 'INSUFFICIENT_FUNDS', message: 'Cannot afford insurance premium' }] };
+      }
+
+      const dateStr = gameDateStr(currentDate);
+
+      // Create insurance account (balance stores the base premium for monthly billing)
+      await client.query(
+        `INSERT INTO game_accounts (game_id, type, name, balance, interest_rate, opened_game_date, status)
+         VALUES ($1, 'insurance', $2, $3, 0, $4, 'active')`,
+        [game.id, config.name, config.basePremium, dateStr],
+      );
+
+      // Pay first premium
+      const newBal = await updateAccountBalance(client, checking.id, -premium);
+      await createTransaction(client, game.id, checking.id, dateStr, 'insurance_premium', 'insurance', -premium, newBal, `First premium: ${config.name}`);
+
+      await client.query('UPDATE games SET state_version = state_version + 1, updated_at = NOW() WHERE id = $1', [game.id]);
+      await client.query('COMMIT');
+
+      return {
+        success: true, newState: {},
+        events: [{ type: 'insurance_purchased', description: `Purchased ${config.name} — ${premium}/month`, timestamp: currentDate, data: { type: insuranceType, premium, deductible: config.deductible, coverageRate: config.coverageRate } }],
+        rewards: [],
+      };
+
+    } else if (action.type === 'file_claim') {
+      const insuranceType = action.payload.insuranceType as string;
+      const claimAmount = action.payload.amount as number;
+
+      if (!insuranceType || !claimAmount || claimAmount <= 0) {
+        await client.query('ROLLBACK');
+        return { success: false, newState: {}, events: [], rewards: [], errors: [{ code: 'VALIDATION_ERROR', message: 'insuranceType and positive amount are required' }] };
+      }
+
+      const config = INSURANCE_CONFIGS.find((c: InsurancePremiumConfig) => c.type === insuranceType);
+      if (!config) {
+        await client.query('ROLLBACK');
+        return { success: false, newState: {}, events: [], rewards: [], errors: [{ code: 'VALIDATION_ERROR', message: `Invalid insurance type: ${insuranceType}` }] };
+      }
+
+      // Check for active policy
+      const policyAcct = await client.query(
+        "SELECT * FROM game_accounts WHERE game_id = $1 AND type = 'insurance' AND name = $2 AND status = 'active' LIMIT 1",
+        [game.id, config.name],
+      );
+      if (policyAcct.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return { success: false, newState: {}, events: [], rewards: [], errors: [{ code: 'NO_POLICY', message: `No active ${config.name} policy` }] };
+      }
+
+      const dateStr = gameDateStr(currentDate);
+
+      // Process claim using simulation engine
+      const claimResult = processClaim(
+        {
+          type: config.type as 'health' | 'auto' | 'renters' | 'homeowners' | 'life' | 'disability',
+          monthlyPremium: config.basePremium,
+          deductible: config.deductible,
+          coverageRate: config.coverageRate,
+          isActive: true,
+          monthsActive: 1,
+          monthsUnpaid: 0,
+          claimsThisYear: 0,
+          basePremium: config.basePremium,
+        },
+        claimAmount,
+      );
+
+      // Deposit insurance payout to checking
+      const checking = await getCheckingAccount(client, game.id);
+      if (checking && claimResult.insurancePaid > 0) {
+        const newBal = await updateAccountBalance(client, checking.id, claimResult.insurancePaid);
+        await createTransaction(client, game.id, checking.id, dateStr, 'insurance_claim', 'insurance', claimResult.insurancePaid, newBal, `Claim payout: ${config.name}`);
+      }
+
+      await client.query(
+        `INSERT INTO game_events (game_id, type, game_date, description, data)
+         VALUES ($1, 'insurance_claim_filed', $2, $3, $4)`,
+        [game.id, dateStr, `Filed claim on ${config.name}`,
+          JSON.stringify({ claimAmount, ...claimResult })],
+      );
+
+      await client.query('UPDATE games SET state_version = state_version + 1, updated_at = NOW() WHERE id = $1', [game.id]);
+      await client.query('COMMIT');
+
+      return {
+        success: true, newState: {},
+        events: [{
+          type: 'claim_filed',
+          description: `Claim filed: ${config.name} covered ${claimResult.insurancePaid} of ${claimAmount} (deductible: ${claimResult.deductiblePaid})`,
+          timestamp: currentDate,
+          data: { insuranceType, claimAmount, ...claimResult },
+        }],
         rewards: [],
       };
 

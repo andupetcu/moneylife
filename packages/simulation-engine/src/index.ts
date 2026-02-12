@@ -10,4 +10,5 @@ export * from './time-engine.js';
 export * from './budget-scorer.js';
 export * from './investment-sim.js';
 export * from './insurance-sim.js';
+export * from './random-events.js';
 export * from './validators.js';
