@@ -1,0 +1,1084 @@
+{
+  "scenarios": [
+    {
+      "id": "DC-101", "category": "housing", "subcategory": "roommate", "title": "Roommate Leaves Dirty Dishes",
+      "description": "Your roommate never cleans up. You could hire a cleaning service or handle it yourself.",
+      "personaTags": ["student", "young_adult"], "levelRange": [1, 5], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Hire a weekly cleaner", "cost": 6000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Buy cleaning supplies, do it yourself", "cost": 1500, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Ignore it", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-102", "category": "housing", "subcategory": "repair", "title": "Water Heater Issues",
+      "description": "Hot water is running out fast. The water heater needs attention.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Replace with new tankless unit", "cost": 50000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Repair the current unit", "cost": 15000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Cold showers for now", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-103", "category": "housing", "subcategory": "lease", "title": "Lease Renewal Decision",
+      "description": "Your lease is up. Renew at current rate or look for something better?",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 7], "frequencyWeight": 2, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Renew lease as-is", "cost": 0, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Negotiate lower rent", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Move to a new place (moving costs)", "cost": 20000, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-104", "category": "housing", "subcategory": "moving", "title": "Job Relocation Offer",
+      "description": "Your company offers relocation to a new city with a raise.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [4, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Accept and move (get partial relo package)", "cost": 30000, "xp": 20, "coins": 10},
+        {"id": "B", "label": "Negotiate remote work instead", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Decline the offer", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-105", "category": "career", "subcategory": "raise", "title": "Annual Performance Review",
+      "description": "Your performance review is coming up. Time to ask for a raise?",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Ask for a significant raise", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Ask for a modest raise", "cost": 0, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Don't rock the boat", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-106", "category": "career", "subcategory": "side_hustle", "title": "Freelance Opportunity",
+      "description": "A friend needs help with a project. You could earn extra money on the side.",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 7], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Take the gig (time investment)", "cost": 500, "xp": 18, "coins": 10},
+        {"id": "B", "label": "Do a smaller portion", "cost": 0, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Pass on it", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-107", "category": "career", "subcategory": "overtime", "title": "Weekend Overtime Available",
+      "description": "Your boss asks if you can work this weekend for overtime pay.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Work the full weekend", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Work one day only", "cost": 0, "xp": 8, "coins": 4},
+        {"id": "C", "label": "Decline — enjoy the weekend", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-108", "category": "career", "subcategory": "job_offer", "title": "Competing Job Offer",
+      "description": "A recruiter reaches out with a job offer paying 15% more.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [4, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Accept the new job", "cost": 5000, "xp": 20, "coins": 10},
+        {"id": "B", "label": "Use it to negotiate current salary", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Politely decline", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-109", "category": "career", "subcategory": "networking", "title": "Industry Conference",
+      "description": "A professional conference is happening in your field.",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Full conference pass + travel", "cost": 25000, "xp": 20, "coins": 10},
+        {"id": "B", "label": "Day pass only", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Watch the free livestream", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-110", "category": "career", "subcategory": "side_hustle", "title": "Start a Small Online Business",
+      "description": "You have an idea for a small online business selling crafts or services.",
+      "personaTags": ["student", "young_adult"], "levelRange": [3, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Invest in proper setup", "cost": 15000, "xp": 18, "coins": 10},
+        {"id": "B", "label": "Start small with minimal investment", "cost": 3000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Not ready yet", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-111", "category": "health", "subcategory": "gym", "title": "Gym Membership Renewal",
+      "description": "Your gym membership is expiring. Renew or find alternatives?",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium gym with classes", "cost": 8000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Basic budget gym", "cost": 2500, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Work out at home/outdoors", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-112", "category": "health", "subcategory": "doctor", "title": "Annual Check-Up",
+      "description": "Time for your annual physical exam.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Full comprehensive check-up", "cost": 15000, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Basic check-up only", "cost": 5000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Skip it this year", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-113", "category": "health", "subcategory": "emergency", "title": "Sudden Illness",
+      "description": "You wake up feeling terrible. Might need medical attention.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Go to urgent care", "cost": 10000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Telehealth appointment", "cost": 3000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Rest and take OTC medicine", "cost": 1500, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-114", "category": "health", "subcategory": "dental", "title": "Dental Work Needed",
+      "description": "Your dentist found a cavity that needs filling.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Get it done now with premium filling", "cost": 20000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Standard filling", "cost": 8000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Postpone treatment", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-115", "category": "health", "subcategory": "mental", "title": "Stress Management",
+      "description": "Work and life stress is building up. How do you cope?",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Book therapy sessions", "cost": 12000, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Try meditation apps", "cost": 1000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Push through it", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-116", "category": "health", "subcategory": "vision", "title": "Eye Exam and Glasses",
+      "description": "Your vision has been blurry. Time for an eye exam.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 1, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Designer frames", "cost": 25000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Affordable glasses", "cost": 8000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Online budget glasses", "cost": 3000, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-117", "category": "transport", "subcategory": "repair", "title": "Check Engine Light On",
+      "description": "The check engine light came on. Could be serious.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Take to dealership immediately", "cost": 20000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Independent mechanic", "cost": 8000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Buy OBD reader and diagnose yourself", "cost": 3000, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-118", "category": "transport", "subcategory": "transit", "title": "Bike vs Car Commute",
+      "description": "Good weather ahead. Consider biking to save on gas.",
+      "personaTags": ["student", "young_adult"], "levelRange": [1, 6], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Buy a decent bike", "cost": 15000, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Used bike from classifieds", "cost": 5000, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Stick with current commute", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-119", "category": "transport", "subcategory": "ticket", "title": "Parking Ticket",
+      "description": "You got a parking ticket downtown.",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Pay immediately (avoid late fees)", "cost": 5000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Contest the ticket", "cost": 1000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Ignore it (risk late penalty)", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-120", "category": "transport", "subcategory": "insurance", "title": "Car Insurance Renewal",
+      "description": "Your car insurance is up for renewal. Shop around?",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Full coverage premium", "cost": 15000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Compare and switch to cheaper", "cost": 10000, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Minimum required coverage", "cost": 6000, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-121", "category": "transport", "subcategory": "rideshare", "title": "Ride Share vs Taxi",
+      "description": "You need a ride home late at night.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 6], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium ride service", "cost": 3500, "xp": 3, "coins": 1},
+        {"id": "B", "label": "Standard rideshare", "cost": 1500, "xp": 8, "coins": 4},
+        {"id": "C", "label": "Take the bus/walk", "cost": 200, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-122", "category": "transport", "subcategory": "fuel", "title": "Gas Prices Spike",
+      "description": "Gas prices jumped 20%. Adjust your driving habits?",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "No changes, fill up as usual", "cost": 7000, "xp": 3, "coins": 1},
+        {"id": "B", "label": "Carpool with coworkers", "cost": 3000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Work from home more", "cost": 0, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-123", "category": "shopping", "subcategory": "impulse", "title": "Social Media Ad Temptation",
+      "description": "An Instagram ad shows exactly what you want. 50% off for 2 hours!",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 6], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Buy it immediately", "cost": 5000, "xp": 3, "coins": 1},
+        {"id": "B", "label": "Save it and think for 24 hours", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Unfollow the account", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-124", "category": "shopping", "subcategory": "subscription", "title": "Subscription Audit",
+      "description": "You realize you're paying for 5 subscription services. Time to review?",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Keep all subscriptions", "cost": 5000, "xp": 3, "coins": 1},
+        {"id": "B", "label": "Cancel 2-3 unused ones", "cost": 2000, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Cancel everything, go free-only", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-125", "category": "food", "subcategory": "cooking", "title": "Meal Kit Delivery Service",
+      "description": "A meal kit service is offering a free trial week.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [2, 7], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Subscribe (auto-renews at $60/wk)", "cost": 0, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Try the free week then cancel", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Skip — cook from scratch", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-126", "category": "food", "subcategory": "groceries", "title": "Store Loyalty Card",
+      "description": "Your grocery store offers a loyalty program with discounts.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium membership ($50/yr)", "cost": 5000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Free basic membership", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Not interested", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-127", "category": "food", "subcategory": "meal_prep", "title": "Batch Cooking Weekend",
+      "description": "Spend a Sunday cooking meals for the whole week?",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Full week prep with variety", "cost": 5000, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Prep lunches only", "cost": 2500, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Wing it day by day", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-128", "category": "emergency", "subcategory": "unexpected", "title": "Washing Machine Breaks",
+      "description": "Your washing machine just died. Laundromat it is... unless you replace it.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Buy new washer", "cost": 35000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Buy used from classifieds", "cost": 12000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Use laundromat for now", "cost": 2000, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-129", "category": "emergency", "subcategory": "family", "title": "Family Member Needs Help",
+      "description": "A close family member asks to borrow money for an emergency.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Lend the full amount", "cost": 50000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Help with a smaller amount", "cost": 15000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Offer non-financial help", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-130", "category": "emergency", "subcategory": "pet", "title": "Pet Emergency Vet Visit",
+      "description": "Your pet is acting strange and might need emergency vet care.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Emergency vet immediately", "cost": 30000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Call vet hotline first", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Monitor and wait till morning", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-131", "category": "emergency", "subcategory": "theft", "title": "Phone Stolen",
+      "description": "Your phone was stolen. You need a replacement ASAP.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Buy the latest model", "cost": 80000, "xp": 3, "coins": 1},
+        {"id": "B", "label": "Affordable replacement", "cost": 25000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Used phone from friend", "cost": 8000, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-132", "category": "emergency", "subcategory": "medical", "title": "ER Visit",
+      "description": "A sports injury lands you in the ER.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [2, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Full treatment at ER", "cost": 50000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Urgent care instead", "cost": 15000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Home treatment (risky)", "cost": 1000, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-133", "category": "education", "subcategory": "course", "title": "Online Course Opportunity",
+      "description": "A highly-rated online course in your field is on sale.",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Buy the premium course bundle", "cost": 15000, "xp": 20, "coins": 10},
+        {"id": "B", "label": "Single course only", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Find free alternatives", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-134", "category": "education", "subcategory": "certification", "title": "Professional Certification",
+      "description": "A certification could boost your career prospects.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Full prep course + exam fee", "cost": 30000, "xp": 25, "coins": 12},
+        {"id": "B", "label": "Self-study + exam fee only", "cost": 10000, "xp": 18, "coins": 8},
+        {"id": "C", "label": "Postpone for later", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-135", "category": "education", "subcategory": "books", "title": "Book Shopping",
+      "description": "New books in your area of interest are out.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Buy the whole reading list", "cost": 8000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Library card instead", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "C", "label": "E-book on sale", "cost": 1500, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-136", "category": "education", "subcategory": "workshop", "title": "Weekend Workshop",
+      "description": "A hands-on workshop for a new skill you've been wanting to learn.",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 7], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Sign up for the workshop", "cost": 10000, "xp": 18, "coins": 8},
+        {"id": "B", "label": "Watch YouTube tutorials", "cost": 0, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Not interested right now", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-137", "category": "social", "subcategory": "birthday", "title": "Best Friend's Birthday",
+      "description": "Your best friend's birthday is coming up.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Throw a surprise party", "cost": 15000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Dinner out, your treat", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Thoughtful handmade gift", "cost": 1000, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-138", "category": "social", "subcategory": "wedding", "title": "Wedding Invitation",
+      "description": "You're invited to a destination wedding.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [4, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Attend (travel + gift + outfit)", "cost": 60000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Attend locally, skip destination events", "cost": 20000, "xp": 8, "coins": 4},
+        {"id": "C", "label": "Send a gift and regrets", "cost": 5000, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-139", "category": "social", "subcategory": "vacation", "title": "Group Trip Planning",
+      "description": "Friends are planning a group vacation.",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "All-in luxury trip", "cost": 80000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Budget-friendly version", "cost": 30000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Can't afford it this time", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-140", "category": "social", "subcategory": "charity", "title": "Charity Fundraiser",
+      "description": "A cause you care about is doing a fundraiser.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Make a generous donation", "cost": 10000, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Modest donation", "cost": 2500, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Volunteer time instead", "cost": 0, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-141", "category": "social", "subcategory": "holiday", "title": "Holiday Travel Plans",
+      "description": "Holiday season means visiting family.",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Fly home (peak season prices)", "cost": 35000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Drive or bus", "cost": 10000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Video call celebration", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-142", "category": "social", "subcategory": "event", "title": "Concert Tickets",
+      "description": "Your favorite artist is performing nearby.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 8], "frequencyWeight": 3, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "VIP tickets", "cost": 20000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "General admission", "cost": 6000, "xp": 8, "coins": 4},
+        {"id": "C", "label": "Watch the livestream", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-143", "category": "finance", "subcategory": "investment", "title": "Friend's Investment Tip",
+      "description": "A friend says they made big returns on a new investment opportunity.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [4, 8], "frequencyWeight": 2, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Invest heavily", "cost": 50000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Small experimental investment", "cost": 10000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Research first, skip for now", "cost": 0, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-144", "category": "finance", "subcategory": "credit_card", "title": "Credit Card Offer",
+      "description": "A bank is offering a credit card with a sign-up bonus.",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Apply for the premium card", "cost": 10000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Apply for no-fee card", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Don't need another card", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-145", "category": "finance", "subcategory": "loan", "title": "Loan Refinancing Offer",
+      "description": "You can refinance your loan at a lower rate.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [4, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Refinance (closing costs apply)", "cost": 15000, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Make extra payments instead", "cost": 20000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Keep current terms", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-146", "category": "finance", "subcategory": "savings", "title": "High-Yield Savings Account",
+      "description": "A new bank offers 4.5% APY on savings.",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Open account and transfer savings", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Keep current bank (convenience)", "cost": 0, "xp": 5, "coins": 2},
+        {"id": "C", "label": "Invest the money instead", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-147", "category": "finance", "subcategory": "tax", "title": "Tax Filing Season",
+      "description": "Tax season is here. How do you handle your taxes?",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Hire an accountant", "cost": 20000, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Use tax software", "cost": 3000, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Free filing tools", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-148", "category": "finance", "subcategory": "emergency_fund", "title": "Emergency Fund Goal",
+      "description": "Financial advisors say you need 3-6 months of expenses saved.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Set aside 20% of paycheck", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Set aside 10% of paycheck", "cost": 0, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Deal with it later", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-149", "category": "finance", "subcategory": "retirement", "title": "401k Enrollment",
+      "description": "Your company offers 401k matching up to 5%.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [4, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Max out the match (5%)", "cost": 0, "xp": 20, "coins": 10},
+        {"id": "B", "label": "Contribute 3%", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Skip for now", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-150", "category": "finance", "subcategory": "debt", "title": "Debt Snowball vs Avalanche",
+      "description": "You have multiple debts. Which strategy to tackle them?",
+      "personaTags": ["young_adult", "parent"], "levelRange": [4, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Avalanche (highest interest first)", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Snowball (smallest balance first)", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Just pay minimums", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-151", "category": "entertainment", "subcategory": "gaming", "title": "New Game Release",
+      "description": "A highly anticipated game just dropped.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 6], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Buy deluxe edition at launch", "cost": 7000, "xp": 3, "coins": 1},
+        {"id": "B", "label": "Wait for a sale", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Play free-to-play games", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-152", "category": "entertainment", "subcategory": "movie", "title": "Movie Night Options",
+      "description": "New blockbuster in theaters. How do you watch?",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "IMAX experience", "cost": 2500, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Regular showing", "cost": 1200, "xp": 8, "coins": 4},
+        {"id": "C", "label": "Wait for streaming", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-153", "category": "entertainment", "subcategory": "sports", "title": "Sporting Event Tickets",
+      "description": "Your team is playing a big game this weekend.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Great seats", "cost": 15000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Nosebleed section", "cost": 4000, "xp": 8, "coins": 4},
+        {"id": "C", "label": "Watch at a sports bar", "cost": 2000, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-154", "category": "entertainment", "subcategory": "hobby", "title": "New Hobby Discovery",
+      "description": "You discovered a new hobby you're excited about.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Go all in with equipment", "cost": 20000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Start with the basics", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Try before you buy", "cost": 500, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-155", "category": "housing", "subcategory": "pest", "title": "Pest Problem",
+      "description": "You spotted pests in your apartment. This needs handling.",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Professional exterminator", "cost": 15000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "DIY traps and sprays", "cost": 3000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Complain to landlord", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-156", "category": "housing", "subcategory": "moving", "title": "Downsizing Option",
+      "description": "You could save money by moving to a smaller place.",
+      "personaTags": ["young_adult"], "levelRange": [3, 7], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Move to smaller place (save on rent)", "cost": 15000, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Get a roommate instead", "cost": 2000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Stay put", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-157", "category": "career", "subcategory": "training", "title": "Company Training Opportunity",
+      "description": "Your company offers a training program but requires weekend commitment.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Commit to full training", "cost": 0, "xp": 18, "coins": 8},
+        {"id": "B", "label": "Partial attendance", "cost": 0, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Skip — value your weekends", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-158", "category": "career", "subcategory": "commute", "title": "Office vs Remote Work",
+      "description": "Your company is offering hybrid work options.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Full office (networking benefits)", "cost": 5000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Hybrid (3 days office)", "cost": 3000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Full remote (save on commute)", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-159", "category": "health", "subcategory": "fitness", "title": "Running Shoes",
+      "description": "Your running shoes are worn out.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium running shoes", "cost": 15000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Mid-range shoes on sale", "cost": 6000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Budget shoes", "cost": 3000, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-160", "category": "health", "subcategory": "nutrition", "title": "Vitamins and Supplements",
+      "description": "Should you start taking daily vitamins?",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium brand vitamins", "cost": 5000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Store brand basics", "cost": 1500, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Focus on diet instead", "cost": 0, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-161", "category": "transport", "subcategory": "maintenance", "title": "Car Wash Decision",
+      "description": "Your car desperately needs cleaning.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Full detail service", "cost": 8000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Drive-through car wash", "cost": 1500, "xp": 8, "coins": 4},
+        {"id": "C", "label": "Wash it yourself", "cost": 500, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-162", "category": "transport", "subcategory": "upgrade", "title": "Electric Vehicle Consideration",
+      "description": "Electric vehicles are getting cheaper. Worth switching?",
+      "personaTags": ["young_adult", "parent"], "levelRange": [5, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Lease an EV", "cost": 30000, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Buy used hybrid", "cost": 50000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Keep current car", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-163", "category": "social", "subcategory": "gift", "title": "Baby Shower Gift",
+      "description": "A coworker is having a baby shower.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Expensive gift from registry", "cost": 8000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Group gift contribution", "cost": 2500, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Handmade something special", "cost": 500, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-164", "category": "social", "subcategory": "dating", "title": "First Date Planning",
+      "description": "You've got a first date. Where to go?",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 7], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Fancy restaurant", "cost": 8000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Casual coffee date", "cost": 1000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Free outdoor activity", "cost": 0, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-165", "category": "social", "subcategory": "party", "title": "House Party Decision",
+      "description": "You want to throw a party at your place.",
+      "personaTags": ["student", "young_adult"], "levelRange": [1, 6], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Full catered party", "cost": 15000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "BYOB with simple snacks", "cost": 3000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Small gathering, homemade food", "cost": 1500, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-166", "category": "education", "subcategory": "tutoring", "title": "Tutoring for Tough Class",
+      "description": "You're struggling with a subject. Tutoring might help.",
+      "personaTags": ["teen", "student"], "levelRange": [1, 4], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Hire a professional tutor", "cost": 8000, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Study group with classmates", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Figure it out yourself", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-167", "category": "education", "subcategory": "conference", "title": "Academic Conference",
+      "description": "Submit a paper to a student conference?",
+      "personaTags": ["student"], "levelRange": [2, 5], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Submit and attend ($200 fee)", "cost": 20000, "xp": 20, "coins": 10},
+        {"id": "B", "label": "Attend as audience only", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Skip it", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-168", "category": "emergency", "subcategory": "car", "title": "Car Accident (Minor)",
+      "description": "Fender bender in a parking lot. Some damage to fix.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "File insurance claim", "cost": 10000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Pay out of pocket for repair", "cost": 25000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Live with cosmetic damage", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-169", "category": "emergency", "subcategory": "weather", "title": "Storm Damage",
+      "description": "A bad storm damaged some of your belongings.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Replace everything new", "cost": 30000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "File renter's insurance claim", "cost": 5000, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Replace only essentials", "cost": 10000, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-170", "category": "emergency", "subcategory": "identity", "title": "Identity Theft Scare",
+      "description": "You got an alert about suspicious activity on your accounts.",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Subscribe to identity protection service", "cost": 15000, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Freeze credit and monitor yourself", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Change passwords and hope for the best", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-171", "category": "shopping", "subcategory": "tech", "title": "Tablet or E-Reader",
+      "description": "You've been thinking about getting a tablet for reading and browsing.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 7], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium tablet", "cost": 40000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Basic e-reader", "cost": 8000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Use your phone", "cost": 0, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-172", "category": "shopping", "subcategory": "fashion", "title": "Sneaker Drop",
+      "description": "Limited edition sneakers just dropped.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 5], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Buy at retail price", "cost": 18000, "xp": 3, "coins": 1},
+        {"id": "B", "label": "Wait for restocks or alternatives", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Not worth the hype", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-173", "category": "food", "subcategory": "treat", "title": "Fancy Coffee Machine",
+      "description": "You could save money long-term with a good coffee machine.",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium espresso machine", "cost": 30000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Basic drip coffee maker", "cost": 3000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Stick with instant coffee", "cost": 500, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-174", "category": "health", "subcategory": "wellness", "title": "Spa Day Temptation",
+      "description": "You've been working hard. A spa day sounds amazing.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Full spa package", "cost": 15000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Just a massage", "cost": 6000, "xp": 8, "coins": 4},
+        {"id": "C", "label": "DIY self-care at home", "cost": 1000, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-175", "category": "finance", "subcategory": "banking", "title": "Bank Fee Frustration",
+      "description": "Your bank charged unexpected maintenance fees.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 6], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Call and contest the fee", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Switch to a no-fee bank", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Just pay it", "cost": 2000, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-176", "category": "social", "subcategory": "peer_pressure", "title": "Expensive Group Activity",
+      "description": "Friends want to go skiing. It's pricey.",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 7], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Go all in", "cost": 25000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Suggest a cheaper alternative", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Sit this one out", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-177", "category": "housing", "subcategory": "insurance", "title": "Renter's Insurance",
+      "description": "Your landlord recommends renter's insurance.",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 6], "frequencyWeight": 1, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Comprehensive policy", "cost": 3000, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Basic coverage", "cost": 1500, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Skip it", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-178", "category": "transport", "subcategory": "registration", "title": "Vehicle Registration Due",
+      "description": "Your vehicle registration is expiring.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Renew immediately online", "cost": 10000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Wait till last minute", "cost": 10000, "xp": 5, "coins": 2},
+        {"id": "C", "label": "Risk driving unregistered (bad idea)", "cost": 0, "xp": 2, "coins": 0}
+      ]
+    },
+    {
+      "id": "DC-179", "category": "career", "subcategory": "education", "title": "MBA Program Consideration",
+      "description": "An MBA could boost your career but it's expensive.",
+      "personaTags": ["young_adult"], "levelRange": [5, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Apply for full-time MBA", "cost": 100000, "xp": 25, "coins": 12},
+        {"id": "B", "label": "Part-time evening MBA", "cost": 50000, "xp": 18, "coins": 8},
+        {"id": "C", "label": "Focus on work experience instead", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-180", "category": "emergency", "subcategory": "plumbing", "title": "Burst Pipe Emergency",
+      "description": "A pipe burst in your home causing water damage.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Emergency plumber (24/7 rates)", "cost": 25000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Shut off water, fix tomorrow", "cost": 12000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Call landlord (if renting)", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-181", "category": "shopping", "subcategory": "second_hand", "title": "Thrift Store Haul",
+      "description": "A huge thrift store sale is happening.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 6], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Browse and buy lots", "cost": 5000, "xp": 8, "coins": 4},
+        {"id": "B", "label": "Just look for one specific item", "cost": 1500, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Don't need anything", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-182", "category": "food", "subcategory": "eating_out", "title": "Food Truck Festival",
+      "description": "A food truck festival is in town!",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Try multiple trucks", "cost": 4000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "One meal only", "cost": 1500, "xp": 8, "coins": 4},
+        {"id": "C", "label": "Eat before going (just enjoy the vibe)", "cost": 0, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-183", "category": "education", "subcategory": "language", "title": "Language Learning App",
+      "description": "You want to learn a new language.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium app subscription ($100/yr)", "cost": 10000, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Free app with ads", "cost": 0, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Free YouTube lessons", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-184", "category": "finance", "subcategory": "crypto", "title": "Crypto Buzz",
+      "description": "Everyone's talking about a new cryptocurrency.",
+      "personaTags": ["student", "young_adult"], "levelRange": [4, 8], "frequencyWeight": 2, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Invest significantly", "cost": 30000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Small amount you can afford to lose", "cost": 5000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Stay away from crypto", "cost": 0, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-185", "category": "housing", "subcategory": "furniture", "title": "IKEA Run",
+      "description": "You need some basic furniture items.",
+      "personaTags": ["student", "young_adult"], "levelRange": [1, 6], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Full room makeover", "cost": 20000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Just the essentials", "cost": 5000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Check Facebook Marketplace first", "cost": 2000, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-186", "category": "career", "subcategory": "mentorship", "title": "Mentorship Program",
+      "description": "A senior colleague offers to mentor you.",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 6], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Accept and commit fully", "cost": 0, "xp": 18, "coins": 8},
+        {"id": "B", "label": "Casual coffee chats occasionally", "cost": 500, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Too busy right now", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-187", "category": "health", "subcategory": "prescription", "title": "Prescription Costs",
+      "description": "You need a prescription filled. Brand vs generic?",
+      "personaTags": ["young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Brand name", "cost": 8000, "xp": 3, "coins": 1},
+        {"id": "B", "label": "Generic equivalent", "cost": 2000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Shop around pharmacies", "cost": 1500, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-188", "category": "social", "subcategory": "community", "title": "Neighborhood Volunteer Day",
+      "description": "Your neighborhood is organizing a community clean-up.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Volunteer and bring supplies", "cost": 2000, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Just show up and help", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Can't make it", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-189", "category": "emergency", "subcategory": "tech", "title": "Laptop Screen Cracked",
+      "description": "You dropped your laptop and cracked the screen.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 7], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Official repair service", "cost": 25000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Third-party repair shop", "cost": 10000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Use external monitor for now", "cost": 5000, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-190", "category": "shopping", "subcategory": "beauty", "title": "Skincare Products",
+      "description": "Your skincare routine needs an update.",
+      "personaTags": ["teen", "student", "young_adult"], "levelRange": [1, 7], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium brand set", "cost": 10000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Drugstore alternatives", "cost": 2500, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Minimal routine only", "cost": 500, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-191", "category": "finance", "subcategory": "budgeting", "title": "Budgeting App Subscription",
+      "description": "A popular budgeting app could help you track spending.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Premium plan ($8/mo)", "cost": 800, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Free tier", "cost": 0, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Spreadsheet it yourself", "cost": 0, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-192", "category": "social", "subcategory": "graduation", "title": "Graduation Expenses",
+      "description": "Graduation is coming with cap, gown, photos, and celebration.",
+      "personaTags": ["teen", "student"], "levelRange": [1, 4], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Full package (photos, party, outfit)", "cost": 20000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Just the essentials", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Low-key celebration", "cost": 1500, "xp": 15, "coins": 8}
+      ]
+    },
+    {
+      "id": "DC-193", "category": "housing", "subcategory": "energy", "title": "Energy Efficiency Upgrades",
+      "description": "LED bulbs and smart thermostat could save on bills.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Full smart home energy kit", "cost": 15000, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Just LED bulbs", "cost": 2000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Not worth the upfront cost", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-194", "category": "career", "subcategory": "interview", "title": "Interview Outfit",
+      "description": "You have a big interview. Need to look sharp.",
+      "personaTags": ["student", "young_adult"], "levelRange": [2, 6], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "New professional outfit", "cost": 15000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Borrow from a friend", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Wear your best existing clothes", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-195", "category": "emergency", "subcategory": "legal", "title": "Legal Issue",
+      "description": "A minor legal issue requires attention. Maybe a lawyer?",
+      "personaTags": ["young_adult", "parent"], "levelRange": [4, 8], "frequencyWeight": 1, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Hire a lawyer", "cost": 30000, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Legal aid / free consultation", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Handle it yourself", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-196", "category": "shopping", "subcategory": "home", "title": "Mattress Replacement",
+      "description": "Your mattress is old and your back hurts.",
+      "personaTags": ["student", "young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Premium memory foam", "cost": 80000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Mid-range bed-in-a-box", "cost": 30000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "Mattress topper", "cost": 5000, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-197", "category": "food", "subcategory": "special_diet", "title": "Organic vs Conventional",
+      "description": "You're debating whether to switch to all organic groceries.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Go fully organic", "cost": 8000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "Dirty dozen organic, rest conventional", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Conventional is fine", "cost": 3000, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-198", "category": "finance", "subcategory": "insurance", "title": "Life Insurance Consideration",
+      "description": "You're thinking about getting life insurance.",
+      "personaTags": ["parent"], "levelRange": [5, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Whole life policy", "cost": 15000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Term life (much cheaper)", "cost": 5000, "xp": 15, "coins": 8},
+        {"id": "C", "label": "Research more first", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-199", "category": "social", "subcategory": "family", "title": "Family Reunion Planning",
+      "description": "Your family is planning a reunion. Everyone's chipping in.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Contribute generously + travel", "cost": 25000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Basic contribution", "cost": 8000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Can't attend, send a message", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-200", "category": "career", "subcategory": "workspace", "title": "Home Office Setup",
+      "description": "Working from home means you need a proper workspace.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [3, 8], "frequencyWeight": 2, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Ergonomic desk + chair + monitor", "cost": 50000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Basic desk setup", "cost": 15000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Work from the couch/kitchen", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-201", "category": "teen", "subcategory": "school", "title": "School Dance",
+      "description": "The school dance is coming up!",
+      "personaTags": ["teen"], "levelRange": [1, 3], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "New outfit + tickets + dinner", "cost": 10000, "xp": 5, "coins": 2},
+        {"id": "B", "label": "Just tickets, wear what you have", "cost": 2000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Skip it", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-202", "category": "teen", "subcategory": "part_time", "title": "Part-Time Job Offer",
+      "description": "A local shop offers you a part-time job on weekends.",
+      "personaTags": ["teen"], "levelRange": [1, 3], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Accept — earn extra money", "cost": 0, "xp": 18, "coins": 10},
+        {"id": "B", "label": "Negotiate fewer hours", "cost": 0, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Focus on school", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-203", "category": "teen", "subcategory": "saving", "title": "Save for New Console",
+      "description": "A new gaming console is out. You need to save up.",
+      "personaTags": ["teen"], "levelRange": [1, 3], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Start a savings plan", "cost": 0, "xp": 15, "coins": 8},
+        {"id": "B", "label": "Ask parents to help", "cost": 0, "xp": 5, "coins": 2},
+        {"id": "C", "label": "It can wait", "cost": 0, "xp": 8, "coins": 3}
+      ]
+    },
+    {
+      "id": "DC-204", "category": "parent", "subcategory": "childcare", "title": "Childcare Options",
+      "description": "You need to find childcare while you work.",
+      "personaTags": ["parent"], "levelRange": [4, 8], "frequencyWeight": 2, "stakeLevel": "high",
+      "options": [
+        {"id": "A", "label": "Premium daycare center", "cost": 100000, "xp": 8, "coins": 3},
+        {"id": "B", "label": "In-home daycare", "cost": 60000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Family member helps out", "cost": 10000, "xp": 10, "coins": 5}
+      ]
+    },
+    {
+      "id": "DC-205", "category": "parent", "subcategory": "school", "title": "Kid's Extracurricular",
+      "description": "Your child wants to join soccer/dance/music classes.",
+      "personaTags": ["parent"], "levelRange": [4, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Sign up with full gear", "cost": 15000, "xp": 10, "coins": 5},
+        {"id": "B", "label": "Budget option (community program)", "cost": 3000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Maybe next semester", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    },
+    {
+      "id": "DC-206", "category": "parent", "subcategory": "education", "title": "529 College Savings Plan",
+      "description": "It's never too early to save for college.",
+      "personaTags": ["parent"], "levelRange": [5, 8], "frequencyWeight": 1, "stakeLevel": "medium",
+      "options": [
+        {"id": "A", "label": "Start with $200/month", "cost": 20000, "xp": 18, "coins": 10},
+        {"id": "B", "label": "Start with $50/month", "cost": 5000, "xp": 12, "coins": 6},
+        {"id": "C", "label": "Deal with it later", "cost": 0, "xp": 3, "coins": 1}
+      ]
+    },
+    {
+      "id": "DC-207", "category": "entertainment", "subcategory": "streaming", "title": "New Streaming Service",
+      "description": "Yet another streaming service launched with must-watch content.",
+      "personaTags": ["teen", "student", "young_adult", "parent"], "levelRange": [1, 8], "frequencyWeight": 3, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Subscribe immediately", "cost": 1500, "xp": 3, "coins": 1},
+        {"id": "B", "label": "Wait for free trial", "cost": 0, "xp": 10, "coins": 5},
+        {"id": "C", "label": "You have enough subscriptions", "cost": 0, "xp": 12, "coins": 6}
+      ]
+    },
+    {
+      "id": "DC-208", "category": "housing", "subcategory": "garden", "title": "Start a Garden",
+      "description": "Growing your own herbs and veggies could save money.",
+      "personaTags": ["young_adult", "parent"], "levelRange": [2, 8], "frequencyWeight": 2, "stakeLevel": "low",
+      "options": [
+        {"id": "A", "label": "Full garden setup (raised beds, tools)", "cost": 10000, "xp": 12, "coins": 6},
+        {"id": "B", "label": "Window box herbs", "cost": 2000, "xp": 10, "coins": 5},
+        {"id": "C", "label": "No green thumb here", "cost": 0, "xp": 5, "coins": 2}
+      ]
+    }
+  ]
+}

@@ -604,7 +604,7 @@ export async function processAction(
         success: true,
         newState: {},
         events,
-        rewards: coinsAwarded > 0 ? [{ type: 'coins', amount: coinsAwarded }] : [],
+        rewards: coinsAwarded > 0 ? [{ type: 'coins' as const, amount: coinsAwarded, reason: `card decision` }] : [],
       };
 
     } else if (action.type === 'transfer') {
