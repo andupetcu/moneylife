@@ -17,11 +17,13 @@ import {
   type ScenarioEntry,
   type ScenarioData,
 } from '@moneylife/simulation-engine';
+import { getAllLevels, getLevelConfig, getDifficultyConfig, getRegionConfig } from '@moneylife/config';
+import type { DifficultyConfig, RegionConfig, LevelConfig } from '@moneylife/config';
 import type { GameRow } from '../models/game.js';
 import { findAccountsByGameId, type AccountRow } from '../models/account.js';
 import { buildGameState } from './game-state.js';
 
-// ---------- levels config (inlined from packages/config) ----------
+// ---------- levels config (from @moneylife/config) ----------
 
 interface LevelDef {
   level: number;
@@ -30,16 +32,12 @@ interface LevelDef {
   coinBonus: number;
 }
 
-const LEVELS: LevelDef[] = [
-  { level: 1, cumulativeXp: 500, xpBonus: 250, coinBonus: 100 },
-  { level: 2, cumulativeXp: 2000, xpBonus: 500, coinBonus: 200 },
-  { level: 3, cumulativeXp: 5000, xpBonus: 750, coinBonus: 300 },
-  { level: 4, cumulativeXp: 10000, xpBonus: 1000, coinBonus: 400 },
-  { level: 5, cumulativeXp: 18000, xpBonus: 1250, coinBonus: 500 },
-  { level: 6, cumulativeXp: 30000, xpBonus: 1500, coinBonus: 600 },
-  { level: 7, cumulativeXp: 48000, xpBonus: 1750, coinBonus: 700 },
-  { level: 8, cumulativeXp: 73000, xpBonus: 2000, coinBonus: 800 },
-];
+const LEVELS: LevelDef[] = getAllLevels().map(l => ({
+  level: l.level,
+  cumulativeXp: l.cumulativeXp,
+  xpBonus: l.xpBonus,
+  coinBonus: l.coinBonus,
+}));
 
 // ---------- helpers ----------
 
@@ -53,10 +51,12 @@ async function awardXp(
   amount: number,
   reason: string,
   currentDate: string,
+  xpMultiplier: number = 1.0,
 ): Promise<{ leveledUp: boolean; newLevel: number; newXp: number }> {
+  const scaledAmount = Math.round(amount * xpMultiplier);
   const res = await client.query(
     'UPDATE games SET total_xp = total_xp + $1, updated_at = NOW() WHERE id = $2 RETURNING total_xp, current_level',
-    [amount, gameId],
+    [scaledAmount, gameId],
   );
   let totalXp: number = res.rows[0].total_xp;
   let currentLevel: number = res.rows[0].current_level;
@@ -183,6 +183,9 @@ async function processMonthEnd(
   let incomeTotal = 0;
   let expenseTotal = 0;
 
+  const difficultyConfig = getDifficultyConfig(game.difficulty);
+  const regionConfig = getRegionConfig(game.region);
+
   // 1. Deposit salary
   const checking = await getCheckingAccount(client, gameId);
   if (checking) {
@@ -213,15 +216,16 @@ async function processMonthEnd(
     }
   }
 
-  // 3. Savings interest
+  // 3. Savings interest (use difficulty-configured APY, fallback to region, then account rate)
   const savingsAccounts = await client.query(
     "SELECT * FROM game_accounts WHERE game_id = $1 AND type = 'savings' AND status = 'active'",
     [gameId],
   );
   let savingsChange = 0;
+  const effectiveSavingsAPY = difficultyConfig.savingsAPY ?? regionConfig.interestRates.savingsAPY;
   for (const sa of savingsAccounts.rows) {
     const balance = parseInt(sa.balance, 10);
-    const rate = parseFloat(sa.interest_rate);
+    const rate = effectiveSavingsAPY || parseFloat(sa.interest_rate);
     if (balance > 0 && rate > 0) {
       const interest = calculateSavingsInterest(balance, rate);
       if (interest > 0) {
@@ -233,18 +237,19 @@ async function processMonthEnd(
     }
   }
 
-  // 4. Credit card interest
+  // 4. Credit card interest (use difficulty-configured APR, fallback to region, then account rate)
   const ccAccounts = await client.query(
     "SELECT * FROM game_accounts WHERE game_id = $1 AND type = 'credit_card' AND status = 'active'",
     [gameId],
   );
   let debtChange = 0;
+  const effectiveCreditCardAPR = difficultyConfig.creditCardAPR ?? regionConfig.interestRates.creditCardAPR;
   for (const cc of ccAccounts.rows) {
     const balance = parseInt(cc.balance, 10);
     // Credit card balance is negative (money owed)
     const outstanding = Math.abs(Math.min(0, balance));
     if (outstanding > 0) {
-      const rate = parseFloat(cc.interest_rate);
+      const rate = effectiveCreditCardAPR || parseFloat(cc.interest_rate);
       const daysInCycle = daysInMonth(currentDate.year, currentDate.month);
       const interest = calculateMonthlyCreditCardInterest(outstanding, rate, daysInCycle);
       if (interest > 0) {
@@ -330,8 +335,8 @@ async function processMonthEnd(
     ],
   );
 
-  // 10. Month-end XP bonus
-  await awardXp(client, gameId, 50, 'month-end bonus', dateStr);
+  // 10. Month-end XP bonus (scaled by difficulty xpMultiplier)
+  await awardXp(client, gameId, 50, 'month-end bonus', dateStr, difficultyConfig.xpMultiplier);
 
   events.push({
     type: 'month_end_processed',
@@ -451,6 +456,9 @@ export async function processAction(
     const gameState = buildGameState(game, accounts);
     const currentDate = gameState.currentDate;
 
+    const diffConfig = getDifficultyConfig(game.difficulty);
+    const regionCfg = getRegionConfig(game.region);
+
     if (action.type === 'advance_day') {
       // Check for unresolved pending cards
       const pendingCards = await client.query(
@@ -483,8 +491,8 @@ export async function processAction(
       // Generate daily decision cards
       await generateDailyCards(client, game, nextDate);
 
-      // Award daily XP (10 base)
-      const xpResult = await awardXp(client, game.id, 10, 'daily advance', dateStr);
+      // Award daily XP (10 base, scaled by difficulty xpMultiplier)
+      const xpResult = await awardXp(client, game.id, 10, 'daily advance', dateStr, diffConfig.xpMultiplier);
 
       await client.query(
         'UPDATE games SET current_game_date = $1, state_version = state_version + 1, updated_at = NOW() WHERE id = $2',
@@ -564,9 +572,9 @@ export async function processAction(
         [optionId, xpAwarded, coinsAwarded, cardId],
       );
 
-      // Award XP and coins
+      // Award XP and coins (scaled by difficulty xpMultiplier)
       if (xpAwarded > 0) {
-        await awardXp(client, game.id, xpAwarded, `card decision: ${pendingCard.title}`, dateStr);
+        await awardXp(client, game.id, xpAwarded, `card decision: ${pendingCard.title}`, dateStr, diffConfig.xpMultiplier);
       }
       if (coinsAwarded > 0) {
         await client.query('UPDATE games SET total_coins = total_coins + $1 WHERE id = $2', [coinsAwarded, game.id]);
@@ -682,12 +690,12 @@ export async function processAction(
       let termMonths: number | null = null;
 
       if (accountType === 'savings') {
-        interestRate = 0.025;
+        interestRate = regionCfg.interestRates.savingsAPY;
       } else if (accountType === 'credit_card') {
-        interestRate = 0.219;
+        interestRate = diffConfig.creditCardAPR ?? regionCfg.interestRates.creditCardAPR;
         creditLimit = action.payload.creditLimit as number ?? 500000;
       } else if (accountType.includes('loan') || accountType === 'mortgage') {
-        interestRate = action.payload.interestRate as number ?? 0.065;
+        interestRate = action.payload.interestRate as number ?? regionCfg.interestRates.autoLoanAPR.good;
         principal = action.payload.principal as number ?? 0;
         termMonths = action.payload.termMonths as number ?? 60;
       }

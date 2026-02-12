@@ -6,6 +6,7 @@ import { GameplayError } from '@moneylife/shared-types';
 import { createTransferTransaction, type AccountBalance } from './ledger.js';
 import { addDays } from './time-engine.js';
 import { randomInt, type ScenarioEntry } from './scenarios.js';
+import { getLevelConfig } from '@moneylife/config';
 
 export interface ScenarioOption {
   id: string;
@@ -108,27 +109,15 @@ export function processCardDecision(
 }
 
 /**
- * Determine the number of cards for a given level.
+ * Determine the number of cards for a given level using config.
  */
 export function getCardsPerDay(
   level: number,
   rng: () => number,
 ): number {
-  // Based on the level card count table from the docs
-  const config: Record<number, { base: number; bonusChance: number }> = {
-    1: { base: 1, bonusChance: 0 },
-    2: { base: 1, bonusChance: 0.2 },
-    3: { base: 2, bonusChance: 0.1 },
-    4: { base: 2, bonusChance: 0.2 },
-    5: { base: 2, bonusChance: 0.3 },
-    6: { base: 2, bonusChance: 0.4 },
-    7: { base: 3, bonusChance: 0.1 },
-    8: { base: 3, bonusChance: 0.2 },
-  };
-
-  const cfg = config[level] ?? config[8];
-  let count = cfg.base;
-  if (rng() < cfg.bonusChance) {
+  const levelConfig = getLevelConfig(level);
+  let count = levelConfig.cardsPerDay.min;
+  if (levelConfig.cardsPerDay.max > levelConfig.cardsPerDay.min && rng() < levelConfig.bonusCardChance) {
     count += 1;
   }
   return count;

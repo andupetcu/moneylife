@@ -3,34 +3,7 @@ import { Pool } from 'pg';
 import { createGameSchema } from '../validators.js';
 import { findGameById } from '../models/game.js';
 import { findAccountsByGameId } from '../models/account.js';
-
-const PERSONA_DEFAULTS: Record<string, { cash: number; income: number; accounts: Array<{ type: string; name: string; balance: number; rate: number }> }> = {
-  teen: {
-    cash: 5000, income: 10000,
-    accounts: [{ type: 'savings', name: 'Savings', balance: 5000, rate: 0.025 }],
-  },
-  student: {
-    cash: 50000, income: 80000,
-    accounts: [
-      { type: 'checking', name: 'Checking', balance: 50000, rate: 0.0001 },
-      { type: 'savings', name: 'Savings', balance: 0, rate: 0.025 },
-    ],
-  },
-  young_adult: {
-    cash: 200000, income: 350000,
-    accounts: [
-      { type: 'checking', name: 'Checking', balance: 200000, rate: 0.0001 },
-      { type: 'savings', name: 'Savings', balance: 50000, rate: 0.025 },
-    ],
-  },
-  parent: {
-    cash: 800000, income: 450000,
-    accounts: [
-      { type: 'checking', name: 'Checking', balance: 800000, rate: 0.0001 },
-      { type: 'savings', name: 'Savings', balance: 300000, rate: 0.025 },
-    ],
-  },
-};
+import { getPersonaConfig, getDifficultyConfig, getRegionConfig } from '@moneylife/config';
 
 export function listGamesController(pool: Pool) {
   return async (req: Request, res: Response): Promise<void> => {
@@ -67,7 +40,26 @@ export function createGameController(pool: Pool) {
     }
 
     const { persona, difficulty, currencyCode, region } = parsed.data;
-    const defaults = PERSONA_DEFAULTS[persona] ?? PERSONA_DEFAULTS.young_adult;
+    const personaConfig = getPersonaConfig(persona);
+    const difficultyConfig = getDifficultyConfig(difficulty);
+    const regionConfig = getRegionConfig(region);
+
+    // Apply difficulty starting cash bonus to persona's starting cash
+    const startingCash = Math.round(personaConfig.startingCash * (1 + difficultyConfig.startingCashBonus));
+
+    // Build accounts list from persona config, using region interest rates
+    const startingAccounts: Array<{ type: string; name: string; balance: number; rate: number }> = [];
+    if (personaConfig.availableAccountsAtStart.includes('checking')) {
+      startingAccounts.push({ type: 'checking', name: 'Checking', balance: startingCash, rate: regionConfig.interestRates.checkingAPY });
+    }
+    if (personaConfig.availableAccountsAtStart.includes('savings')) {
+      // Savings starts at 0 unless there's no checking (teen), in which case cash goes here
+      const savingsBalance = startingAccounts.length === 0 ? startingCash : 0;
+      startingAccounts.push({ type: 'savings', name: 'Savings', balance: savingsBalance, rate: regionConfig.interestRates.savingsAPY });
+    }
+    if (personaConfig.availableAccountsAtStart.includes('credit_card')) {
+      startingAccounts.push({ type: 'credit_card', name: 'Credit Card', balance: 0, rate: difficultyConfig.creditCardAPR ?? regionConfig.interestRates.creditCardAPR });
+    }
 
     try {
       const client = await pool.connect();
@@ -85,14 +77,14 @@ export function createGameController(pool: Pool) {
           [
             req.userId, req.partnerId ?? null, persona, difficulty, region, currencyCode,
             gameDate, 1, 0, 0, 60, 650, 70, 80, 30, 30, 100, 50,
-            defaults.cash, defaults.income,
+            startingCash, personaConfig.monthlyIncome,
             Math.floor(Math.random() * 2147483647), 'active',
           ],
         );
 
         const game = gameResult.rows[0];
 
-        for (const acct of defaults.accounts) {
+        for (const acct of startingAccounts) {
           await client.query(
             `INSERT INTO game_accounts (game_id, type, name, balance, interest_rate, opened_game_date, status)
              VALUES ($1, $2, $3, $4, $5, $6, 'active')`,
@@ -100,47 +92,13 @@ export function createGameController(pool: Pool) {
           );
         }
 
-        // Create scheduled bills based on persona
-        const PERSONA_BILLS: Record<string, Array<{ name: string; amount: number; category: string; frequency: string }>> = {
-          teen: [
-            { name: 'Phone Plan', amount: 3000, category: 'phone', frequency: 'monthly' },
-            { name: 'Streaming', amount: 1500, category: 'subscription', frequency: 'monthly' },
-          ],
-          student: [
-            { name: 'Phone Plan', amount: 4000, category: 'phone', frequency: 'monthly' },
-            { name: 'Streaming', amount: 1500, category: 'subscription', frequency: 'monthly' },
-            { name: 'Textbooks', amount: 10000, category: 'education', frequency: 'quarterly' },
-          ],
-          young_adult: [
-            { name: 'Rent', amount: 120000, category: 'housing', frequency: 'monthly' },
-            { name: 'Phone Plan', amount: 5000, category: 'phone', frequency: 'monthly' },
-            { name: 'Streaming', amount: 1500, category: 'subscription', frequency: 'monthly' },
-            { name: 'Utilities', amount: 12000, category: 'utilities', frequency: 'monthly' },
-            { name: 'Internet', amount: 6000, category: 'utilities', frequency: 'monthly' },
-            { name: 'Gym', amount: 4000, category: 'health', frequency: 'monthly' },
-          ],
-          parent: [
-            { name: 'Rent/Mortgage', amount: 180000, category: 'housing', frequency: 'monthly' },
-            { name: 'Phone Plan', amount: 8000, category: 'phone', frequency: 'monthly' },
-            { name: 'Streaming', amount: 2500, category: 'subscription', frequency: 'monthly' },
-            { name: 'Utilities', amount: 20000, category: 'utilities', frequency: 'monthly' },
-            { name: 'Internet', amount: 6000, category: 'utilities', frequency: 'monthly' },
-            { name: 'Insurance', amount: 15000, category: 'insurance', frequency: 'monthly' },
-            { name: 'Daycare', amount: 80000, category: 'childcare', frequency: 'monthly' },
-          ],
-        };
-
-        const bills = PERSONA_BILLS[persona] ?? [];
+        // Create scheduled bills from persona config
+        const bills = personaConfig.startingBills;
         for (const bill of bills) {
-          // Set next due date based on frequency (first due on Feb 1 for monthly)
-          let nextDue = '2026-02-01';
-          if (bill.frequency === 'quarterly') nextDue = '2026-04-01';
-          if (bill.frequency === 'annually') nextDue = '2027-01-01';
-
           await client.query(
             `INSERT INTO scheduled_bills (game_id, name, amount, category, frequency, next_due_date, auto_pay, is_active)
              VALUES ($1, $2, $3, $4, $5, $6, false, true)`,
-            [game.id, bill.name, bill.amount, bill.category, bill.frequency, nextDue],
+            [game.id, bill.name, bill.amount, bill.category, 'monthly', '2026-02-01'],
           );
         }
 
