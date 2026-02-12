@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   // Enable react-native-web transpilation
   transpilePackages: [
     'react-native',
