@@ -188,6 +188,65 @@ function normalizeGame(raw: Record<string, unknown>): GameResponse {
   };
 }
 
+// ─── Social types ───────────────────────────────────────────────
+
+export interface Friend {
+  friendshipId: string;
+  userId: string;
+  displayName: string;
+  email: string;
+  friendsSince: string;
+  level: number;
+  xp: number;
+  netWorth: number;
+}
+
+export interface FriendRequest {
+  id: string;
+  fromUserId: string;
+  displayName: string;
+  email: string;
+  createdAt: string;
+}
+
+export interface SearchUser {
+  id: string;
+  displayName: string;
+  email: string;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  displayName: string;
+  level: number;
+  xp: number;
+  netWorth: number;
+  isMe?: boolean;
+}
+
+export interface Classroom {
+  id: string;
+  name: string;
+  joinCode?: string;
+  description: string;
+  teacherName?: string;
+  isTeacher?: boolean;
+  status: string;
+  memberCount?: number;
+  createdAt: string;
+  role?: string;
+  members?: ClassroomMember[];
+}
+
+export interface ClassroomMember {
+  userId: string;
+  displayName: string;
+  level: number;
+  xp: number;
+  netWorth: number;
+}
+
 export const api = {
   auth: {
     register: (email: string, password: string, displayName: string) =>
@@ -243,5 +302,39 @@ export const api = {
       if (!res.ok && res.error?.includes('404')) return { ok: true, data: [] };
       return res;
     },
+  },
+  social: {
+    // Friends
+    sendFriendRequest: (targetUserId: string) =>
+      request('/api/game/friends/request', { method: 'POST', body: JSON.stringify({ targetUserId }) }),
+    acceptFriendRequest: (requestId: string) =>
+      request(`/api/game/friends/accept/${requestId}`, { method: 'POST' }),
+    rejectFriendRequest: (requestId: string) =>
+      request(`/api/game/friends/reject/${requestId}`, { method: 'POST' }),
+    removeFriend: (friendshipId: string) =>
+      request(`/api/game/friends/${friendshipId}`, { method: 'DELETE' }),
+    listFriends: () => request<{ friends: Friend[] }>('/api/game/friends'),
+    listFriendRequests: () => request<{ requests: FriendRequest[] }>('/api/game/friends/requests'),
+    searchUsers: (q: string) => request<{ users: SearchUser[] }>(`/api/game/friends/search?q=${encodeURIComponent(q)}`),
+
+    // Leaderboard
+    globalLeaderboard: (limit = 50, offset = 0) =>
+      request<{ entries: LeaderboardEntry[]; total: number }>(`/api/game/leaderboard/global?limit=${limit}&offset=${offset}`),
+    friendsLeaderboard: () =>
+      request<{ entries: LeaderboardEntry[] }>('/api/game/leaderboard/friends'),
+    levelLeaderboard: (limit = 50, offset = 0) =>
+      request<{ entries: LeaderboardEntry[] }>(`/api/game/leaderboard/level?limit=${limit}&offset=${offset}`),
+
+    // Classrooms
+    createClassroom: (name: string, description: string) =>
+      request<Classroom>('/api/game/classrooms', { method: 'POST', body: JSON.stringify({ name, description }) }),
+    joinClassroom: (joinCode: string) =>
+      request<{ success: boolean; classroomId: string }>(`/api/game/classrooms/join`, { method: 'POST', body: JSON.stringify({ joinCode }) }),
+    listClassrooms: () =>
+      request<{ teaching: Classroom[]; enrolled: Classroom[] }>('/api/game/classrooms'),
+    getClassroom: (id: string) =>
+      request<Classroom>(`/api/game/classrooms/${id}`),
+    classroomLeaderboard: (id: string) =>
+      request<{ entries: LeaderboardEntry[] }>(`/api/game/classrooms/${id}/leaderboard`),
   },
 };

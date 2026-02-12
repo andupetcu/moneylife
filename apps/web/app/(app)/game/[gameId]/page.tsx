@@ -311,8 +311,8 @@ export default function GamePage(): React.ReactElement {
         {[
           { key: 'dashboard', icon: '🏠', label: 'Dashboard', href: `/game/${gameId}` },
           { key: 'budget', icon: '📊', label: 'Budget', href: `/game/${gameId}/budget` },
-          { key: 'rewards', icon: '🏆', label: 'Rewards', href: `/game/${gameId}/rewards` },
-          { key: 'bills', icon: '📬', label: 'Bills', href: `/game/${gameId}` },
+          { key: 'social', icon: '👥', label: 'Social', href: '/social' },
+          { key: 'leaderboard', icon: '🏆', label: 'Ranks', href: '/leaderboard' },
         ].map(tab => (
           <Link
             key={tab.key}
