@@ -1,0 +1,2 @@
+# This file should be at Dockerfile.api but Coolify can't select it via API.
+# Workaround: copy this to Dockerfile before API deploys.
