@@ -29,6 +29,7 @@ export interface GameRow {
   inflation_cumulative: string;
   bankruptcy_count: number;
   bankruptcy_active: boolean;
+  bankruptcy_end_date: Date | null;
   state_version: string;
   random_seed: string;
   status: string;
