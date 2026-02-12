@@ -4,7 +4,7 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ThemeProvider } from '@moneylife/ui-kit';
-import '@moneylife/ui-kit/src/i18n/i18n';
+import '../src/i18n';
 
 const queryClient = new QueryClient({
   defaultOptions: {
