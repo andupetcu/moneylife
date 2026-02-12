@@ -15,17 +15,17 @@ if [ -n "$DATABASE_URL" ]; then
   echo "Migrations complete."
 fi
 
-# Start services in background
+# Start services with explicit ports (override Coolify's PORT=3000)
 echo "Starting auth service on :3001..."
-cd /app/auth && node dist/index.js &
+cd /app/auth && PORT=3001 node dist/index.js &
 AUTH_PID=$!
 
 echo "Starting game-engine on :3002..."
-cd /app/game-engine && node dist/index.js &
+cd /app/game-engine && PORT=3002 node dist/index.js &
 GAME_PID=$!
 
 # Wait for services to be ready
-sleep 2
+sleep 3
 
 # Start nginx
 echo "Starting API gateway on :3000..."
