@@ -7,6 +7,7 @@ import { getPendingCardsController } from './controllers/cards.js';
 import { getMonthlyReportController } from './controllers/monthly-report.js';
 import { getTransactionsController } from './controllers/transactions.js';
 import { getXpHistoryController, getBadgesController, getRewardsSummaryController, spendCoinsController } from './controllers/rewards.js';
+import { getAdviceController, getCardHintController, getDailySummaryController, getAIStatusController } from './controllers/ai.js';
 
 export function createRoutes(pool: Pool): Router {
   const router = Router();
@@ -27,6 +28,12 @@ export function createRoutes(pool: Pool): Router {
   router.get('/games/:id/badges', getBadgesController(pool));
   router.get('/games/:id/rewards-summary', getRewardsSummaryController(pool));
   router.post('/games/:id/spend-coins', spendCoinsController(pool));
+
+  // AI advisor endpoints
+  router.get('/games/:id/ai/status', getAIStatusController(pool));
+  router.post('/games/:id/ai/advice', getAdviceController(pool));
+  router.post('/games/:id/ai/card-hint/:cardId', getCardHintController(pool));
+  router.get('/games/:id/ai/daily-summary', getDailySummaryController(pool));
 
   // Bills endpoint
   router.get('/games/:id/bills', async (req, res) => {

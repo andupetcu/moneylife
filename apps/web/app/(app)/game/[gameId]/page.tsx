@@ -9,6 +9,7 @@ import { colors, radius, shadows } from '../../../../src/lib/design-tokens';
 import Tutorial from '../../../../src/components/Tutorial';
 import LevelUpModal from '../../../../src/components/LevelUpModal';
 import BadgeNotification from '../../../../src/components/BadgeNotification';
+import AIAdvisor from '../../../../src/components/AIAdvisor';
 
 const PERSONAS: Record<string, string> = {
   teen: '🎒', student: '🎓', young_adult: '💼', parent: '👨‍👩‍👧',
@@ -305,6 +306,9 @@ export default function GamePage(): React.ReactElement {
 
       {/* Badge notifications */}
       <BadgeNotification badges={newBadges} onClear={() => setNewBadges([])} />
+
+      {/* AI Financial Advisor */}
+      <AIAdvisor gameId={gameId} />
 
       {/* Bottom Nav */}
       <div style={s.bottomNav}>

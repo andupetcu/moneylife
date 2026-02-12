@@ -188,6 +188,30 @@ function normalizeGame(raw: Record<string, unknown>): GameResponse {
   };
 }
 
+export interface AIStatusResponse {
+  available: boolean;
+  remainingCalls: number;
+  totalCoins: number;
+  hintCost: number;
+}
+
+export interface AIAdviceResponse {
+  advice: string;
+  remainingCalls: number;
+}
+
+export interface AICardHintResponse {
+  hint: string;
+  cost: number;
+  remainingCoins: number;
+  remainingCalls: number;
+}
+
+export interface AIDailySummaryResponse {
+  summary: string;
+  remainingCalls: number;
+}
+
 export const api = {
   auth: {
     register: (email: string, password: string, displayName: string) =>
@@ -243,5 +267,20 @@ export const api = {
       if (!res.ok && res.error?.includes('404')) return { ok: true, data: [] };
       return res;
     },
+  },
+  ai: {
+    getStatus: (gameId: string) =>
+      request<AIStatusResponse>(`/api/game/games/${gameId}/ai/status`),
+    getAdvice: (gameId: string, question?: string) =>
+      request<AIAdviceResponse>(`/api/game/games/${gameId}/ai/advice`, {
+        method: 'POST',
+        body: JSON.stringify({ question }),
+      }),
+    getCardHint: (gameId: string, cardId: string) =>
+      request<AICardHintResponse>(`/api/game/games/${gameId}/ai/card-hint/${cardId}`, {
+        method: 'POST',
+      }),
+    getDailySummary: (gameId: string) =>
+      request<AIDailySummaryResponse>(`/api/game/games/${gameId}/ai/daily-summary`),
   },
 };

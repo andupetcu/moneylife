@@ -3,8 +3,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../../src/lib/auth-context';
-import { api, type PendingCard } from '../../../../../../src/lib/api';
+import { api, type PendingCard, type GameResponse } from '../../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../../src/lib/design-tokens';
+import { CardHintButton } from '../../../../../../src/components/AIAdvisor';
 
 const CATEGORY_STYLES: Record<string, { icon: string; color: string; bg: string }> = {
   housing: { icon: '🏠', color: '#7C3AED', bg: '#F5F3FF' },
@@ -53,15 +54,22 @@ export default function CardPage(): React.ReactElement {
   const [confirmed, setConfirmed] = useState(false);
   const [outcome, setOutcome] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [totalCoins, setTotalCoins] = useState(0);
 
   const fetchCard = useCallback(async () => {
-    const res = await api.game.getCards(gameId);
-    if (res.ok && res.data) {
-      const found = res.data.find((c: PendingCard) => c.id === cardId);
+    const [cardsRes, gameRes] = await Promise.all([
+      api.game.getCards(gameId),
+      api.game.get(gameId),
+    ]);
+    if (cardsRes.ok && cardsRes.data) {
+      const found = cardsRes.data.find((c: PendingCard) => c.id === cardId);
       if (found) setCard(found);
       else setError('Card not found');
     } else {
-      setError(res.error || 'Failed to load card');
+      setError(cardsRes.error || 'Failed to load card');
+    }
+    if (gameRes.ok && gameRes.data) {
+      setTotalCoins((gameRes.data as GameResponse & { coins?: number }).coins ?? (gameRes.data as any).totalCoins ?? 0);
     }
     setLoading(false);
   }, [gameId, cardId]);
@@ -142,6 +150,9 @@ export default function CardPage(): React.ReactElement {
         <div style={s.descCard}>
           <p style={{ margin: 0, fontSize: 15, color: colors.textSecondary, lineHeight: 1.6 }}>{card.description}</p>
         </div>
+
+        {/* AI Hint Button */}
+        <CardHintButton gameId={gameId} cardId={cardId} totalCoins={totalCoins} />
 
         {/* Options */}
         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10 }}>
