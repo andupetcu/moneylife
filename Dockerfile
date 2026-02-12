@@ -2,30 +2,35 @@ FROM node:22-alpine AS builder
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 WORKDIR /app
 
-# Copy everything needed for build
 COPY . .
 RUN pnpm install --no-frozen-lockfile
 
-# Build only auth + game-engine and their deps
+# Build auth + game-engine
 RUN npx turbo build --filter=@moneylife/auth --filter=@moneylife/game-engine
+
+# Create standalone bundles with all deps resolved
+RUN mkdir -p /standalone/auth /standalone/game-engine
+
+# Auth: copy dist + install production deps standalone
+RUN cd /standalone/auth && \
+    cp /app/services/auth/package.json . && \
+    cp -r /app/services/auth/dist . && \
+    npm install --omit=dev --no-package-lock 2>/dev/null || true
+
+# Game engine: same
+RUN cd /standalone/game-engine && \
+    cp /app/services/game-engine/package.json . && \
+    cp -r /app/services/game-engine/dist . && \
+    npm install --omit=dev --no-package-lock 2>/dev/null || true
 
 FROM node:22-alpine
 RUN apk add --no-cache nginx postgresql-client
 WORKDIR /app
 
-# Copy built services with their node_modules
-COPY --from=builder /app/services/auth/dist /app/auth/dist
-COPY --from=builder /app/services/auth/node_modules /app/auth/node_modules
-COPY --from=builder /app/services/auth/package.json /app/auth/
-
-COPY --from=builder /app/services/game-engine/dist /app/game-engine/dist
-COPY --from=builder /app/services/game-engine/node_modules /app/game-engine/node_modules
-COPY --from=builder /app/services/game-engine/package.json /app/game-engine/
-
-# Copy migrations
+COPY --from=builder /standalone/auth /app/auth
+COPY --from=builder /standalone/game-engine /app/game-engine
 COPY --from=builder /app/packages/db-migrations/migrations /app/migrations
 
-# Nginx + startup
 COPY infra/docker/api-gateway.conf /etc/nginx/http.d/default.conf
 COPY infra/docker/start-api.sh /app/start-api.sh
 RUN chmod +x /app/start-api.sh
