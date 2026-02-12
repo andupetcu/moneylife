@@ -38,15 +38,16 @@ export interface Account {
   name: string;
   type: string;
   balance: number;
-  currency: string;
+  interestRate?: number;
+  isActive?: boolean;
 }
 
 export interface PendingCard {
   id: string;
-  title: string;
-  description: string;
-  category: string;
-  options: { id: string; label: string; description?: string }[];
+  cardId: string;
+  presentedDate?: string;
+  expiresDate?: string;
+  status: string;
 }
 
 export interface Transaction {
@@ -79,6 +80,41 @@ export interface GameResponse {
   pendingCards?: PendingCard[];
 }
 
+// Normalize API response fields to what the UI expects
+function normalizeGame(raw: Record<string, unknown>): GameResponse {
+  const cd = raw.currentDate as { year?: number; month?: number; day?: number } | string | undefined;
+  let dateStr: string | undefined;
+  if (cd && typeof cd === 'object') {
+    dateStr = `${cd.year}-${String(cd.month).padStart(2, '0')}-${String(cd.day).padStart(2, '0')}`;
+  } else if (typeof cd === 'string') {
+    dateStr = cd;
+  }
+
+  const chi = raw.creditHealthIndex as { overall?: number } | number | undefined;
+  const chiScore = typeof chi === 'object' && chi ? chi.overall : (typeof chi === 'number' ? chi : undefined);
+
+  return {
+    id: raw.id as string,
+    userId: raw.userId as string,
+    persona: raw.persona as string,
+    difficulty: raw.difficulty as string,
+    region: raw.region as string,
+    currency: (raw.currency || raw.currencyCode) as string,
+    level: (raw.level ?? raw.currentLevel ?? 1) as number,
+    xp: (raw.xp ?? raw.totalXp ?? 0) as number,
+    xpToNextLevel: raw.xpToNextLevel as number | undefined,
+    status: raw.status as string,
+    createdAt: raw.createdAt as string,
+    currentDate: dateStr,
+    netWorth: raw.netWorth as number | undefined,
+    monthlyIncome: raw.monthlyIncome as number | undefined,
+    budgetScore: raw.budgetScore as number | undefined,
+    creditHealthIndex: chiScore as number | undefined,
+    accounts: raw.accounts as Account[] | undefined,
+    pendingCards: raw.pendingCards as PendingCard[] | undefined,
+  };
+}
+
 export const api = {
   auth: {
     register: (email: string, password: string, displayName: string) =>
@@ -101,13 +137,19 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ persona, difficulty, region, currencyCode }),
       }),
-    get: (id: string) => request<GameResponse>(`/api/game/games/${id}`),
+    get: async (id: string): Promise<ApiResponse<GameResponse>> => {
+      const res = await request<Record<string, unknown>>(`/api/game/games/${id}`);
+      if (res.ok && res.data) {
+        return { ok: true, data: normalizeGame(res.data) };
+      }
+      return res as ApiResponse<GameResponse>;
+    },
     submitAction: (gameId: string, action: Record<string, unknown>) =>
-      request<GameResponse>(`/api/game/games/${gameId}/actions`, {
+      request(`/api/game/games/${gameId}/actions`, {
         method: 'POST',
         body: JSON.stringify(action),
       }),
-    getCards: (gameId: string) => request<PendingCard[]>(`/api/game/games/${gameId}/cards`),
-    getTransactions: (gameId: string) => request<Transaction[]>(`/api/game/games/${gameId}/transactions`),
+    getCards: (gameId: string) => request<{ cards: PendingCard[] }>(`/api/game/games/${gameId}/cards`),
+    getTransactions: (gameId: string) => request<{ transactions: Transaction[] }>(`/api/game/games/${gameId}/transactions`),
   },
 };

@@ -38,7 +38,10 @@ export default function GamePage(): React.ReactElement {
     ]);
     if (gameRes.ok && gameRes.data) setGame(gameRes.data);
     else setError(gameRes.error || 'Failed to load game');
-    if (txRes.ok && txRes.data) setTransactions(txRes.data.slice(0, 10));
+    if (txRes.ok && txRes.data) {
+      const txList = Array.isArray(txRes.data) ? txRes.data : (txRes.data as any).transactions || [];
+      setTransactions(txList.slice(0, 10));
+    }
     setLoading(false);
   }, [gameId]);
 
