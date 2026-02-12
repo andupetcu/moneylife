@@ -66,11 +66,23 @@ export interface Account {
   balance: number;
   interestRate?: number;
   isActive?: boolean;
+  currency: string;
+}
+
+export interface CardOption {
+  id: string;
+  label: string;
+  description?: string;
+  effects?: { type: string; amount?: number; label?: string }[];
 }
 
 export interface PendingCard {
   id: string;
   cardId: string;
+  title: string;
+  description: string;
+  category: string;
+  options: CardOption[];
   presentedDate?: string;
   expiresDate?: string;
   status: string;
@@ -83,6 +95,41 @@ export interface Transaction {
   amount: number;
   category: string;
   accountId: string;
+}
+
+export interface Bill {
+  id: string;
+  name: string;
+  amount: number;
+  dueDay: number;
+  category: string;
+  autopay: boolean;
+  isPaid?: boolean;
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earnedAt?: string;
+  earned: boolean;
+}
+
+export interface MonthlyReport {
+  year: number;
+  month: number;
+  totalIncome: number;
+  totalExpenses: number;
+  categoryBreakdown: Record<string, number>;
+  creditHealthIndex: number;
+  budgetAdherence: number;
+  xpEarned: number;
+  level: number;
+  xp: number;
+  xpToNextLevel: number;
+  savingsRate: number;
+  netWorthChange: number;
 }
 
 export interface GameResponse {
@@ -175,7 +222,26 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ ...action, idempotencyKey: crypto.randomUUID() }),
       }),
-    getCards: (gameId: string) => request<{ cards: PendingCard[] }>(`/api/game/games/${gameId}/cards`),
+    getCards: async (gameId: string): Promise<ApiResponse<PendingCard[]>> => {
+      const res = await request<PendingCard[] | { cards: PendingCard[] }>(`/api/game/games/${gameId}/cards`);
+      if (res.ok && res.data) {
+        const cards = Array.isArray(res.data) ? res.data : (res.data as any).cards || [];
+        return { ok: true, data: cards };
+      }
+      return res as ApiResponse<PendingCard[]>;
+    },
     getTransactions: (gameId: string) => request<{ transactions: Transaction[] }>(`/api/game/games/${gameId}/transactions`),
+    getMonthlyReport: (gameId: string, year: number, month: number) =>
+      request<MonthlyReport>(`/api/game/games/${gameId}/monthly-report/${year}/${month}`),
+    getBills: async (gameId: string): Promise<ApiResponse<Bill[]>> => {
+      const res = await request<Bill[]>(`/api/game/games/${gameId}/bills`);
+      if (!res.ok && res.error?.includes('404')) return { ok: true, data: [] };
+      return res;
+    },
+    getBadges: async (gameId: string): Promise<ApiResponse<Badge[]>> => {
+      const res = await request<Badge[]>(`/api/game/games/${gameId}/badges`);
+      if (!res.ok && res.error?.includes('404')) return { ok: true, data: [] };
+      return res;
+    },
   },
 };

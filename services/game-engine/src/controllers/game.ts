@@ -100,6 +100,50 @@ export function createGameController(pool: Pool) {
           );
         }
 
+        // Create scheduled bills based on persona
+        const PERSONA_BILLS: Record<string, Array<{ name: string; amount: number; category: string; frequency: string }>> = {
+          teen: [
+            { name: 'Phone Plan', amount: 3000, category: 'phone', frequency: 'monthly' },
+            { name: 'Streaming', amount: 1500, category: 'subscription', frequency: 'monthly' },
+          ],
+          student: [
+            { name: 'Phone Plan', amount: 4000, category: 'phone', frequency: 'monthly' },
+            { name: 'Streaming', amount: 1500, category: 'subscription', frequency: 'monthly' },
+            { name: 'Textbooks', amount: 10000, category: 'education', frequency: 'quarterly' },
+          ],
+          young_adult: [
+            { name: 'Rent', amount: 120000, category: 'housing', frequency: 'monthly' },
+            { name: 'Phone Plan', amount: 5000, category: 'phone', frequency: 'monthly' },
+            { name: 'Streaming', amount: 1500, category: 'subscription', frequency: 'monthly' },
+            { name: 'Utilities', amount: 12000, category: 'utilities', frequency: 'monthly' },
+            { name: 'Internet', amount: 6000, category: 'utilities', frequency: 'monthly' },
+            { name: 'Gym', amount: 4000, category: 'health', frequency: 'monthly' },
+          ],
+          parent: [
+            { name: 'Rent/Mortgage', amount: 180000, category: 'housing', frequency: 'monthly' },
+            { name: 'Phone Plan', amount: 8000, category: 'phone', frequency: 'monthly' },
+            { name: 'Streaming', amount: 2500, category: 'subscription', frequency: 'monthly' },
+            { name: 'Utilities', amount: 20000, category: 'utilities', frequency: 'monthly' },
+            { name: 'Internet', amount: 6000, category: 'utilities', frequency: 'monthly' },
+            { name: 'Insurance', amount: 15000, category: 'insurance', frequency: 'monthly' },
+            { name: 'Daycare', amount: 80000, category: 'childcare', frequency: 'monthly' },
+          ],
+        };
+
+        const bills = PERSONA_BILLS[persona] ?? [];
+        for (const bill of bills) {
+          // Set next due date based on frequency (first due on Feb 1 for monthly)
+          let nextDue = '2026-02-01';
+          if (bill.frequency === 'quarterly') nextDue = '2026-04-01';
+          if (bill.frequency === 'annually') nextDue = '2027-01-01';
+
+          await client.query(
+            `INSERT INTO scheduled_bills (game_id, name, amount, category, frequency, next_due_date, auto_pay, is_active)
+             VALUES ($1, $2, $3, $4, $5, $6, false, true)`,
+            [game.id, bill.name, bill.amount, bill.category, bill.frequency, nextDue],
+          );
+        }
+
         await client.query('COMMIT');
 
         const accounts = await findAccountsByGameId(pool, game.id);
