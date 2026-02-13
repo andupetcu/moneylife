@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../src/lib/auth-context';
 import { api, type GameResponse } from '../../../src/lib/api';
+import Link from 'next/link';
 import { colors, radius, shadows } from '../../../src/lib/design-tokens';
 
 const PERSONAS = [
@@ -235,23 +236,24 @@ export default function DashboardPage(): React.ReactElement {
         )}
       </div>
 
-      {/* Bottom tab nav placeholder */}
+      {/* Bottom tab nav */}
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
         background: colors.surface, borderTop: `1px solid ${colors.border}`,
-        padding: '12px 0', display: 'flex', justifyContent: 'space-around',
+        padding: '10px 0 14px', display: 'flex', justifyContent: 'space-around',
         boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
+        zIndex: 50,
       }}>
         {[
-          { icon: '🏠', label: 'Home' },
-          { icon: '📊', label: 'Stats' },
-          { icon: '🎓', label: 'Learn' },
-          { icon: '👤', label: 'Profile' },
+          { icon: '🏠', label: 'Home', href: '/dashboard', active: true },
+          { icon: '👥', label: 'Social', href: '/social' },
+          { icon: '🏆', label: 'Leaderboard', href: '/leaderboard' },
+          { icon: '🎓', label: 'Classroom', href: '/classroom' },
         ].map(tab => (
-          <div key={tab.label} style={{ textAlign: 'center', cursor: 'pointer' }}>
-            <div style={{ fontSize: 22 }}>{tab.icon}</div>
-            <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>{tab.label}</div>
-          </div>
+          <Link key={tab.label} href={tab.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, textDecoration: 'none', color: tab.active ? colors.primary : colors.textMuted }}>
+            <span style={{ fontSize: 20 }}>{tab.icon}</span>
+            <span style={{ fontSize: 11, fontWeight: tab.active ? 600 : 400 }}>{tab.label}</span>
+          </Link>
         ))}
       </div>
     </div>
