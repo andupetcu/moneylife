@@ -1,11 +1,25 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, shadows } from '../src/lib/design-tokens';
 
 /**
- * Landing page — server-rendered for SEO.
+ * Landing page
  */
 export default function LandingPage(): React.ReactElement {
+  const { t } = useTranslation();
+
+  const features = [
+    { icon: '📊', title: t('landing.realisticSim'), desc: t('landing.realisticSimDesc') },
+    { icon: '🎯', title: t('landing.decisionCards'), desc: t('landing.decisionCardsDesc') },
+    { icon: '🏆', title: t('landing.earnRewards'), desc: t('landing.earnRewardsDesc') },
+    { icon: '🏫', title: t('landing.classroomMode'), desc: t('landing.classroomModeDesc') },
+    { icon: '🏦', title: t('landing.mirrorMode'), desc: t('landing.mirrorModeDesc') },
+    { icon: '🌍', title: t('landing.multiCurrency'), desc: t('landing.multiCurrencyDesc') },
+  ];
+
   return (
     <main style={{ minHeight: '100vh', background: colors.background }}>
       {/* Hero */}
@@ -17,12 +31,10 @@ export default function LandingPage(): React.ReactElement {
       }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>💰</div>
-          <h1 style={{ fontSize: 52, fontWeight: 700, color: '#FFFFFF', marginBottom: 12 }}>MoneyLife</h1>
-          <p style={{ fontSize: 22, color: 'rgba(255,255,255,0.85)', marginBottom: 16 }}>Learn money by living it</p>
+          <h1 style={{ fontSize: 52, fontWeight: 700, color: '#FFFFFF', marginBottom: 12 }}>{t('appTitle')}</h1>
+          <p style={{ fontSize: 22, color: 'rgba(255,255,255,0.85)', marginBottom: 16 }}>{t('landing.tagline')}</p>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.7)', maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.7 }}>
-            A financial education game where you manage personal finances through realistic scenarios.
-            Pick a persona, navigate financial decisions, build budgets, handle emergencies, and learn
-            to make smart money decisions — all in a safe, gamified environment.
+            {t('landing.description')}
           </p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
             <Link href="/register" style={{
@@ -34,7 +46,7 @@ export default function LandingPage(): React.ReactElement {
               fontWeight: 600,
               boxShadow: shadows.elevated,
             }}>
-              Get Started Free
+              {t('landing.getStarted')}
             </Link>
             <Link href="/login" style={{
               border: '2px solid rgba(255,255,255,0.5)',
@@ -44,7 +56,7 @@ export default function LandingPage(): React.ReactElement {
               fontSize: 18,
               fontWeight: 600,
             }}>
-              Sign In
+              {t('landing.signIn')}
             </Link>
           </div>
         </div>
@@ -59,14 +71,7 @@ export default function LandingPage(): React.ReactElement {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: 20,
       }}>
-        {[
-          { icon: '📊', title: 'Realistic Simulation', desc: 'Manage checking, savings, credit cards, loans, and investments with real-world financial mechanics.' },
-          { icon: '🎯', title: 'Decision Cards', desc: 'Face daily financial decisions with real consequences. Every choice teaches a lesson.' },
-          { icon: '🏆', title: 'Earn Rewards', desc: 'Earn XP, coins, and badges for smart financial decisions. Redeem for real-world rewards.' },
-          { icon: '🏫', title: 'Classroom Mode', desc: 'Teachers can create classrooms, set assignments, and track student progress.' },
-          { icon: '🏦', title: 'Mirror Mode', desc: 'Connect your real bank account and compare simulated vs real spending patterns.' },
-          { icon: '🌍', title: 'Multi-Currency', desc: 'Play in your local currency — RON, PLN, EUR, GBP, USD, and more.' },
-        ].map((f) => (
+        {features.map((f) => (
           <div key={f.title} style={{
             background: colors.surface,
             padding: 28,
@@ -89,7 +94,7 @@ export default function LandingPage(): React.ReactElement {
         borderTop: `1px solid ${colors.border}`,
         fontSize: 14,
       }}>
-        <p>© 2026 MoneyLife. Financial education for everyone.</p>
+        <p>{t('landing.footer')}</p>
       </footer>
     </main>
   );

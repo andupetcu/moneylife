@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../../../src/lib/auth-context';
 import { api, type MonthlyReport } from '../../../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../../../src/lib/design-tokens';
+import { useTranslation } from 'react-i18next';
 
 function fmt(amount: number, currency: string): string {
   return (amount / 100).toLocaleString('en-US', { style: 'currency', currency: currency || 'USD' });
@@ -17,17 +18,18 @@ function chiColor(score: number): string {
   return colors.danger;
 }
 
-function chiLabel(score: number): string {
-  if (score >= 750) return 'Excellent';
-  if (score >= 650) return 'Good';
-  if (score >= 500) return 'Fair';
-  return 'Poor';
+function chiLabel(score: number, t: (key: string) => string): string {
+  if (score >= 750) return t('creditHealth.excellent');
+  if (score >= 650) return t('creditHealth.good');
+  if (score >= 500) return t('creditHealth.fair');
+  return t('creditHealth.poor');
 }
 
 export default function MonthlyReportPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const gameId = params.gameId as string;
   const year = parseInt(params.year as string);
   const month = parseInt(params.month as string);
@@ -39,7 +41,7 @@ export default function MonthlyReportPage(): React.ReactElement {
   const fetchReport = useCallback(async () => {
     const res = await api.game.getMonthlyReport(gameId, year, month);
     if (res.ok && res.data) setReport(res.data);
-    else setError(res.error || 'Report not available yet');
+    else setError(res.error || t('monthlyReview.reportNotAvailable'));
     setLoading(false);
   }, [gameId, year, month]);
 
@@ -48,16 +50,16 @@ export default function MonthlyReportPage(): React.ReactElement {
     if (user) fetchReport();
   }, [user, authLoading, router, fetchReport]);
 
-  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('common.loading')}</p></div>;
   if (error || !report) return (
     <div style={s.page}>
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
-        <span style={s.headerTitle}>Monthly Report</span>
+        <span style={s.headerTitle}>{t('monthlyReview.monthlyReport')}</span>
         <div style={{ width: 32 }} />
       </div>
       <div style={s.content}>
-        <p style={{ color: colors.danger }}>{error || 'No report data'}</p>
+        <p style={{ color: colors.danger }}>{error || t('monthlyReview.noReportData')}</p>
       </div>
     </div>
   );
@@ -80,7 +82,7 @@ export default function MonthlyReportPage(): React.ReactElement {
       <div style={s.content}>
         {/* Bank Card */}
         <div style={s.bankCard}>
-          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Net Balance</p>
+          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{t('monthlyReview.netBalance')}</p>
           <p style={{ margin: '8px 0 0', fontSize: 28, fontWeight: 700, color: '#FFF' }}>
             {fmt(report.totalIncome - report.totalExpenses, currency)}
           </p>
@@ -90,7 +92,7 @@ export default function MonthlyReportPage(): React.ReactElement {
         <div style={s.card}>
           <div style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: colors.success }}>Income</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: colors.success }}>{t('monthlyReview.income')}</span>
               <span style={{ fontSize: 14, fontWeight: 700, color: colors.success }}>{fmt(report.totalIncome, currency)}</span>
             </div>
             <div style={s.barTrack}>
@@ -99,7 +101,7 @@ export default function MonthlyReportPage(): React.ReactElement {
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: colors.danger }}>Expenses</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: colors.danger }}>{t('monthlyReview.expenses')}</span>
               <span style={{ fontSize: 14, fontWeight: 700, color: colors.danger }}>{fmt(report.totalExpenses, currency)}</span>
             </div>
             <div style={s.barTrack}>
@@ -110,7 +112,7 @@ export default function MonthlyReportPage(): React.ReactElement {
 
         {/* Savings Rate */}
         <div style={s.card}>
-          <p style={s.cardLabel}>Savings Rate</p>
+          <p style={s.cardLabel}>{t('monthlyReview.savingsRate')}</p>
           <p style={{ margin: 0, fontSize: 32, fontWeight: 700, color: report.savingsRate >= 20 ? colors.success : report.savingsRate >= 0 ? colors.warning : colors.danger }}>
             {report.savingsRate.toFixed(1)}%
           </p>
@@ -119,7 +121,7 @@ export default function MonthlyReportPage(): React.ReactElement {
         {/* Category Breakdown */}
         {report.categoryBreakdown && Object.keys(report.categoryBreakdown).length > 0 && (
           <div style={s.card}>
-            <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600, color: colors.textPrimary }}>Category Breakdown</h2>
+            <h2 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600, color: colors.textPrimary }}>{t('monthlyReview.categoryBreakdown')}</h2>
             {Object.entries(report.categoryBreakdown).sort((a, b) => b[1] - a[1]).map(([cat, amount]) => (
               <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${colors.borderLight}` }}>
                 <span style={{ fontWeight: 500, color: colors.textPrimary, textTransform: 'capitalize' as const }}>{cat}</span>
@@ -131,9 +133,9 @@ export default function MonthlyReportPage(): React.ReactElement {
 
         {/* Credit Health */}
         <div style={s.card}>
-          <p style={s.cardLabel}>Credit Health Index</p>
+          <p style={s.cardLabel}>{t('monthlyReview.creditHealthIndex')}</p>
           <p style={{ margin: '4px 0', fontSize: 32, fontWeight: 700, color: chiColor(report.creditHealthIndex) }}>{report.creditHealthIndex}</p>
-          <p style={{ margin: '0 0 8px', fontSize: 13, color: chiColor(report.creditHealthIndex), fontWeight: 600 }}>{chiLabel(report.creditHealthIndex)}</p>
+          <p style={{ margin: '0 0 8px', fontSize: 13, color: chiColor(report.creditHealthIndex), fontWeight: 600 }}>{chiLabel(report.creditHealthIndex, t)}</p>
           <div style={s.gaugeTrack}>
             <div style={{ height: '100%', borderRadius: 5, width: `${chiPct}%`, backgroundColor: chiColor(report.creditHealthIndex), transition: 'width 0.5s' }} />
           </div>
@@ -144,23 +146,23 @@ export default function MonthlyReportPage(): React.ReactElement {
 
         {/* Budget Adherence */}
         <div style={s.card}>
-          <p style={s.cardLabel}>Budget Adherence</p>
+          <p style={s.cardLabel}>{t('monthlyReview.budgetAdherence')}</p>
           <p style={{ margin: 0, fontSize: 32, fontWeight: 700, color: colors.textPrimary }}>{report.budgetAdherence}%</p>
         </div>
 
         {/* XP & Level */}
         <div style={s.card}>
-          <p style={s.cardLabel}>XP Earned This Month</p>
+          <p style={s.cardLabel}>{t('monthlyReview.xpEarnedThisMonth')}</p>
           <p style={{ margin: '4px 0 12px', fontSize: 28, fontWeight: 700, color: colors.primary }}>+{report.xpEarned} XP</p>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: colors.textSecondary, marginBottom: 4 }}>
-            <span>Level {report.level}</span>
+            <span>{t('game.level', { level: report.level })}</span>
             <span>{report.xp} / {report.xpToNextLevel} XP</span>
           </div>
           <div style={s.xpTrack}><div style={{ height: '100%', borderRadius: 4, width: `${xpPct}%`, backgroundColor: colors.primary, transition: 'width 0.3s' }} /></div>
         </div>
 
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.primaryBtn}>
-          🎮 Continue Playing
+          🎮 {t('monthlyReview.continuePlaying')}
         </button>
       </div>
     </div>

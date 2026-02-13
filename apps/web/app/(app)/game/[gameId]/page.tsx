@@ -9,6 +9,8 @@ import { colors, radius, shadows } from '../../../../src/lib/design-tokens';
 import Tutorial from '../../../../src/components/Tutorial';
 import LevelUpModal from '../../../../src/components/LevelUpModal';
 import BadgeNotification from '../../../../src/components/BadgeNotification';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../../../../src/components/LanguageSwitcher';
 
 const PERSONAS: Record<string, string> = {
   teen: '🎒', student: '🎓', young_adult: '💼', parent: '👨‍👩‍👧',
@@ -46,6 +48,7 @@ export default function GamePage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const gameId = params.gameId as string;
 
   const [game, setGame] = useState<GameResponse | null>(null);
@@ -68,7 +71,7 @@ export default function GamePage(): React.ReactElement {
       api.game.getBills(gameId),
     ]);
     if (gameRes.ok && gameRes.data) setGame(gameRes.data);
-    else setError(gameRes.error || 'Failed to load game');
+    else setError(gameRes.error || t('game.failedToLoad'));
     if (txRes.ok && txRes.data) {
       const txList = Array.isArray(txRes.data) ? txRes.data : (txRes.data as any).transactions || [];
       setTransactions(txList.slice(0, 15));
@@ -101,7 +104,7 @@ export default function GamePage(): React.ReactElement {
         setLevelUpLevel(updatedGame.data.level);
       }
     } else {
-      setError(res.error || 'Failed to advance day');
+      setError(res.error || t('game.failedToAdvance'));
     }
   };
 
@@ -110,9 +113,9 @@ export default function GamePage(): React.ReactElement {
     setBills(prev => prev.map(b => b.id === billId ? { ...b, autopay: !current } : b));
   };
 
-  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('common.loading')}</p></div>;
   if (error && !game) return <div style={s.page}><p style={{ color: colors.danger, textAlign: 'center', paddingTop: 80 }}>{error}</p></div>;
-  if (!game) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Game not found</p></div>;
+  if (!game) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('game.gameNotFound')}</p></div>;
 
   const currency = game.currency || 'USD';
   const xpPct = game.xpToNextLevel ? Math.min(100, (game.xp / game.xpToNextLevel) * 100) : 0;
@@ -131,10 +134,10 @@ export default function GamePage(): React.ReactElement {
           <button onClick={() => router.push('/dashboard')} style={s.headerBackBtn}>←</button>
           <div style={{ textAlign: 'center', flex: 1 }}>
             <span style={{ fontSize: 44 }}>{PERSONAS[game.persona] || '🎮'}</span>
-            <h1 style={{ margin: '8px 0 4px', fontSize: 22, fontWeight: 700, color: '#FFF' }}>Level {game.level}</h1>
+            <h1 style={{ margin: '8px 0 4px', fontSize: 22, fontWeight: 700, color: '#FFF' }}>{t('game.level', { level: game.level })}</h1>
             <span style={s.diffBadge}>{game.difficulty}</span>
           </div>
-          <div style={{ width: 32 }} />
+          <LanguageSwitcher />
         </div>
         {/* XP Bar in header */}
         <div style={{ marginTop: 16 }}>
@@ -149,7 +152,7 @@ export default function GamePage(): React.ReactElement {
       <div style={s.content}>
         {/* Bank Card - Net Worth */}
         <div style={s.bankCard}>
-          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Total Net Worth</p>
+          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{t('game.totalNetWorth')}</p>
           <p style={{ margin: '8px 0 0', fontSize: 32, fontWeight: 700, color: '#FFF' }}>{fmt(netWorth, currency)}</p>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', letterSpacing: 2 }}>•••• •••• •••• {Math.abs(netWorth % 10000).toString().padStart(4, '0')}</span>
@@ -160,20 +163,20 @@ export default function GamePage(): React.ReactElement {
         {/* Stats Grid */}
         <div style={s.statsGrid}>
           <div style={s.statCard}>
-            <p style={s.statLabel}>Net Worth</p>
+            <p style={s.statLabel}>{t('game.netWorth')}</p>
             <p style={s.statValue}>{fmt(netWorth, currency)}</p>
-            <p style={{ margin: 0, fontSize: 12, color: netWorth >= 0 ? colors.success : colors.danger }}>{netWorth >= 0 ? '↑ Positive' : '↓ Negative'}</p>
+            <p style={{ margin: 0, fontSize: 12, color: netWorth >= 0 ? colors.success : colors.danger }}>{netWorth >= 0 ? `↑ ${t('game.positive')}` : `↓ ${t('game.negative')}`}</p>
           </div>
           <div style={s.statCard}>
-            <p style={s.statLabel}>Monthly Income</p>
+            <p style={s.statLabel}>{t('game.monthlyIncome')}</p>
             <p style={s.statValue}>{fmt(income, currency)}</p>
           </div>
           <div style={s.statCard}>
-            <p style={s.statLabel}>Budget Score</p>
+            <p style={s.statLabel}>{t('game.budgetScore')}</p>
             <p style={s.statValue}>{game.budgetScore ?? 0}%</p>
           </div>
           <div style={s.statCard}>
-            <p style={s.statLabel}>Credit Health</p>
+            <p style={s.statLabel}>{t('game.creditHealth')}</p>
             <p style={{ ...s.statValue, color: getCreditColor(creditScore) }}>{creditScore}</p>
           </div>
         </div>
@@ -181,12 +184,12 @@ export default function GamePage(): React.ReactElement {
         {/* Quick Actions */}
         <div style={s.quickGrid}>
           {[
-            { href: `/game/${gameId}/transfer`, icon: '💸', label: 'Transfer' },
-            { href: `/game/${gameId}/budget`, icon: '📊', label: 'Budget' },
-            { href: `/game/${gameId}/rewards`, icon: '🏆', label: 'Rewards' },
-            { href: `/game/${gameId}`, icon: '📬', label: 'Bills', scroll: true },
-            { href: `/game/${gameId}/monthly-report/${game.currentDate?.split('-')[0]}/${game.currentDate?.split('-')[1]}`, icon: '📋', label: 'Report' },
-            { href: `/game/${gameId}`, icon: '⚙️', label: 'Settings' },
+            { href: `/game/${gameId}/transfer`, icon: '💸', label: t('game.transfer') },
+            { href: `/game/${gameId}/budget`, icon: '📊', label: t('game.budget') },
+            { href: `/game/${gameId}/rewards`, icon: '🏆', label: t('game.rewards') },
+            { href: `/game/${gameId}`, icon: '📬', label: t('game.bills'), scroll: true },
+            { href: `/game/${gameId}/monthly-report/${game.currentDate?.split('-')[0]}/${game.currentDate?.split('-')[1]}`, icon: '📋', label: t('game.report') },
+            { href: `/game/${gameId}`, icon: '⚙️', label: t('game.settings') },
           ].map(item => (
             <Link key={item.label} href={item.href} style={s.quickItem}>
               <div style={s.quickIcon}><span style={{ fontSize: 22 }}>{item.icon}</span></div>
@@ -199,25 +202,25 @@ export default function GamePage(): React.ReactElement {
         <div style={s.dayCard}>
           <div style={{ textAlign: 'center' }}>
             <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: colors.textPrimary }}>📅 {dateDisplay}</p>
-            {monthEnd && <span style={s.monthEndBadge}>🎉 Month End!</span>}
+            {monthEnd && <span style={s.monthEndBadge}>🎉 {t('game.monthEnd')}</span>}
           </div>
           {error && <p style={{ color: colors.danger, textAlign: 'center', margin: '8px 0', fontSize: 13 }}>{error}</p>}
           <button onClick={handleAdvanceDay} disabled={advancing} style={{ ...s.primaryBtn, opacity: advancing ? 0.7 : 1, marginTop: 12 }}>
-            {advancing ? '⏳ Advancing...' : '☀️ Advance Day'}
+            {advancing ? `⏳ ${t('game.advancing')}` : `☀️ ${t('game.advanceDay')}`}
           </button>
         </div>
 
         {/* Pending Cards */}
         {game.pendingCards && game.pendingCards.length > 0 && (
           <div style={s.section}>
-            <h2 style={s.sectionTitle}>📋 Decisions Needed</h2>
+            <h2 style={s.sectionTitle}>📋 {t('game.decisionsNeeded')}</h2>
             {game.pendingCards.map(card => (
               <div key={card.id} style={s.pendingCard} onClick={() => router.push(`/game/${gameId}/card/${card.id}`)}>
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{card.title || card.cardId}</p>
-                  <p style={{ margin: '4px 0 0', fontSize: 13, color: colors.textSecondary }}>{card.description || 'Make a decision'}</p>
+                  <p style={{ margin: '4px 0 0', fontSize: 13, color: colors.textSecondary }}>{card.description || t('game.makeDecision')}</p>
                 </div>
-                <span style={s.decidePill}>Decide →</span>
+                <span style={s.decidePill}>{t('game.decide')} →</span>
               </div>
             ))}
           </div>
@@ -226,7 +229,7 @@ export default function GamePage(): React.ReactElement {
         {/* Accounts */}
         {game.accounts && game.accounts.length > 0 && (
           <div style={s.section}>
-            <h2 style={s.sectionTitle}>💰 Accounts</h2>
+            <h2 style={s.sectionTitle}>💰 {t('game.accounts')}</h2>
             {game.accounts.map(acc => (
               <div key={acc.id} style={s.accountCard} onClick={() => router.push(`/game/${gameId}/account/${acc.id}`)}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -247,12 +250,12 @@ export default function GamePage(): React.ReactElement {
         {/* Bills */}
         {bills.length > 0 && (
           <div style={s.section}>
-            <h2 style={s.sectionTitle}>📬 Upcoming Bills</h2>
+            <h2 style={s.sectionTitle}>📬 {t('game.upcomingBills')}</h2>
             {bills.map(bill => (
               <div key={bill.id} style={s.billCard}>
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{bill.name}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>Due day {bill.dueDay} · {bill.category}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>{t('game.dueDay', { day: bill.dueDay })} · {bill.category}</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{fmt(bill.amount, currency)}</p>
@@ -260,7 +263,7 @@ export default function GamePage(): React.ReactElement {
                     onClick={() => handleToggleAutopay(bill.id, bill.autopay)}
                     style={{ ...s.autopayBtn, backgroundColor: bill.autopay ? '#D1FAE5' : colors.borderLight, color: bill.autopay ? '#059669' : colors.textMuted }}
                   >
-                    {bill.autopay ? '✓ Auto' : 'Manual'}
+                    {bill.autopay ? `✓ ${t('game.auto')}` : t('game.manual')}
                   </button>
                 </div>
               </div>
@@ -271,7 +274,7 @@ export default function GamePage(): React.ReactElement {
         {/* Recent Transactions */}
         {transactions.length > 0 && (
           <div style={s.section}>
-            <h2 style={s.sectionTitle}>📊 Recent Activity</h2>
+            <h2 style={s.sectionTitle}>📊 {t('game.recentActivity')}</h2>
             {transactions.map(tx => {
               const catColor = TX_CATEGORY_COLORS[(tx.category || '').toLowerCase()] || colors.textMuted;
               return (
@@ -309,10 +312,10 @@ export default function GamePage(): React.ReactElement {
       {/* Bottom Nav */}
       <div style={s.bottomNav}>
         {[
-          { key: 'dashboard', icon: '🏠', label: 'Dashboard', href: `/game/${gameId}` },
-          { key: 'budget', icon: '📊', label: 'Budget', href: `/game/${gameId}/budget` },
-          { key: 'rewards', icon: '🏆', label: 'Rewards', href: `/game/${gameId}/rewards` },
-          { key: 'bills', icon: '📬', label: 'Bills', href: `/game/${gameId}` },
+          { key: 'dashboard', icon: '🏠', label: t('game.dashboard'), href: `/game/${gameId}` },
+          { key: 'budget', icon: '📊', label: t('game.budget'), href: `/game/${gameId}/budget` },
+          { key: 'rewards', icon: '🏆', label: t('game.rewards'), href: `/game/${gameId}/rewards` },
+          { key: 'bills', icon: '📬', label: t('game.bills'), href: `/game/${gameId}` },
         ].map(tab => (
           <Link
             key={tab.key}

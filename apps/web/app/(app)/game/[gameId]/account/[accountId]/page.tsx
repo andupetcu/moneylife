@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../../../../src/lib/auth-context';
 import { api, type GameResponse, type Account, type Transaction } from '../../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../../src/lib/design-tokens';
@@ -18,6 +19,7 @@ export default function AccountDetailPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const gameId = params.gameId as string;
   const accountId = params.accountId as string;
 
@@ -43,17 +45,17 @@ export default function AccountDetailPage(): React.ReactElement {
     if (user) fetchData();
   }, [user, authLoading, router, fetchData]);
 
-  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('common.loading')}</p></div>;
 
   const account = game?.accounts?.find(a => a.id === accountId);
   if (!account) return (
     <div style={s.page}>
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
-        <span style={s.headerTitle}>Account</span>
+        <span style={s.headerTitle}>{t('accounts.account')}</span>
         <div style={{ width: 32 }} />
       </div>
-      <div style={s.content}><p style={{ color: colors.danger }}>Account not found</p></div>
+      <div style={s.content}><p style={{ color: colors.danger }}>{t('accounts.accountNotFound')}</p></div>
     </div>
   );
 
@@ -72,7 +74,7 @@ export default function AccountDetailPage(): React.ReactElement {
         {/* Balance Card */}
         <div style={s.balanceCard}>
           <span style={{ fontSize: 40 }}>{ACCOUNT_ICONS[account.type] || '🏦'}</span>
-          <p style={{ margin: '12px 0 4px', fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Current Balance</p>
+          <p style={{ margin: '12px 0 4px', fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{t('accounts.currentBalance')}</p>
           <p style={{ margin: 0, fontSize: 32, fontWeight: 700, color: '#FFF' }}>
             {fmt(account.balance, currency)}
           </p>
@@ -83,13 +85,13 @@ export default function AccountDetailPage(): React.ReactElement {
 
         {/* Transfer Button */}
         <button onClick={() => router.push(`/game/${gameId}/transfer`)} style={s.primaryBtn}>
-          💸 Transfer Money
+          💸 {t('accounts.transferMoney')}
         </button>
 
         {/* Transactions */}
         <div style={{ marginTop: 24 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 600, color: colors.textPrimary, marginBottom: 12 }}>Transaction History</h2>
-          {transactions.length === 0 && <p style={{ color: colors.textMuted, fontSize: 14 }}>No transactions yet</p>}
+          <h2 style={{ fontSize: 17, fontWeight: 600, color: colors.textPrimary, marginBottom: 12 }}>{t('accounts.transactionHistory')}</h2>
+          {transactions.length === 0 && <p style={{ color: colors.textMuted, fontSize: 14 }}>{t('accounts.noTransactions')}</p>}
           {transactions.map(tx => (
             <div key={tx.id} style={s.txRow}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

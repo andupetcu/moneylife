@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../../../../src/lib/auth-context';
 import { api, type PendingCard } from '../../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../../src/lib/design-tokens';
@@ -43,6 +44,7 @@ export default function CardPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const gameId = params.gameId as string;
   const cardId = params.cardId as string;
 
@@ -59,9 +61,9 @@ export default function CardPage(): React.ReactElement {
     if (res.ok && res.data) {
       const found = res.data.find((c: PendingCard) => c.id === cardId);
       if (found) setCard(found);
-      else setError('Card not found');
+      else setError(t('game.cardNotFound'));
     } else {
-      setError(res.error || 'Failed to load card');
+      setError(res.error || t('game.failedToLoadCard'));
     }
     setLoading(false);
   }, [gameId, cardId]);
@@ -83,24 +85,24 @@ export default function CardPage(): React.ReactElement {
     setSubmitting(false);
     if (res.ok) {
       const chosen = card?.options?.find(o => o.id === selectedOption);
-      setOutcome(chosen?.label || 'Decision made!');
+      setOutcome(chosen?.label || t('game.decisionMade'));
       setConfirmed(true);
       setTimeout(() => router.push(`/game/${gameId}`), 2500);
     } else {
-      setError(res.error || 'Failed to submit decision');
+      setError(res.error || t('game.failedToSubmit'));
     }
   };
 
-  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('common.loading')}</p></div>;
   if (!card) return (
     <div style={s.page}>
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
-        <span style={s.headerTitle}>Decision</span>
+        <span style={s.headerTitle}>{t('game.decision')}</span>
         <div style={{ width: 32 }} />
       </div>
       <div style={s.content}>
-        <p style={{ color: colors.danger }}>{error || 'Card not found'}</p>
+        <p style={{ color: colors.danger }}>{error || t('game.cardNotFound')}</p>
       </div>
     </div>
   );
@@ -113,9 +115,9 @@ export default function CardPage(): React.ReactElement {
         <div style={s.headerBar} />
         <div style={{ ...s.content, textAlign: 'center' as const, paddingTop: 60 }}>
           <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, color: colors.textPrimary, marginBottom: 8 }}>Decision Made!</h2>
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: colors.textPrimary, marginBottom: 8 }}>{t('game.decisionMade')}</h2>
           <p style={{ fontSize: 16, color: colors.textSecondary, marginBottom: 24 }}>{outcome}</p>
-          <p style={{ fontSize: 14, color: colors.textMuted }}>Returning to game...</p>
+          <p style={{ fontSize: 14, color: colors.textMuted }}>{t('game.returningToGame')}</p>
         </div>
       </div>
     );
@@ -185,7 +187,7 @@ export default function CardPage(): React.ReactElement {
           disabled={!selectedOption || submitting}
           style={{ ...s.primaryBtn, marginTop: 24, opacity: !selectedOption || submitting ? 0.5 : 1 }}
         >
-          {submitting ? 'Submitting...' : '✅ Confirm Decision'}
+          {submitting ? t('game.submitting') : `✅ ${t('game.confirmDecision')}`}
         </button>
       </div>
     </div>

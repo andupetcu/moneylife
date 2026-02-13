@@ -5,11 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../src/lib/auth-context';
 import { api, type GameResponse, type Badge } from '../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
+import { useTranslation } from 'react-i18next';
 
 export default function RewardsPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const gameId = params.gameId as string;
 
   const [game, setGame] = useState<GameResponse | null>(null);
@@ -31,7 +33,7 @@ export default function RewardsPage(): React.ReactElement {
     if (user) fetchData();
   }, [user, authLoading, router, fetchData]);
 
-  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('common.loading')}</p></div>;
 
   const xpPct = game?.xpToNextLevel ? Math.min(100, ((game?.xp ?? 0) / game.xpToNextLevel) * 100) : 0;
   const earned = badges.filter(b => b.earned);
@@ -41,7 +43,7 @@ export default function RewardsPage(): React.ReactElement {
       {/* Header */}
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
-        <span style={s.headerTitle}>Rewards & Badges</span>
+        <span style={s.headerTitle}>{t('rewards.rewardsAndBadges')}</span>
         <div style={{ width: 32 }} />
       </div>
 
@@ -50,18 +52,18 @@ export default function RewardsPage(): React.ReactElement {
         {game && (
           <div style={s.levelCard}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Level {game.level}</span>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>⭐ {game.xp} XP</span>
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{t('game.level', { level: game.level })}</span>
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{`⭐ ${game.xp} ${t('rewards.xp')}`}</span>
             </div>
             <div style={s.xpTrack}><div style={{ ...s.xpFill, width: `${xpPct}%` }} /></div>
             {game.xpToNextLevel && (
               <p style={{ margin: '8px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.6)', textAlign: 'right' as const }}>
-                {game.xpToNextLevel - (game.xp ?? 0)} XP to next level
+                {t('rewards.xpToNextLevel', { amount: game.xpToNextLevel - (game.xp ?? 0) })}
               </p>
             )}
             <div style={{ textAlign: 'center', marginTop: 12 }}>
               <span style={{ fontSize: 48, fontWeight: 700, color: '#FFF' }}>{game.level}</span>
-              <p style={{ margin: '4px 0 0', fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Current Level</p>
+              <p style={{ margin: '4px 0 0', fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{t('rewards.currentLevel')}</p>
             </div>
           </div>
         )}
@@ -70,15 +72,15 @@ export default function RewardsPage(): React.ReactElement {
         <div style={s.statsRow}>
           <div style={s.statBox}>
             <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: colors.primary }}>{earned.length}</p>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: colors.textSecondary }}>Earned</p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: colors.textSecondary }}>{t('rewards.earned')}</p>
           </div>
           <div style={s.statBox}>
             <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: colors.textMuted }}>{badges.length - earned.length}</p>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: colors.textSecondary }}>Locked</p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: colors.textSecondary }}>{t('rewards.locked')}</p>
           </div>
           <div style={s.statBox}>
             <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: colors.textPrimary }}>{badges.length}</p>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: colors.textSecondary }}>Total</p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: colors.textSecondary }}>{t('rewards.total')}</p>
           </div>
         </div>
 
@@ -86,8 +88,8 @@ export default function RewardsPage(): React.ReactElement {
         {badges.length === 0 ? (
           <div style={{ textAlign: 'center' as const, padding: 40 }}>
             <p style={{ fontSize: 48 }}>🏅</p>
-            <p style={{ color: colors.textSecondary }}>Badges will appear here as you play!</p>
-            <p style={{ color: colors.textMuted, fontSize: 13 }}>Make financial decisions and hit milestones to earn badges.</p>
+            <p style={{ color: colors.textSecondary }}>{t('rewards.badgesAppear')}</p>
+            <p style={{ color: colors.textMuted, fontSize: 13 }}>{t('rewards.badgesHint')}</p>
           </div>
         ) : (
           <div style={s.badgeGrid}>
