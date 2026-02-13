@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../../../src/lib/auth-context';
 import { api, type MonthlyReport } from '../../../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../../../src/lib/design-tokens';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../../../../../../../src/lib/useT';
 import { useIsMobile } from '../../../../../../../src/hooks/useIsMobile';
 
 function fmt(amount: number, currency: string): string {
@@ -30,7 +30,7 @@ export default function MonthlyReportPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { t } = useTranslation();
+  const t = useT();
   const isMobile = useIsMobile();
   const gameId = params.gameId as string;
   const year = parseInt(params.year as string);

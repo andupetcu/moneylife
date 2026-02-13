@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../../../src/lib/useT';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../src/lib/auth-context';
 import { colors, radius, shadows } from '../../../src/lib/design-tokens';
 
 export default function LoginPage(): React.ReactElement {
-  const { t } = useTranslation();
+  const t = useT();
   const router = useRouter();
   const { login } = useAuth();
   const [email, setEmail] = useState('');

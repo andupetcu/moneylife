@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../../../src/lib/useT';
 import { colors, radius, shadows } from '../../../src/lib/design-tokens';
 
 export default function RewardsPage(): React.ReactElement {
-  const { t } = useTranslation();
+  const t = useT();
   const router = useRouter();
 
   return (

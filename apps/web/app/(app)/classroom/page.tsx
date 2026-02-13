@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../../../src/lib/useT';
 import { useAuth } from '../../../src/lib/auth-context';
 import { api, type Classroom, type LeaderboardEntry } from '../../../src/lib/api';
 import { colors, radius, shadows } from '../../../src/lib/design-tokens';
@@ -12,7 +12,7 @@ import { useIsMobile } from '../../../src/hooks/useIsMobile';
 type View = 'list' | 'detail';
 
 export default function ClassroomPage(): React.ReactElement {
-  const { t } = useTranslation();
+  const t = useT();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../lib/useT';
 import { colors, radius, shadows } from '../lib/design-tokens';
 import type { Badge } from '../lib/api';
 
@@ -16,7 +16,7 @@ interface BadgeNotificationProps {
 }
 
 export default function BadgeNotification({ badges, onClear }: BadgeNotificationProps): React.ReactElement | null {
-  const { t } = useTranslation();
+  const t = useT();
   const [toasts, setToasts] = useState<BadgeToast[]>([]);
 
   useEffect(() => {

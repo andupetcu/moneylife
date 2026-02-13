@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../lib/useT';
 import { colors, radius, shadows } from '../lib/design-tokens';
 
 interface TutorialStep {
@@ -30,7 +30,7 @@ interface TutorialProps {
 }
 
 export default function Tutorial({ gameId, onComplete }: TutorialProps): React.ReactElement | null {
-  const { t } = useTranslation();
+  const t = useT();
   const [step, setStep] = useState(0);
   const [visible, setVisible] = useState(false);
 

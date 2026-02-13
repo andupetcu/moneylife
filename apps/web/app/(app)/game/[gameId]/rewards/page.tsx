@@ -5,14 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../src/lib/auth-context';
 import { api, type GameResponse, type Badge } from '../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../../../../../src/lib/useT';
 import { useIsMobile } from '../../../../../src/hooks/useIsMobile';
 
 export default function RewardsPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { t } = useTranslation();
+  const t = useT();
   const isMobile = useIsMobile();
   const gameId = params.gameId as string;
 

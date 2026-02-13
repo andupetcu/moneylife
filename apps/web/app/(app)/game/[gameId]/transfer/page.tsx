@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../src/lib/auth-context';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../../../../../src/lib/useT';
 import { api, type GameResponse } from '../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
 import { useIsMobile } from '../../../../../src/hooks/useIsMobile';
@@ -16,7 +16,7 @@ export default function TransferPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { t } = useTranslation();
+  const t = useT();
   const isMobile = useIsMobile();
   const gameId = params.gameId as string;
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../lib/useT';
 import { colors, radius, shadows } from '../lib/design-tokens';
 
 interface LevelUpModalProps {
@@ -17,7 +17,7 @@ const LEVEL_UNLOCKS: Record<number, string[]> = {
 };
 
 export default function LevelUpModal({ level, onDismiss }: LevelUpModalProps): React.ReactElement {
-  const { t } = useTranslation();
+  const t = useT();
   const [animating, setAnimating] = useState(true);
 
   useEffect(() => {

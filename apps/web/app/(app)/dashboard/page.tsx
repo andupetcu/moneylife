@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../../../src/lib/useT';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../src/lib/auth-context';
 import { api, type GameResponse } from '../../../src/lib/api';
@@ -20,7 +20,7 @@ const PERSONAS = [
 const DIFFICULTIES = ['easy', 'normal', 'hard'];
 
 export default function DashboardPage(): React.ReactElement {
-  const { t } = useTranslation();
+  const t = useT();
   const router = useRouter();
   const { user, loading, logout } = useAuth();
   const isMobile = useIsMobile();

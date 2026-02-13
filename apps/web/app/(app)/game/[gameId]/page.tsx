@@ -10,7 +10,7 @@ import Tutorial from '../../../../src/components/Tutorial';
 import LevelUpModal from '../../../../src/components/LevelUpModal';
 import BadgeNotification from '../../../../src/components/BadgeNotification';
 import AIAdvisor from '../../../../src/components/AIAdvisor';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../../../../src/lib/useT';
 import LanguageSwitcher from '../../../../src/components/LanguageSwitcher';
 import { useIsMobile } from '../../../../src/hooks/useIsMobile';
 
@@ -50,7 +50,7 @@ export default function GamePage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { t } = useTranslation();
+  const t = useT();
   const isMobile = useIsMobile();
   const gameId = params.gameId as string;
 

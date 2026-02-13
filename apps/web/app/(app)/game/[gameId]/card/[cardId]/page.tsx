@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
+import { useT } from '../../../../../../src/lib/useT';
 import { useAuth } from '../../../../../../src/lib/auth-context';
 import { api, type PendingCard, type GameResponse } from '../../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../../src/lib/design-tokens';
@@ -46,7 +46,7 @@ export default function CardPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { t } = useTranslation();
+  const t = useT();
   const isMobile = useIsMobile();
   const gameId = params.gameId as string;
   const cardId = params.cardId as string;
