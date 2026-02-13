@@ -210,6 +210,7 @@ export interface AICardHintResponse {
 export interface AIDailySummaryResponse {
   summary: string;
   remainingCalls: number;
+}
 // ─── Social types ───────────────────────────────────────────────
 
 export interface Friend {
@@ -267,6 +268,7 @@ export interface ClassroomMember {
   level: number;
   xp: number;
   netWorth: number;
+}
 // ─── Banking types ────────────────────────────────────────────────────────────
 
 export interface LinkedAccount {
@@ -408,6 +410,7 @@ export const api = {
       }),
     getDailySummary: (gameId: string) =>
       request<AIDailySummaryResponse>(`/api/game/games/${gameId}/ai/daily-summary`),
+  },
   social: {
     // Friends
     sendFriendRequest: (targetUserId: string) =>
@@ -441,6 +444,7 @@ export const api = {
       request<Classroom>(`/api/game/classrooms/${id}`),
     classroomLeaderboard: (id: string) =>
       request<{ entries: LeaderboardEntry[] }>(`/api/game/classrooms/${id}/leaderboard`),
+  },
   banking: {
     link: (region: string, redirectUri?: string) =>
       request<LinkBankResponse>('/api/game/banking/link', {

@@ -171,7 +171,7 @@ export class PlaidClient implements BankingProvider {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error_message: `HTTP ${res.status}` }));
-      throw new Error(`Plaid error: ${err.error_message || res.status}`);
+      throw new Error(`Plaid error: ${(err as any).error_message || res.status}`);
     }
     return res.json() as Promise<T>;
   }
