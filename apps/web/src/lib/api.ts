@@ -186,8 +186,30 @@ function normalizeGame(raw: Record<string, unknown>): GameResponse {
     budgetScore: raw.budgetScore as number | undefined,
     creditHealthIndex: chiScore as number | undefined,
     accounts: raw.accounts as Account[] | undefined,
-    pendingCards: raw.pendingCards as PendingCard[] | undefined,
+    pendingCards: normalizeCards(raw.pendingCards as any[] | undefined),
   };
+}
+
+function normalizeCards(cards: any[] | undefined): PendingCard[] | undefined {
+  if (!cards) return undefined;
+  return cards.map(c => ({
+    ...c,
+    options: (c.options || []).map((o: any) => ({
+      id: o.id,
+      label: o.label,
+      description: o.description,
+      effects: o.effects || buildEffects(o),
+    })),
+  }));
+}
+
+function buildEffects(o: any): { type: string; amount?: number; label?: string }[] {
+  const effects: { type: string; amount?: number; label?: string }[] = [];
+  if (o.cost && o.cost !== 0) effects.push({ type: 'balance', amount: -o.cost });
+  if (o.xp && o.xp !== 0) effects.push({ type: 'xp', amount: o.xp });
+  if (o.coins && o.coins !== 0) effects.push({ type: 'coins', amount: o.coins });
+  if (o.happiness && o.happiness !== 0) effects.push({ type: 'happiness', amount: o.happiness });
+  return effects;
 }
 
 export interface AIStatusResponse {
@@ -408,7 +430,8 @@ export const api = {
     getCards: async (gameId: string): Promise<ApiResponse<PendingCard[]>> => {
       const res = await request<PendingCard[] | { cards: PendingCard[] }>(`/api/game/games/${gameId}/cards`);
       if (res.ok && res.data) {
-        const cards = Array.isArray(res.data) ? res.data : (res.data as any).cards || [];
+        const raw = Array.isArray(res.data) ? res.data : (res.data as any).cards || [];
+        const cards = normalizeCards(raw) || [];
         return { ok: true, data: cards };
       }
       return res as ApiResponse<PendingCard[]>;

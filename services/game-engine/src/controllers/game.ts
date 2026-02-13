@@ -60,6 +60,12 @@ export function createGameController(pool: Pool) {
     if (personaConfig.availableAccountsAtStart.includes('credit_card')) {
       startingAccounts.push({ type: 'credit_card', name: 'Credit Card', balance: 0, rate: difficultyConfig.creditCardAPR ?? regionConfig.interestRates.creditCardAPR });
     }
+    if (personaConfig.availableAccountsAtStart.includes('prepaid')) {
+      // Prepaid gets starting cash if no checking account
+      const hasChecking = startingAccounts.some(a => a.type === 'checking');
+      const prepaidBalance = hasChecking ? 0 : startingCash;
+      startingAccounts.push({ type: 'prepaid', name: 'Prepaid Card', balance: prepaidBalance, rate: 0 });
+    }
 
     try {
       const client = await pool.connect();
@@ -159,7 +165,10 @@ export function getGameController(pool: Pool) {
       const accounts = await findAccountsByGameId(pool, game.id);
 
       const pendingCards = await pool.query(
-        "SELECT * FROM game_pending_cards WHERE game_id = $1 AND status = 'pending'",
+        `SELECT gpc.*, dc.options, dc.title, dc.description, dc.category 
+         FROM game_pending_cards gpc 
+         JOIN decision_cards dc ON dc.id = gpc.card_id 
+         WHERE gpc.game_id = $1 AND gpc.status = 'pending'`,
         [game.id],
       );
 
@@ -207,6 +216,10 @@ export function getGameController(pool: Pool) {
         pendingCards: pendingCards.rows.map(c => ({
           id: c.id,
           cardId: c.card_id,
+          title: c.title,
+          description: c.description,
+          category: c.category,
+          options: c.options,
           presentedDate: c.presented_game_date,
           expiresDate: c.expires_game_date,
           status: c.status,

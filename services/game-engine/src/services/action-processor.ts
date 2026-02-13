@@ -114,8 +114,9 @@ async function awardXp(
 }
 
 async function getCheckingAccount(client: PoolClient, gameId: string): Promise<AccountRow> {
+  // Fall back to prepaid or savings if no checking (e.g. Teen persona)
   const res = await client.query(
-    "SELECT * FROM game_accounts WHERE game_id = $1 AND type = 'checking' AND status = 'active' LIMIT 1",
+    "SELECT * FROM game_accounts WHERE game_id = $1 AND status = 'active' AND type IN ('checking', 'prepaid', 'savings') ORDER BY CASE type WHEN 'checking' THEN 1 WHEN 'prepaid' THEN 2 WHEN 'savings' THEN 3 END LIMIT 1",
     [gameId],
   );
   return res.rows[0];
