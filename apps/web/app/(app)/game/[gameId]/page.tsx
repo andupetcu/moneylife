@@ -191,6 +191,12 @@ export default function GamePage(): React.ReactElement {
             { href: `/game/${gameId}`, icon: '📬', label: t('game.bills'), scroll: true },
             { href: `/game/${gameId}/monthly-report/${game.currentDate?.split('-')[0]}/${game.currentDate?.split('-')[1]}`, icon: '📋', label: t('game.report') },
             { href: `/game/${gameId}`, icon: '⚙️', label: t('game.settings') },
+            { href: `/game/${gameId}/transfer`, icon: '💸', label: 'Transfer' },
+            { href: `/game/${gameId}/budget`, icon: '📊', label: 'Budget' },
+            { href: `/game/${gameId}/rewards`, icon: '🏆', label: 'Rewards' },
+            { href: `/banking`, icon: '🏦', label: 'Banking' },
+            { href: `/game/${gameId}/mirror`, icon: '🪞', label: 'Mirror' },
+            { href: `/game/${gameId}/monthly-report/${game.currentDate?.split('-')[0]}/${game.currentDate?.split('-')[1]}`, icon: '📋', label: 'Report' },
           ].map(item => (
             <Link key={item.label} href={item.href} style={s.quickItem}>
               <div style={s.quickIcon}><span style={{ fontSize: 22 }}>{item.icon}</span></div>

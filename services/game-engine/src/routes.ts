@@ -25,6 +25,15 @@ import {
   getClassroomController,
   classroomLeaderboardController,
 } from './controllers/social.js';
+import {
+  linkBankController,
+  bankCallbackController,
+  listAccountsController,
+  unlinkAccountController,
+  getBankTransactionsController,
+  syncBankController,
+  mirrorController,
+} from './controllers/banking.js';
 
 export function createRoutes(pool: Pool): Router {
   const router = Router();
@@ -51,6 +60,14 @@ export function createRoutes(pool: Pool): Router {
   router.post('/games/:id/ai/advice', getAdviceController(pool));
   router.post('/games/:id/ai/card-hint/:cardId', getCardHintController(pool));
   router.get('/games/:id/ai/daily-summary', getDailySummaryController(pool));
+  // Banking endpoints
+  router.post('/banking/link', linkBankController(pool));
+  router.post('/banking/callback', bankCallbackController(pool));
+  router.get('/banking/accounts', listAccountsController(pool));
+  router.delete('/banking/accounts/:id', unlinkAccountController(pool));
+  router.get('/banking/transactions', getBankTransactionsController(pool));
+  router.post('/banking/sync', syncBankController(pool));
+  router.get('/banking/mirror/:gameId', mirrorController(pool));
 
   // Bills endpoint
   router.get('/games/:id/bills', async (req, res) => {

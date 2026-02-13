@@ -267,6 +267,75 @@ export interface ClassroomMember {
   level: number;
   xp: number;
   netWorth: number;
+// ─── Banking types ────────────────────────────────────────────────────────────
+
+export interface LinkedAccount {
+  id: string;
+  provider: string;
+  institutionName: string | null;
+  status: string;
+  consentGrantedAt: string | null;
+  consentExpiresAt: string | null;
+  lastSyncAt: string | null;
+  createdAt: string;
+}
+
+export interface LinkBankResponse {
+  provider: string;
+  linkType: 'link_token' | 'auth_url';
+  linkValue: string;
+}
+
+export interface BankTransaction {
+  id: string;
+  linkedAccountId: string;
+  date: string;
+  amount: number;
+  currency: string;
+  description: string;
+  category: string;
+  merchantName: string | null;
+  isPending: boolean;
+}
+
+export interface SyncResult {
+  synced: number;
+  accounts: number;
+  errors?: Array<{ accountId: string; error: string }>;
+}
+
+export interface CategoryComparison {
+  category: string;
+  gameAmount: number;
+  realAmount: number;
+  differencePercent: number;
+}
+
+export interface MirrorInsight {
+  type: 'overspend' | 'underspend' | 'match' | 'missing';
+  category: string;
+  message: string;
+  severity: 'info' | 'warning' | 'positive';
+}
+
+export interface MirrorComparison {
+  id: string;
+  gameId: string;
+  periodStart: string;
+  periodEnd: string;
+  gameSpending: Record<string, number>;
+  realSpending: Record<string, number>;
+  categories: CategoryComparison[];
+  similarityScore: number;
+  insights: MirrorInsight[];
+  createdAt: string;
+}
+
+export interface MirrorDashboard {
+  comparisons: MirrorComparison[];
+  overallSimilarity: number;
+  trend: 'improving' | 'stable' | 'declining';
+  topDifferences: CategoryComparison[];
 }
 
 export const api = {
@@ -372,5 +441,36 @@ export const api = {
       request<Classroom>(`/api/game/classrooms/${id}`),
     classroomLeaderboard: (id: string) =>
       request<{ entries: LeaderboardEntry[] }>(`/api/game/classrooms/${id}/leaderboard`),
+  banking: {
+    link: (region: string, redirectUri?: string) =>
+      request<LinkBankResponse>('/api/game/banking/link', {
+        method: 'POST',
+        body: JSON.stringify({ region, redirectUri }),
+      }),
+    callback: (code: string, region: string) =>
+      request<LinkedAccount>('/api/game/banking/callback', {
+        method: 'POST',
+        body: JSON.stringify({ code, region }),
+      }),
+    listAccounts: () =>
+      request<LinkedAccount[]>('/api/game/banking/accounts'),
+    unlinkAccount: (id: string) =>
+      request('/api/game/banking/accounts/' + id, { method: 'DELETE' }),
+    getTransactions: (from?: string, to?: string) => {
+      const params = new URLSearchParams();
+      if (from) params.set('from', from);
+      if (to) params.set('to', to);
+      const qs = params.toString();
+      return request<{ transactions: BankTransaction[] }>(`/api/game/banking/transactions${qs ? '?' + qs : ''}`);
+    },
+    sync: () =>
+      request<SyncResult>('/api/game/banking/sync', { method: 'POST' }),
+    getMirror: (gameId: string, year?: number, month?: number) => {
+      const params = new URLSearchParams();
+      if (year != null) params.set('year', String(year));
+      if (month != null) params.set('month', String(month));
+      const qs = params.toString();
+      return request<MirrorComparison | MirrorDashboard>(`/api/game/banking/mirror/${gameId}${qs ? '?' + qs : ''}`);
+    },
   },
 };
