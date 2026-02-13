@@ -399,10 +399,10 @@ export const api = {
       return res as ApiResponse<GameResponse>;
     },
     submitAction: (gameId: string, action: Record<string, unknown>) => {
-      const { type, ...rest } = action;
+      const { type, payload, ...rest } = action;
       return request(`/api/game/games/${gameId}/actions`, {
         method: 'POST',
-        body: JSON.stringify({ type, payload: rest, idempotencyKey: crypto.randomUUID() }),
+        body: JSON.stringify({ type, payload: payload || rest, idempotencyKey: crypto.randomUUID() }),
       });
     },
     getCards: async (gameId: string): Promise<ApiResponse<PendingCard[]>> => {
