@@ -7,6 +7,15 @@ import { getPendingCardsController } from './controllers/cards.js';
 import { getMonthlyReportController } from './controllers/monthly-report.js';
 import { getTransactionsController } from './controllers/transactions.js';
 import { getXpHistoryController, getBadgesController, getRewardsSummaryController, spendCoinsController } from './controllers/rewards.js';
+import {
+  linkBankController,
+  bankCallbackController,
+  listAccountsController,
+  unlinkAccountController,
+  getBankTransactionsController,
+  syncBankController,
+  mirrorController,
+} from './controllers/banking.js';
 
 export function createRoutes(pool: Pool): Router {
   const router = Router();
@@ -27,6 +36,15 @@ export function createRoutes(pool: Pool): Router {
   router.get('/games/:id/badges', getBadgesController(pool));
   router.get('/games/:id/rewards-summary', getRewardsSummaryController(pool));
   router.post('/games/:id/spend-coins', spendCoinsController(pool));
+
+  // Banking endpoints
+  router.post('/banking/link', linkBankController(pool));
+  router.post('/banking/callback', bankCallbackController(pool));
+  router.get('/banking/accounts', listAccountsController(pool));
+  router.delete('/banking/accounts/:id', unlinkAccountController(pool));
+  router.get('/banking/transactions', getBankTransactionsController(pool));
+  router.post('/banking/sync', syncBankController(pool));
+  router.get('/banking/mirror/:gameId', mirrorController(pool));
 
   // Bills endpoint
   router.get('/games/:id/bills', async (req, res) => {

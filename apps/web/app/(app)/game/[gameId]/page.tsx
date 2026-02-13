@@ -184,9 +184,9 @@ export default function GamePage(): React.ReactElement {
             { href: `/game/${gameId}/transfer`, icon: '💸', label: 'Transfer' },
             { href: `/game/${gameId}/budget`, icon: '📊', label: 'Budget' },
             { href: `/game/${gameId}/rewards`, icon: '🏆', label: 'Rewards' },
-            { href: `/game/${gameId}`, icon: '📬', label: 'Bills', scroll: true },
+            { href: `/banking`, icon: '🏦', label: 'Banking' },
+            { href: `/game/${gameId}/mirror`, icon: '🪞', label: 'Mirror' },
             { href: `/game/${gameId}/monthly-report/${game.currentDate?.split('-')[0]}/${game.currentDate?.split('-')[1]}`, icon: '📋', label: 'Report' },
-            { href: `/game/${gameId}`, icon: '⚙️', label: 'Settings' },
           ].map(item => (
             <Link key={item.label} href={item.href} style={s.quickItem}>
               <div style={s.quickIcon}><span style={{ fontSize: 22 }}>{item.icon}</span></div>
