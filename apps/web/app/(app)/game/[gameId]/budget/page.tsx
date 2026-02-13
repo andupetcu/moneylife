@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../src/lib/auth-context';
 import { api, type GameResponse, type Transaction } from '../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
+import { useTranslation } from 'react-i18next';
 
 const CATEGORIES = ['Housing', 'Food', 'Transport', 'Entertainment', 'Savings', 'Other'];
 const CAT_COLORS: Record<string, string> = {
@@ -20,6 +21,7 @@ export default function BudgetPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const gameId = params.gameId as string;
 
   const [game, setGame] = useState<GameResponse | null>(null);
@@ -66,7 +68,7 @@ export default function BudgetPage(): React.ReactElement {
   };
 
   const handleSubmit = async (): Promise<void> => {
-    if (totalPct !== 100) { setError('Allocations must total 100%'); return; }
+    if (totalPct !== 100) { setError(t('budget.allocationsTotal')); return; }
     setSubmitting(true);
     setError(null);
     const res = await api.game.submitAction(gameId, {
@@ -78,11 +80,11 @@ export default function BudgetPage(): React.ReactElement {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } else {
-      setError(res.error || 'Failed to set budget');
+      setError(res.error || t('budget.failedToSet'));
     }
   };
 
-  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('common.loading')}</p></div>;
 
   const currency = game?.currency || 'USD';
   const income = game?.monthlyIncome ?? 0;
@@ -94,7 +96,7 @@ export default function BudgetPage(): React.ReactElement {
       {/* Header */}
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
-        <span style={s.headerTitle}>Budget</span>
+        <span style={s.headerTitle}>{t('budget.title')}</span>
         <div style={{ width: 32 }} />
       </div>
 
@@ -112,15 +114,15 @@ export default function BudgetPage(): React.ReactElement {
               <span style={{ fontSize: 28, fontWeight: 700, color: colors.textPrimary }}>{budgetScore}%</span>
             </div>
           </div>
-          <p style={{ color: colors.textSecondary, fontSize: 14, margin: '8px 0 0' }}>Budget Score</p>
-          {income > 0 && <p style={{ color: colors.textMuted, fontSize: 13, margin: '4px 0 0' }}>Monthly income: {fmt(income, currency)}</p>}
+          <p style={{ color: colors.textSecondary, fontSize: 14, margin: '8px 0 0' }}>{t('budget.budgetScore')}</p>
+          {income > 0 && <p style={{ color: colors.textMuted, fontSize: 13, margin: '4px 0 0' }}>{t('budget.monthlyIncome')}: {fmt(income, currency)}</p>}
         </div>
 
         {/* Total allocation bar */}
         <div style={s.totalBar}>
-          <span style={{ fontWeight: 600, color: colors.textPrimary }}>Total: {totalPct}%</span>
+          <span style={{ fontWeight: 600, color: colors.textPrimary }}>{t('budget.total')}: {totalPct}%</span>
           <span style={{ color: totalPct === 100 ? colors.success : colors.danger, fontWeight: 600, fontSize: 13 }}>
-            {totalPct === 100 ? '✓ Balanced' : `${100 - totalPct}% remaining`}
+            {totalPct === 100 ? `✓ ${t('budget.balanced')}` : t('budget.percentRemaining', { percent: 100 - totalPct })}
           </span>
         </div>
 
@@ -166,14 +168,14 @@ export default function BudgetPage(): React.ReactElement {
         })}
 
         {error && <p style={{ color: colors.danger, margin: '12px 0', fontSize: 14 }}>{error}</p>}
-        {success && <p style={{ color: colors.success, margin: '12px 0', fontSize: 14 }}>✓ Budget saved!</p>}
+        {success && <p style={{ color: colors.success, margin: '12px 0', fontSize: 14 }}>✓ {t('budget.budgetSaved')}</p>}
 
         <button
           onClick={handleSubmit}
           disabled={submitting || totalPct !== 100}
           style={{ ...s.primaryBtn, opacity: submitting || totalPct !== 100 ? 0.5 : 1 }}
         >
-          {submitting ? 'Saving...' : '💾 Save Budget'}
+          {submitting ? t('budget.saving') : `💾 ${t('budget.saveBudget')}`}
         </button>
       </div>
     </div>

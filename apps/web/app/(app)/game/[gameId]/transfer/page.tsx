@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../src/lib/auth-context';
+import { useTranslation } from 'react-i18next';
 import { api, type GameResponse } from '../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
 
@@ -14,6 +15,7 @@ export default function TransferPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const gameId = params.gameId as string;
 
   const [game, setGame] = useState<GameResponse | null>(null);
@@ -37,9 +39,9 @@ export default function TransferPage(): React.ReactElement {
 
   const handleSubmit = async (): Promise<void> => {
     if (!fromId || !toId || !amount) return;
-    if (fromId === toId) { setError('Cannot transfer to same account'); return; }
+    if (fromId === toId) { setError(t('transfer.sameAccountError')); return; }
     const cents = Math.round(parseFloat(amount) * 100);
-    if (isNaN(cents) || cents <= 0) { setError('Invalid amount'); return; }
+    if (isNaN(cents) || cents <= 0) { setError(t('transfer.invalidAmount')); return; }
     setSubmitting(true);
     setError(null);
     const res = await api.game.submitAction(gameId, {
@@ -50,11 +52,11 @@ export default function TransferPage(): React.ReactElement {
     if (res.ok) {
       router.push(`/game/${gameId}`);
     } else {
-      setError(res.error || 'Transfer failed');
+      setError(res.error || t('transfer.failed'));
     }
   };
 
-  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>Loading...</p></div>;
+  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('common.loading')}</p></div>;
 
   const accounts = game?.accounts || [];
   const currency = game?.currency || 'USD';
@@ -64,14 +66,14 @@ export default function TransferPage(): React.ReactElement {
       {/* Header */}
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
-        <span style={s.headerTitle}>Transfer</span>
+        <span style={s.headerTitle}>{t('transfer.title')}</span>
         <div style={{ width: 32 }} />
       </div>
 
       <div style={s.content}>
         {/* Amount Display */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <p style={{ margin: '0 0 8px', fontSize: 14, color: colors.textMuted }}>Amount ({currency})</p>
+          <p style={{ margin: '0 0 8px', fontSize: 14, color: colors.textMuted }}>{t('transfer.amount')} ({currency})</p>
           <input
             type="number"
             min="0.01"
@@ -85,9 +87,9 @@ export default function TransferPage(): React.ReactElement {
 
         <div style={s.formCard}>
           <div style={s.field}>
-            <label style={s.label}>From Account</label>
+            <label style={s.label}>{t('transfer.fromAccount')}</label>
             <select value={fromId} onChange={e => setFromId(e.target.value)} style={s.select}>
-              <option value="">Select account...</option>
+              <option value="">{t('transfer.selectAccount')}</option>
               {accounts.map(a => (
                 <option key={a.id} value={a.id}>{a.name} ({fmt(a.balance, currency)})</option>
               ))}
@@ -97,9 +99,9 @@ export default function TransferPage(): React.ReactElement {
           <div style={{ textAlign: 'center', margin: '4px 0', color: colors.textMuted, fontSize: 20 }}>↓</div>
 
           <div style={s.field}>
-            <label style={s.label}>To Account</label>
+            <label style={s.label}>{t('transfer.toAccount')}</label>
             <select value={toId} onChange={e => setToId(e.target.value)} style={s.select}>
-              <option value="">Select account...</option>
+              <option value="">{t('transfer.selectAccount')}</option>
               {accounts.filter(a => a.id !== fromId).map(a => (
                 <option key={a.id} value={a.id}>{a.name} ({fmt(a.balance, currency)})</option>
               ))}
@@ -114,7 +116,7 @@ export default function TransferPage(): React.ReactElement {
           disabled={submitting || !fromId || !toId || !amount}
           style={{ ...s.primaryBtn, opacity: submitting || !fromId || !toId || !amount ? 0.5 : 1 }}
         >
-          {submitting ? 'Transferring...' : '✅ Confirm Transfer'}
+          {submitting ? t('transfer.transferring') : `✅ ${t('transfer.confirmTransfer')}`}
         </button>
       </div>
     </div>

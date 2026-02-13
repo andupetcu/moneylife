@@ -7,6 +7,7 @@ import { useAuth } from '../../../src/lib/auth-context';
 import { api, type GameResponse } from '../../../src/lib/api';
 import Link from 'next/link';
 import { colors, radius, shadows } from '../../../src/lib/design-tokens';
+import LanguageSwitcher from '../../../src/components/LanguageSwitcher';
 
 const PERSONAS = [
   { id: 'teen', emoji: '🎒' },
@@ -55,8 +56,8 @@ export default function DashboardPage(): React.ReactElement {
     }
   };
 
-  if (loading) return <div style={{ minHeight: '100vh', background: colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: colors.textSecondary }}>Loading...</p></div>;
-  if (!user) return <div style={{ minHeight: '100vh', background: colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: colors.textSecondary }}>Redirecting...</p></div>;
+  if (loading) return <div style={{ minHeight: '100vh', background: colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: colors.textSecondary }}>{t('common.loading')}</p></div>;
+  if (!user) return <div style={{ minHeight: '100vh', background: colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: colors.textSecondary }}>{t('dashboard.redirecting')}</p></div>;
 
   return (
     <div style={{ minHeight: '100vh', background: colors.background }}>
@@ -69,13 +70,14 @@ export default function DashboardPage(): React.ReactElement {
         <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
-              Hi, {user.displayName}! 👋
+              {t('dashboard.hi', { name: user.displayName })} 👋
             </h1>
             <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.75)', marginTop: 4 }}>
               {t('home.subtitle') || 'Your financial journey starts here'}
             </p>
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <LanguageSwitcher />
             <div style={{ width: 40, height: 40, borderRadius: 20, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
               🔔
             </div>
@@ -83,7 +85,7 @@ export default function DashboardPage(): React.ReactElement {
               padding: '8px 16px', borderRadius: radius.sm, border: '1px solid rgba(255,255,255,0.3)',
               background: 'rgba(255,255,255,0.1)', cursor: 'pointer', color: '#FFFFFF', fontSize: 14, fontWeight: 500,
             }}>
-              Logout
+              {t('dashboard.logout')}
             </button>
           </div>
         </div>
@@ -117,7 +119,7 @@ export default function DashboardPage(): React.ReactElement {
                     <span style={{ fontSize: 36 }}>{PERSONAS.find(p => p.id === game.persona)?.emoji || '🎮'}</span>
                     <div>
                       <p style={{ fontWeight: 600, fontSize: 17, margin: 0, textTransform: 'capitalize' }}>{game.persona.replace('_', ' ')}</p>
-                      <p style={{ fontSize: 13, opacity: 0.8, margin: '2px 0 0' }}>Level {game.level} · {game.xp} XP</p>
+                      <p style={{ fontSize: 13, opacity: 0.8, margin: '2px 0 0' }}>{t('game.level', { level: game.level })} · {game.xp} XP</p>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -222,14 +224,14 @@ export default function DashboardPage(): React.ReactElement {
                 color: '#FFFFFF', fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer',
                 opacity: creating ? 0.7 : 1,
               }}>
-                {creating ? 'Creating...' : (t('onboarding.startGame') || '🚀 Start Game')}
+                {creating ? t('dashboard.creating') : (t('onboarding.startGame') || '🚀 Start Game')}
               </button>
               <button onClick={() => setShowNewGame(false)} style={{
                 padding: '0 24px', height: 52, borderRadius: radius.md,
                 background: colors.borderLight, color: colors.textSecondary,
                 fontSize: 16, fontWeight: 600, border: 'none', cursor: 'pointer',
               }}>
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </div>
@@ -249,6 +251,10 @@ export default function DashboardPage(): React.ReactElement {
           { icon: '👥', label: 'Social', href: '/social' },
           { icon: '🏆', label: 'Leaderboard', href: '/leaderboard' },
           { icon: '🎓', label: 'Classroom', href: '/classroom' },
+          { icon: '🏠', label: t('tabs.home') },
+          { icon: '📊', label: t('dashboard.stats') },
+          { icon: '🎓', label: t('dashboard.learn') },
+          { icon: '👤', label: t('tabs.profile') },
         ].map(tab => (
           <Link key={tab.label} href={tab.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, textDecoration: 'none', color: tab.active ? colors.primary : colors.textMuted }}>
             <span style={{ fontSize: 20 }}>{tab.icon}</span>
