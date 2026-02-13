@@ -13,6 +13,7 @@ import AIAdvisor from '../../../../src/components/AIAdvisor';
 import { useT } from '../../../../src/lib/useT';
 import LanguageSwitcher from '../../../../src/components/LanguageSwitcher';
 import { useIsMobile } from '../../../../src/hooks/useIsMobile';
+import { useToast } from '../../../../src/components/Toast';
 
 const PERSONAS: Record<string, string> = {
   teen: '🎒', student: '🎓', young_adult: '💼', parent: '👨‍👩‍👧',
@@ -32,9 +33,9 @@ function fmt(amount: number, currency: string): string {
   return (amount / 100).toLocaleString('en-US', { style: 'currency', currency: currency || 'USD' });
 }
 
-function getCreditColor(score: number): string {
-  if (score >= 80) return colors.success;
-  if (score >= 60) return colors.warning;
+function getScoreColor(score: number): string {
+  if (score >= 70) return colors.success;
+  if (score >= 40) return colors.warning;
   return colors.danger;
 }
 
@@ -46,12 +47,59 @@ function isLastDay(dateStr?: string): boolean {
   return next.getMonth() !== d.getMonth();
 }
 
+const shimmerStyle: React.CSSProperties = {
+  background: `linear-gradient(90deg, ${colors.borderLight} 25%, ${colors.border} 50%, ${colors.borderLight} 75%)`,
+  backgroundSize: '200% 100%',
+  animation: 'shimmer 1.5s infinite',
+  borderRadius: radius.md,
+};
+
+function GameSkeleton() {
+  return (
+    <div style={s.page}>
+      <div style={{ ...s.header, padding: '20px 24px 24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ width: 44, height: 44, borderRadius: radius.sm, background: 'rgba(255,255,255,0.2)' }} />
+          <div style={{ textAlign: 'center', flex: 1 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 24, background: 'rgba(255,255,255,0.15)', margin: '0 auto 8px' }} />
+            <div style={{ width: 100, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.15)', margin: '0 auto' }} />
+          </div>
+          <div style={{ width: 44 }} />
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <div style={{ height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.2)' }} />
+        </div>
+      </div>
+      <div style={{ padding: '0 20px 120px' }}>
+        <div style={{ ...shimmerStyle, height: 100, margin: '-8px 0 20px', borderRadius: radius.lg }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 24 }}>
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} style={{ ...shimmerStyle, height: 80 }} />
+          ))}
+        </div>
+        <div style={{ ...shimmerStyle, height: 120, marginBottom: 24 }} />
+        {[1, 2, 3].map(i => (
+          <div key={i} style={{ ...shimmerStyle, height: 60, marginBottom: 8 }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface DaySummary {
+  day: number;
+  xpGained: number;
+  newCards: number;
+  events: string[];
+}
+
 export default function GamePage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const t = useT();
   const isMobile = useIsMobile();
+  const { showToast } = useToast();
   const gameId = params.gameId as string;
 
   const [game, setGame] = useState<GameResponse | null>(null);
@@ -64,7 +112,9 @@ export default function GamePage(): React.ReactElement {
   const [showTutorial, setShowTutorial] = useState(true);
   const [levelUpLevel, setLevelUpLevel] = useState<number | null>(null);
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
+  const [daySummary, setDaySummary] = useState<DaySummary | null>(null);
   const prevLevelRef = useRef<number | null>(null);
+  const pendingCardsRef = useRef<HTMLDivElement>(null);
 
   const fetchGame = useCallback(async () => {
     if (!gameId) return;
@@ -92,6 +142,8 @@ export default function GamePage(): React.ReactElement {
     setAdvancing(true);
     setError(null);
     const prevLevel = game?.level ?? null;
+    const prevXp = game?.xp ?? 0;
+    const prevCardCount = game?.pendingCards?.length ?? 0;
     const res = await api.game.submitAction(gameId, { type: 'advance_day' });
     setAdvancing(false);
     if (res.ok) {
@@ -101,9 +153,36 @@ export default function GamePage(): React.ReactElement {
       }
       await fetchGame();
       const updatedGame = await api.game.get(gameId);
-      if (updatedGame.ok && updatedGame.data && prevLevel !== null && updatedGame.data.level > prevLevel) {
-        setLevelUpLevel(updatedGame.data.level);
+      if (updatedGame.ok && updatedGame.data) {
+        const newXp = updatedGame.data.xp ?? 0;
+        const newCardCount = updatedGame.data.pendingCards?.length ?? 0;
+        const dayNum = updatedGame.data.currentDate ? new Date(updatedGame.data.currentDate).getDate() : 0;
+
+        // Build day summary
+        const events: string[] = [];
+        if (resData?.randomEvents && Array.isArray(resData.randomEvents)) {
+          (resData.randomEvents as { description: string }[]).forEach(e => events.push(e.description));
+        }
+        setDaySummary({
+          day: dayNum > 0 ? dayNum - 1 : 0,
+          xpGained: Math.max(0, newXp - prevXp),
+          newCards: Math.max(0, newCardCount - prevCardCount),
+          events,
+        });
+        setTimeout(() => setDaySummary(null), 5000);
+
+        if (prevLevel !== null && updatedGame.data.level > prevLevel) {
+          setLevelUpLevel(updatedGame.data.level);
+        }
+
+        // Scroll to pending cards if new ones appeared
+        if (newCardCount > prevCardCount && pendingCardsRef.current) {
+          setTimeout(() => {
+            pendingCardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 300);
+        }
       }
+      showToast(t('game.dayAdvanced') || 'Day advanced!', 'success');
     } else {
       setError(res.error || t('game.failedToAdvance'));
     }
@@ -114,18 +193,21 @@ export default function GamePage(): React.ReactElement {
     setBills(prev => prev.map(b => b.id === billId ? { ...b, autopay: !current } : b));
   };
 
-  if (loading || authLoading) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('common.loading')}</p></div>;
+  if (loading || authLoading) return <GameSkeleton />;
   if (error && !game) return <div style={s.page}><p style={{ color: colors.danger, textAlign: 'center', paddingTop: 80 }}>{error}</p></div>;
   if (!game) return <div style={s.page}><p style={{ color: colors.textMuted, textAlign: 'center', paddingTop: 80 }}>{t('game.gameNotFound')}</p></div>;
 
   const currency = game.currency || 'USD';
   const xpPct = game.xpToNextLevel ? Math.min(100, (game.xp / game.xpToNextLevel) * 100) : 0;
   const creditScore = game.creditHealthIndex ?? 0;
+  const budgetScore = game.budgetScore ?? 0;
   const monthEnd = isLastDay(game.currentDate);
   const netWorth = game.netWorth ?? 0;
   const income = game.monthlyIncome ?? 0;
 
-  const dateDisplay = game.currentDate ? new Date(game.currentDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Day 1';
+  const gameDate = game.currentDate ? new Date(game.currentDate) : null;
+  const dayNumber = gameDate ? gameDate.getDate() : 1;
+  const dateDisplay = gameDate ? gameDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'Day 1';
 
   const quickActions = [
     { href: `/game/${gameId}/transfer`, icon: '💸', label: t('game.transfer') },
@@ -155,7 +237,7 @@ export default function GamePage(): React.ReactElement {
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>⭐ XP</span>
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{game.xp}{game.xpToNextLevel ? ` / ${game.xpToNextLevel}` : ''}</span>
           </div>
-          <div style={s.xpTrack}><div style={{ ...s.xpFill, width: `${xpPct}%` }} /></div>
+          <div style={s.xpTrack}><div style={{ ...s.xpFill, width: `${xpPct}%`, animation: 'xpGrow 0.8s ease' }} /></div>
         </div>
       </div>
 
@@ -183,11 +265,17 @@ export default function GamePage(): React.ReactElement {
           </div>
           <div style={s.statCard}>
             <p style={s.statLabel}>{t('game.budgetScore')}</p>
-            <p style={{ ...s.statValue, fontSize: isMobile ? 17 : 20 }}>{game.budgetScore ?? 0}%</p>
+            <p style={{ ...s.statValue, fontSize: isMobile ? 17 : 20, color: getScoreColor(budgetScore) }}>{budgetScore}%</p>
+            <div style={{ marginTop: 4, height: 4, borderRadius: 2, backgroundColor: colors.borderLight, overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 2, width: `${Math.min(100, budgetScore)}%`, backgroundColor: getScoreColor(budgetScore), transition: 'width 0.5s ease' }} />
+            </div>
           </div>
           <div style={s.statCard}>
             <p style={s.statLabel}>{t('game.creditHealth')}</p>
-            <p style={{ ...s.statValue, fontSize: isMobile ? 17 : 20, color: getCreditColor(creditScore) }}>{creditScore}</p>
+            <p style={{ ...s.statValue, fontSize: isMobile ? 17 : 20, color: getScoreColor(creditScore) }}>{creditScore}</p>
+            <div style={{ marginTop: 4, height: 4, borderRadius: 2, backgroundColor: colors.borderLight, overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 2, width: `${Math.min(100, creditScore)}%`, backgroundColor: getScoreColor(creditScore), transition: 'width 0.5s ease' }} />
+            </div>
           </div>
         </div>
 
@@ -204,30 +292,80 @@ export default function GamePage(): React.ReactElement {
         {/* Date + Advance Day */}
         <div style={s.dayCard}>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ margin: 0, fontSize: isMobile ? 14 : 16, fontWeight: 600, color: colors.textPrimary }}>📅 {dateDisplay}</p>
+            <p style={{ margin: 0, fontSize: isMobile ? 20 : 24, fontWeight: 700, color: colors.textPrimary }}>
+              Day {dayNumber}
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: 14, color: colors.textSecondary }}>📅 {dateDisplay}</p>
             {monthEnd && <span style={s.monthEndBadge}>🎉 {t('game.monthEnd')}</span>}
           </div>
           {error && <p style={{ color: colors.danger, textAlign: 'center', margin: '8px 0', fontSize: 13 }}>{error}</p>}
-          <button onClick={handleAdvanceDay} disabled={advancing} style={{ ...s.primaryBtn, opacity: advancing ? 0.7 : 1, marginTop: 12 }}>
+          <button
+            onClick={handleAdvanceDay}
+            disabled={advancing}
+            style={{
+              ...s.primaryBtn,
+              opacity: advancing ? 0.7 : 1,
+              marginTop: 12,
+              animation: !advancing ? 'pulse 2s ease-in-out infinite' : 'none',
+            }}
+          >
             {advancing ? `⏳ ${t('game.advancing')}` : `☀️ ${t('game.advanceDay')}`}
           </button>
         </div>
 
-        {/* Pending Cards */}
-        {game.pendingCards && game.pendingCards.length > 0 && (
-          <div style={s.section}>
-            <h2 style={s.sectionTitle}>📋 {t('game.decisionsNeeded')}</h2>
-            {game.pendingCards.map(card => (
-              <div key={card.id} style={{ ...s.pendingCard, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 10 : 0, alignItems: isMobile ? 'flex-start' : 'center' }} onClick={() => router.push(`/game/${gameId}/card/${card.id}`)}>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{card.title || card.cardId}</p>
-                  <p style={{ margin: '4px 0 0', fontSize: 13, color: colors.textSecondary }}>{card.description || t('game.makeDecision')}</p>
-                </div>
-                <span style={s.decidePill}>{t('game.decide')} →</span>
+        {/* Day Summary Feedback */}
+        {daySummary && (
+          <div style={{
+            padding: 16, borderRadius: radius.lg, background: '#EEF2FF',
+            border: `1px solid ${colors.primaryLight}33`, marginBottom: 20,
+            animation: 'slideUp 0.4s ease',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 20 }}>🌟</span>
+              <span style={{ fontWeight: 700, color: colors.textPrimary, fontSize: 15 }}>
+                Day {daySummary.day} complete!
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const }}>
+              {daySummary.xpGained > 0 && (
+                <span style={{ fontSize: 13, color: colors.primary, fontWeight: 600 }}>+{daySummary.xpGained} XP</span>
+              )}
+              {daySummary.newCards > 0 && (
+                <span style={{ fontSize: 13, color: colors.warning, fontWeight: 600 }}>{daySummary.newCards} new decisions</span>
+              )}
+            </div>
+            {daySummary.events.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                {daySummary.events.map((evt, i) => (
+                  <p key={i} style={{ margin: '4px 0 0', fontSize: 13, color: colors.textSecondary }}>⚡ {evt}</p>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         )}
+
+        {/* Pending Cards */}
+        <div ref={pendingCardsRef}>
+          {game.pendingCards && game.pendingCards.length > 0 ? (
+            <div style={s.section}>
+              <h2 style={s.sectionTitle}>📋 {t('game.decisionsNeeded')}</h2>
+              {game.pendingCards.map(card => (
+                <div key={card.id} style={{ ...s.pendingCard, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 10 : 0, alignItems: isMobile ? 'flex-start' : 'center' }} onClick={() => router.push(`/game/${gameId}/card/${card.id}`)}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{card.title || card.cardId}</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, color: colors.textSecondary }}>{card.description || t('game.makeDecision')}</p>
+                  </div>
+                  <span style={s.decidePill}>{t('game.decide')} →</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: 32, background: colors.surface, borderRadius: radius.lg, boxShadow: shadows.card, marginBottom: 28 }}>
+              <span style={{ fontSize: 40 }}>✅</span>
+              <p style={{ color: colors.textSecondary, margin: '8px 0 0', fontSize: 14 }}>All caught up! Advance to the next day for new decisions.</p>
+            </div>
+          )}
+        </div>
 
         {/* Accounts */}
         {game.accounts && game.accounts.length > 0 && (
@@ -275,7 +413,7 @@ export default function GamePage(): React.ReactElement {
         )}
 
         {/* Recent Transactions */}
-        {transactions.length > 0 && (
+        {transactions.length > 0 ? (
           <div style={s.section}>
             <h2 style={s.sectionTitle}>📊 {t('game.recentActivity')}</h2>
             {transactions.map(tx => {
@@ -298,13 +436,10 @@ export default function GamePage(): React.ReactElement {
               );
             })}
           </div>
-        )}
-
-        {/* No transactions empty state */}
-        {transactions.length === 0 && (
+        ) : (
           <div style={{ textAlign: 'center', padding: 40, background: colors.surface, borderRadius: radius.lg, boxShadow: shadows.card }}>
-            <span style={{ fontSize: 48 }}>📊</span>
-            <p style={{ color: colors.textMuted, margin: '12px 0 0' }}>{t('accounts.noTransactions') || 'No transactions yet'}</p>
+            <span style={{ fontSize: 48 }}>📭</span>
+            <p style={{ color: colors.textSecondary, margin: '12px 0 0' }}>No transactions yet. Start making decisions!</p>
           </div>
         )}
       </div>

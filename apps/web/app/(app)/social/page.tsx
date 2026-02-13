@@ -161,8 +161,8 @@ export default function SocialPage(): React.ReactElement {
         <h2 style={s.sectionTitle}>{t('social.friends')} ({friends.length})</h2>
         {friends.length === 0 ? (
           <div style={{ ...s.card, textAlign: 'center', padding: 40 }}>
-            <span style={{ fontSize: 48 }}>👥</span>
-            <p style={{ color: colors.textMuted, margin: '12px 0 0' }}>{t('social.noFriends')}</p>
+            <span style={{ fontSize: 48 }}>👋</span>
+            <p style={{ color: colors.textSecondary, margin: '12px 0 0' }}>Add friends to compare progress!</p>
             <button onClick={() => setShowSearch(true)} style={{ ...s.searchBtn, marginTop: 16, minHeight: 44 }}>
               {t('social.addFriend')}
             </button>

@@ -95,8 +95,8 @@ export default function AccountDetailPage(): React.ReactElement {
           <h2 style={{ fontSize: 17, fontWeight: 600, color: colors.textPrimary, marginBottom: 12 }}>{t('accounts.transactionHistory')}</h2>
           {transactions.length === 0 && (
             <div style={{ textAlign: 'center', padding: 40, background: colors.surface, borderRadius: radius.lg, boxShadow: shadows.card }}>
-              <span style={{ fontSize: 48 }}>📊</span>
-              <p style={{ color: colors.textMuted, fontSize: 14, margin: '12px 0 0' }}>{t('accounts.noTransactions')}</p>
+              <span style={{ fontSize: 48 }}>📭</span>
+              <p style={{ color: colors.textSecondary, fontSize: 14, margin: '12px 0 0' }}>No transactions yet. Start making decisions!</p>
             </div>
           )}
           {transactions.map(tx => (
