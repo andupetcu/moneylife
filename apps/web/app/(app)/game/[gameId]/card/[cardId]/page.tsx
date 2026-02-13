@@ -28,7 +28,7 @@ function getEffectLabel(effect: { type: string; amount?: number; label?: string 
   if (effect.label) return effect.label;
   const sign = (effect.amount ?? 0) >= 0 ? '+' : '';
   switch (effect.type) {
-    case 'balance': return `${sign}$${((effect.amount ?? 0) / 100).toFixed(0)}`;
+    case 'balance': return `${sign}RON ${(Math.abs(effect.amount ?? 0) / 100).toFixed(0)}`;
     case 'xp': return `${sign}${effect.amount} XP`;
     case 'happiness': return `😊 ${sign}${effect.amount}`;
     case 'credit': return `📊 ${sign}${effect.amount}`;
