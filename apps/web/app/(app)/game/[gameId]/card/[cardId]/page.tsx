@@ -7,6 +7,7 @@ import { useAuth } from '../../../../../../src/lib/auth-context';
 import { api, type PendingCard, type GameResponse } from '../../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../../src/lib/design-tokens';
 import { CardHintButton } from '../../../../../../src/components/AIAdvisor';
+import { useIsMobile } from '../../../../../../src/hooks/useIsMobile';
 
 const CATEGORY_STYLES: Record<string, { icon: string; color: string; bg: string }> = {
   housing: { icon: '🏠', color: '#7C3AED', bg: '#F5F3FF' },
@@ -46,6 +47,7 @@ export default function CardPage(): React.ReactElement {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const gameId = params.gameId as string;
   const cardId = params.cardId as string;
 
@@ -72,10 +74,11 @@ export default function CardPage(): React.ReactElement {
     }
     if (gameRes.ok && gameRes.data) {
       setTotalCoins((gameRes.data as GameResponse & { coins?: number }).coins ?? (gameRes.data as any).totalCoins ?? 0);
-      setError(res.error || t('game.failedToLoadCard'));
+    } else {
+      setError(gameRes.error || t('game.failedToLoadCard'));
     }
     setLoading(false);
-  }, [gameId, cardId]);
+  }, [gameId, cardId, t]);
 
   useEffect(() => {
     if (!authLoading && !user) { router.push('/login'); return; }
@@ -108,7 +111,7 @@ export default function CardPage(): React.ReactElement {
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
         <span style={s.headerTitle}>{t('game.decision')}</span>
-        <div style={{ width: 32 }} />
+        <div style={{ width: 44 }} />
       </div>
       <div style={s.content}>
         <p style={{ color: colors.danger }}>{error || t('game.cardNotFound')}</p>
@@ -137,11 +140,11 @@ export default function CardPage(): React.ReactElement {
       {/* Purple Header */}
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
-        <span style={s.headerTitle}>{card.title}</span>
-        <div style={{ width: 32 }} />
+        <span style={{ ...s.headerTitle, fontSize: isMobile ? 16 : 18 }}>{card.title}</span>
+        <div style={{ width: 44 }} />
       </div>
 
-      <div style={s.content}>
+      <div style={{ ...s.content, padding: isMobile ? 16 : 20 }}>
         {/* Category Badge */}
         <div style={{ marginBottom: 16 }}>
           <span style={{ display: 'inline-block', padding: '4px 14px', borderRadius: radius.pill, backgroundColor: catStyle.bg, color: catStyle.color, fontSize: 13, fontWeight: 600 }}>
@@ -159,21 +162,21 @@ export default function CardPage(): React.ReactElement {
 
         {/* Options */}
         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10 }}>
-          {(card.options || []).map((opt, idx) => {
+          {(card.options || []).map((opt) => {
             const isSelected = selectedOption === opt.id;
-            const isPrimary = idx === 0;
             return (
               <button
                 key={opt.id}
                 onClick={() => setSelectedOption(opt.id)}
                 style={{
                   width: '100%',
-                  padding: 16,
+                  padding: isMobile ? 14 : 16,
                   borderRadius: radius.md,
                   border: isSelected ? `2px solid ${colors.primary}` : `2px solid ${colors.border}`,
-                  background: isSelected ? '#EEF2FF' : (isPrimary ? colors.surface : colors.surface),
+                  background: isSelected ? '#EEF2FF' : colors.surface,
                   cursor: 'pointer',
                   textAlign: 'left' as const,
+                  minHeight: 44,
                 }}
               >
                 <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{opt.label}</p>
@@ -209,7 +212,7 @@ export default function CardPage(): React.ReactElement {
 const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', backgroundColor: colors.background },
   headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  headerBack: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer' },
+  headerBack: { width: 44, height: 44, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
   content: { padding: 20 },
   descCard: { padding: 20, borderRadius: radius.lg, background: colors.surface, boxShadow: shadows.card, marginBottom: 20 },

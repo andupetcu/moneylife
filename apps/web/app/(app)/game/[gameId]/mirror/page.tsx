@@ -13,6 +13,7 @@ import {
   type LinkedAccount,
 } from '../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
+import { useIsMobile } from '../../../../../src/hooks/useIsMobile';
 
 const CATEGORY_ICONS: Record<string, string> = {
   housing: '🏠', food: '🍕', transport: '🚗', entertainment: '🎮',
@@ -39,6 +40,7 @@ export default function MirrorPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const isMobile = useIsMobile();
   const gameId = params.gameId as string;
 
   const [game, setGame] = useState<GameResponse | null>(null);
@@ -84,22 +86,29 @@ export default function MirrorPage(): React.ReactElement {
   };
 
   if (loading || authLoading) {
-    return <div style={s.page}><p style={s.loadingText}>Loading Mirror Mode...</p></div>;
+    return (
+      <div style={s.page}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 80, gap: 12 }}>
+          <div style={{ width: 24, height: 24, border: `3px solid ${colors.borderLight}`, borderTopColor: colors.primary, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <p style={{ color: colors.textMuted }}>Loading Mirror Mode...</p>
+        </div>
+      </div>
+    );
   }
 
   // No linked accounts — prompt to connect
   if (accounts.length === 0) {
     return (
       <div style={s.page}>
-        <div style={s.header}>
+        <div style={{ ...s.header, padding: isMobile ? '16px 16px 24px' : '20px 24px 28px' }}>
           <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>←</button>
           <div style={{ textAlign: 'center', flex: 1 }}>
-            <span style={{ fontSize: 40 }}>🪞</span>
-            <h1 style={s.headerTitle}>Mirror Mode</h1>
+            <span style={{ fontSize: isMobile ? 32 : 40 }}>🪞</span>
+            <h1 style={{ ...s.headerTitle, fontSize: isMobile ? 18 : 22 }}>Mirror Mode</h1>
           </div>
-          <div style={{ width: 32 }} />
+          <div style={{ width: 44 }} />
         </div>
-        <div style={s.content}>
+        <div style={{ ...s.content, padding: isMobile ? '20px 16px 120px' : '20px 20px 120px' }}>
           <div style={s.emptyCard}>
             <span style={{ fontSize: 48 }}>🏦</span>
             <h2 style={s.emptyTitle}>Connect a Bank First</h2>
@@ -118,28 +127,28 @@ export default function MirrorPage(): React.ReactElement {
   return (
     <div style={s.page}>
       {/* Header */}
-      <div style={s.header}>
+      <div style={{ ...s.header, padding: isMobile ? '16px 16px 24px' : '20px 24px 28px' }}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.backBtn}>←</button>
         <div style={{ textAlign: 'center', flex: 1 }}>
-          <span style={{ fontSize: 40 }}>🪞</span>
-          <h1 style={s.headerTitle}>Mirror Mode</h1>
+          <span style={{ fontSize: isMobile ? 32 : 40 }}>🪞</span>
+          <h1 style={{ ...s.headerTitle, fontSize: isMobile ? 18 : 22 }}>Mirror Mode</h1>
           <p style={s.headerSub}>Game vs Reality</p>
         </div>
-        <div style={{ width: 32 }} />
+        <div style={{ width: 44 }} />
       </div>
 
-      <div style={s.content}>
+      <div style={{ ...s.content, padding: isMobile ? '20px 16px 120px' : '20px 20px 120px' }}>
         {/* View mode toggle */}
         <div style={s.toggleRow}>
           <button
             onClick={() => setViewMode('dashboard')}
-            style={{ ...s.toggleBtn, ...(viewMode === 'dashboard' ? s.toggleActive : {}) }}
+            style={{ ...s.toggleBtn, ...(viewMode === 'dashboard' ? s.toggleActive : {}), minHeight: 44 }}
           >
             Overview
           </button>
           <button
             onClick={() => loadMonth(selectedYear, selectedMonth)}
-            style={{ ...s.toggleBtn, ...(viewMode === 'month' ? s.toggleActive : {}) }}
+            style={{ ...s.toggleBtn, ...(viewMode === 'month' ? s.toggleActive : {}), minHeight: 44 }}
           >
             Monthly
           </button>
@@ -150,7 +159,7 @@ export default function MirrorPage(): React.ReactElement {
             {/* Overall Score */}
             <div style={s.scoreCard}>
               <p style={s.scoreLabel}>Overall Similarity</p>
-              <p style={{ ...s.scoreValue, color: getScoreColor(dashboard.overallSimilarity) }}>
+              <p style={{ ...s.scoreValue, color: getScoreColor(dashboard.overallSimilarity), fontSize: isMobile ? 44 : 56 }}>
                 {dashboard.overallSimilarity}%
               </p>
               <p style={s.trendBadge}>
@@ -165,7 +174,7 @@ export default function MirrorPage(): React.ReactElement {
               <div style={s.section}>
                 <h2 style={s.sectionTitle}>Top Differences</h2>
                 {dashboard.topDifferences.map(diff => (
-                  <DifferenceBar key={diff.category} diff={diff} currency={currency} />
+                  <DifferenceBar key={diff.category} diff={diff} currency={currency} isMobile={isMobile} />
                 ))}
               </div>
             )}
@@ -179,7 +188,7 @@ export default function MirrorPage(): React.ReactElement {
                   return (
                     <div
                       key={comp.id}
-                      style={s.historyCard}
+                      style={{ ...s.historyCard, padding: isMobile ? 14 : 16 }}
                       onClick={() => loadMonth(d.getFullYear(), d.getMonth() + 1)}
                     >
                       <div>
@@ -187,7 +196,7 @@ export default function MirrorPage(): React.ReactElement {
                         <p style={s.historyMeta}>{comp.categories.length} categories compared</p>
                       </div>
                       <div style={{ textAlign: 'right' as const }}>
-                        <p style={{ ...s.historyScore, color: getScoreColor(comp.similarityScore) }}>
+                        <p style={{ ...s.historyScore, color: getScoreColor(comp.similarityScore), fontSize: isMobile ? 18 : 22 }}>
                           {comp.similarityScore}%
                         </p>
                         <p style={s.historyMeta}>similarity</p>
@@ -229,7 +238,7 @@ export default function MirrorPage(): React.ReactElement {
                 {/* Score */}
                 <div style={s.scoreCard}>
                   <p style={s.scoreLabel}>Similarity Score</p>
-                  <p style={{ ...s.scoreValue, color: getScoreColor(comparison.similarityScore) }}>
+                  <p style={{ ...s.scoreValue, color: getScoreColor(comparison.similarityScore), fontSize: isMobile ? 44 : 56 }}>
                     {comparison.similarityScore}%
                   </p>
                 </div>
@@ -242,7 +251,7 @@ export default function MirrorPage(): React.ReactElement {
                     <span style={s.legendReal}>■ Real (IRL)</span>
                   </div>
                   {comparison.categories.map(cat => (
-                    <CategoryBar key={cat.category} cat={cat} currency={currency} />
+                    <CategoryBar key={cat.category} cat={cat} currency={currency} isMobile={isMobile} />
                   ))}
                 </div>
 
@@ -267,18 +276,18 @@ export default function MirrorPage(): React.ReactElement {
       </div>
 
       {/* Bottom Nav */}
-      <div style={s.bottomNav}>
+      <div style={{ ...s.bottomNav, paddingBottom: 'env(safe-area-inset-bottom, 14px)' }}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.navTab}>
-          <span style={{ fontSize: 20 }}>🏠</span>
-          <span style={{ fontSize: 11 }}>Game</span>
+          <span style={{ fontSize: 22 }}>🏠</span>
+          {!isMobile && <span style={{ fontSize: 11 }}>Game</span>}
         </button>
         <button onClick={() => router.push('/banking')} style={s.navTab}>
-          <span style={{ fontSize: 20 }}>🏦</span>
-          <span style={{ fontSize: 11 }}>Banking</span>
+          <span style={{ fontSize: 22 }}>🏦</span>
+          {!isMobile && <span style={{ fontSize: 11 }}>Banking</span>}
         </button>
         <button style={{ ...s.navTab, color: '#7C3AED' }}>
-          <span style={{ fontSize: 20 }}>🪞</span>
-          <span style={{ fontSize: 11, fontWeight: 600 }}>Mirror</span>
+          <span style={{ fontSize: 22 }}>🪞</span>
+          {!isMobile && <span style={{ fontSize: 11, fontWeight: 600 }}>Mirror</span>}
         </button>
       </div>
     </div>
@@ -287,7 +296,7 @@ export default function MirrorPage(): React.ReactElement {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function CategoryBar({ cat, currency }: { cat: CategoryComparison; currency: string }): React.ReactElement {
+function CategoryBar({ cat, currency, isMobile }: { cat: CategoryComparison; currency: string; isMobile: boolean }): React.ReactElement {
   const maxAmount = Math.max(cat.gameAmount, cat.realAmount, 1);
   const gamePct = (cat.gameAmount / maxAmount) * 100;
   const realPct = (cat.realAmount / maxAmount) * 100;
@@ -308,7 +317,7 @@ function CategoryBar({ cat, currency }: { cat: CategoryComparison; currency: str
         <div style={barStyles.track}>
           <div style={{ ...barStyles.fillGame, width: `${gamePct}%` }} />
         </div>
-        <span style={{ fontSize: 11, color: colors.textMuted, minWidth: 65, textAlign: 'right' as const }}>
+        <span style={{ fontSize: 11, color: colors.textMuted, minWidth: isMobile ? 55 : 65, textAlign: 'right' as const }}>
           {fmt(cat.gameAmount, currency)}
         </span>
       </div>
@@ -318,7 +327,7 @@ function CategoryBar({ cat, currency }: { cat: CategoryComparison; currency: str
         <div style={barStyles.track}>
           <div style={{ ...barStyles.fillReal, width: `${realPct}%` }} />
         </div>
-        <span style={{ fontSize: 11, color: colors.textMuted, minWidth: 65, textAlign: 'right' as const }}>
+        <span style={{ fontSize: 11, color: colors.textMuted, minWidth: isMobile ? 55 : 65, textAlign: 'right' as const }}>
           {fmt(cat.realAmount, currency)}
         </span>
       </div>
@@ -326,10 +335,10 @@ function CategoryBar({ cat, currency }: { cat: CategoryComparison; currency: str
   );
 }
 
-function DifferenceBar({ diff, currency }: { diff: CategoryComparison; currency: string }): React.ReactElement {
+function DifferenceBar({ diff, currency, isMobile }: { diff: CategoryComparison; currency: string; isMobile: boolean }): React.ReactElement {
   const isOver = diff.differencePercent > 0;
   return (
-    <div style={{ ...s.diffCard, borderLeft: `3px solid ${isOver ? colors.warning : colors.success}` }}>
+    <div style={{ ...s.diffCard, borderLeft: `3px solid ${isOver ? colors.warning : colors.success}`, padding: isMobile ? 12 : 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 14, fontWeight: 600 }}>
           {CATEGORY_ICONS[diff.category] || '📦'} {diff.category}
@@ -372,7 +381,6 @@ const barStyles: Record<string, React.CSSProperties> = {
 
 const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', backgroundColor: colors.background },
-  loadingText: { color: colors.textMuted, textAlign: 'center', paddingTop: 80 },
   header: {
     background: purpleGradient,
     padding: '20px 24px 28px',
@@ -380,7 +388,7 @@ const s: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'flex-start',
   },
   backBtn: {
-    width: 32, height: 32, borderRadius: radius.sm, border: 'none',
+    width: 44, height: 44, borderRadius: radius.sm, border: 'none',
     background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
@@ -427,7 +435,7 @@ const s: Record<string, React.CSSProperties> = {
     display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 24, marginBottom: 20,
   },
   monthArrow: {
-    width: 36, height: 36, borderRadius: 18, border: `1px solid ${colors.border}`,
+    width: 44, height: 44, borderRadius: 22, border: `1px solid ${colors.border}`,
     background: colors.surface, fontSize: 16, cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
@@ -453,12 +461,14 @@ const s: Record<string, React.CSSProperties> = {
   primaryBtn: {
     padding: '12px 28px', borderRadius: radius.md, background: purpleGradient,
     color: '#FFF', fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer',
+    minHeight: 52,
   },
 
   historyCard: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: 16, borderRadius: radius.lg, marginBottom: 8,
     background: colors.surface, boxShadow: shadows.card, cursor: 'pointer',
+    minHeight: 44,
   },
   historyMonth: { margin: 0, fontWeight: 600, fontSize: 15, color: colors.textPrimary },
   historyMeta: { margin: '2px 0 0', fontSize: 12, color: colors.textMuted },
@@ -472,5 +482,6 @@ const s: Record<string, React.CSSProperties> = {
   navTab: {
     display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 2,
     background: 'none', border: 'none', cursor: 'pointer', color: colors.textMuted,
+    minWidth: 44, minHeight: 44, justifyContent: 'center',
   },
 };

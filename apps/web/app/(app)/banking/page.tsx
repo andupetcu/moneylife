@@ -10,10 +10,12 @@ import {
   type GameResponse,
 } from '../../../src/lib/api';
 import { colors, radius, shadows } from '../../../src/lib/design-tokens';
+import { useIsMobile } from '../../../src/hooks/useIsMobile';
 
 export default function BankingPage(): React.ReactElement {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const isMobile = useIsMobile();
 
   const [accounts, setAccounts] = useState<LinkedAccount[]>([]);
   const [transactions, setTransactions] = useState<BankTransaction[]>([]);
@@ -82,11 +84,8 @@ export default function BankingPage(): React.ReactElement {
 
     const data = res.data!;
     if (data.linkType === 'auth_url') {
-      // TrueLayer: redirect to OAuth
       window.location.href = data.linkValue;
     } else {
-      // Plaid: In production, would open Plaid Link with this token.
-      // For sandbox, simulate with a callback.
       setSuccess(`Plaid Link token received. In production, Plaid Link UI would open. Token: ${data.linkValue.slice(0, 20)}...`);
     }
   };
@@ -117,33 +116,40 @@ export default function BankingPage(): React.ReactElement {
   };
 
   if (loading || authLoading) {
-    return <div style={s.page}><p style={s.loadingText}>Loading...</p></div>;
+    return (
+      <div style={s.page}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 80, gap: 12 }}>
+          <div style={{ width: 24, height: 24, border: `3px solid ${colors.borderLight}`, borderTopColor: colors.primary, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <p style={{ color: colors.textMuted }}>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div style={s.page}>
       {/* Header */}
-      <div style={s.header}>
+      <div style={{ ...s.header, padding: isMobile ? '16px 16px 24px' : '20px 24px 28px' }}>
         <button onClick={() => router.push('/dashboard')} style={s.backBtn}>←</button>
         <div style={{ textAlign: 'center', flex: 1 }}>
-          <span style={{ fontSize: 40 }}>🏦</span>
-          <h1 style={s.headerTitle}>Banking</h1>
+          <span style={{ fontSize: isMobile ? 32 : 40 }}>🏦</span>
+          <h1 style={{ ...s.headerTitle, fontSize: isMobile ? 18 : 22 }}>Banking</h1>
           <p style={s.headerSub}>Connect your real bank to compare with in-game spending</p>
         </div>
-        <div style={{ width: 32 }} />
+        <div style={{ width: 44 }} />
       </div>
 
-      <div style={s.content}>
+      <div style={{ ...s.content, padding: isMobile ? '20px 16px 120px' : '20px 20px 120px' }}>
         {/* Messages */}
         {error && (
           <div style={s.errorBanner}>
-            <span>{error}</span>
+            <span style={{ flex: 1 }}>{error}</span>
             <button onClick={() => setError(null)} style={s.dismissBtn}>×</button>
           </div>
         )}
         {success && (
           <div style={s.successBanner}>
-            <span>{success}</span>
+            <span style={{ flex: 1 }}>{success}</span>
             <button onClick={() => setSuccess(null)} style={s.dismissBtn}>×</button>
           </div>
         )}
@@ -193,7 +199,7 @@ export default function BankingPage(): React.ReactElement {
             </div>
 
             {accounts.map(acct => (
-              <div key={acct.id} style={s.accountCard}>
+              <div key={acct.id} style={{ ...s.accountCard, flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 12 : 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
                   <div style={s.bankIcon}>
                     <span style={{ fontSize: 22 }}>{acct.provider === 'plaid' ? '🇺🇸' : '🇪🇺'}</span>
@@ -211,14 +217,14 @@ export default function BankingPage(): React.ReactElement {
                     )}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8, width: isMobile ? '100%' : 'auto' }}>
                   {unlinkConfirm === acct.id ? (
                     <>
-                      <button onClick={() => handleUnlink(acct.id)} style={s.confirmUnlinkBtn}>Confirm</button>
-                      <button onClick={() => setUnlinkConfirm(null)} style={s.cancelBtn}>Cancel</button>
+                      <button onClick={() => handleUnlink(acct.id)} style={{ ...s.confirmUnlinkBtn, minHeight: 44, flex: isMobile ? 1 : undefined }}>Confirm</button>
+                      <button onClick={() => setUnlinkConfirm(null)} style={{ ...s.cancelBtn, minHeight: 44, flex: isMobile ? 1 : undefined }}>Cancel</button>
                     </>
                   ) : (
-                    <button onClick={() => setUnlinkConfirm(acct.id)} style={s.unlinkBtn}>Unlink</button>
+                    <button onClick={() => setUnlinkConfirm(acct.id)} style={{ ...s.unlinkBtn, minHeight: 44, width: isMobile ? '100%' : 'auto' }}>Unlink</button>
                   )}
                 </div>
               </div>
@@ -241,7 +247,7 @@ export default function BankingPage(): React.ReactElement {
             {games.map(game => (
               <div
                 key={game.id}
-                style={s.mirrorCard}
+                style={{ ...s.mirrorCard, padding: isMobile ? 14 : 16 }}
                 onClick={() => router.push(`/game/${game.id}/mirror`)}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -263,15 +269,15 @@ export default function BankingPage(): React.ReactElement {
             <h2 style={s.sectionTitle}>Recent Bank Transactions</h2>
             {transactions.slice(0, 20).map(tx => (
               <div key={tx.id} style={s.txRow}>
-                <div>
-                  <p style={s.txDesc}>{tx.description}</p>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ ...s.txDesc, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.description}</p>
                   <p style={s.txMeta}>
                     {tx.date} · {tx.category}
                     {tx.merchantName && ` · ${tx.merchantName}`}
                     {tx.isPending && ' · Pending'}
                   </p>
                 </div>
-                <p style={{ ...s.txAmount, color: tx.amount >= 0 ? colors.success : colors.danger }}>
+                <p style={{ ...s.txAmount, color: tx.amount >= 0 ? colors.success : colors.danger, whiteSpace: 'nowrap', marginLeft: 8 }}>
                   {tx.amount >= 0 ? '+' : ''}{(tx.amount / 100).toLocaleString('en-US', { style: 'currency', currency: tx.currency || 'USD' })}
                 </p>
               </div>
@@ -281,14 +287,14 @@ export default function BankingPage(): React.ReactElement {
       </div>
 
       {/* Bottom Nav */}
-      <div style={s.bottomNav}>
+      <div style={{ ...s.bottomNav, paddingBottom: 'env(safe-area-inset-bottom, 14px)' }}>
         <button onClick={() => router.push('/dashboard')} style={s.navTab}>
-          <span style={{ fontSize: 20 }}>🏠</span>
-          <span style={{ fontSize: 11 }}>Home</span>
+          <span style={{ fontSize: 22 }}>🏠</span>
+          {!isMobile && <span style={{ fontSize: 11 }}>Home</span>}
         </button>
         <button onClick={() => {}} style={{ ...s.navTab, color: colors.primary }}>
-          <span style={{ fontSize: 20 }}>🏦</span>
-          <span style={{ fontSize: 11, fontWeight: 600 }}>Banking</span>
+          <span style={{ fontSize: 22 }}>🏦</span>
+          {!isMobile && <span style={{ fontSize: 11, fontWeight: 600 }}>Banking</span>}
         </button>
       </div>
     </div>
@@ -299,7 +305,6 @@ const purpleGradient = 'linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #C084FC
 
 const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', backgroundColor: colors.background },
-  loadingText: { color: colors.textMuted, textAlign: 'center', paddingTop: 80 },
   header: {
     background: purpleGradient,
     padding: '20px 24px 28px',
@@ -308,7 +313,7 @@ const s: Record<string, React.CSSProperties> = {
     alignItems: 'flex-start',
   },
   backBtn: {
-    width: 32, height: 32, borderRadius: radius.sm, border: 'none',
+    width: 44, height: 44, borderRadius: radius.sm, border: 'none',
     background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
@@ -328,7 +333,8 @@ const s: Record<string, React.CSSProperties> = {
   },
   dismissBtn: {
     background: 'none', border: 'none', fontSize: 18, cursor: 'pointer',
-    color: 'inherit', padding: '0 4px',
+    color: 'inherit', padding: '0 4px', minWidth: 44, minHeight: 44,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
 
   ctaCard: {
@@ -359,6 +365,7 @@ const s: Record<string, React.CSSProperties> = {
   addBtn: {
     padding: '6px 16px', borderRadius: radius.pill, background: purpleGradient,
     color: '#FFF', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+    minHeight: 44, display: 'flex', alignItems: 'center',
   },
 
   accountCard: {
@@ -388,14 +395,14 @@ const s: Record<string, React.CSSProperties> = {
   syncBtn: {
     width: '100%', padding: '12px 24px', borderRadius: radius.md,
     background: purpleGradient, color: '#FFF', fontSize: 14, fontWeight: 600,
-    border: 'none', cursor: 'pointer', marginTop: 12,
+    border: 'none', cursor: 'pointer', marginTop: 12, height: 52,
   },
 
   mirrorCard: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: 16, borderRadius: radius.lg, marginBottom: 8,
     background: colors.surface, boxShadow: shadows.card, cursor: 'pointer',
-    border: '2px solid #E9D5FF',
+    border: '2px solid #E9D5FF', minHeight: 44,
   },
   arrowBtn: { fontSize: 20, color: '#7C3AED', fontWeight: 700 },
 
@@ -415,5 +422,6 @@ const s: Record<string, React.CSSProperties> = {
   navTab: {
     display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 2,
     background: 'none', border: 'none', cursor: 'pointer', color: colors.textMuted,
+    minWidth: 44, minHeight: 44, justifyContent: 'center',
   },
 };

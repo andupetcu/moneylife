@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../src/lib/auth-context';
 import { api, type LeaderboardEntry } from '../../../src/lib/api';
 import { colors, radius, shadows } from '../../../src/lib/design-tokens';
+import { useIsMobile } from '../../../src/hooks/useIsMobile';
 
 type TabKey = 'global' | 'friends' | 'level';
 
@@ -16,6 +17,7 @@ export default function LeaderboardPage(): React.ReactElement {
   const { t } = useTranslation();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const isMobile = useIsMobile();
 
   const [tab, setTab] = useState<TabKey>('global');
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -53,25 +55,25 @@ export default function LeaderboardPage(): React.ReactElement {
       {/* Header */}
       <div style={s.header}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#FFF', margin: 0 }}>{t('social.leaderboard')}</h1>
+          <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 700, color: '#FFF', margin: 0 }}>{t('social.leaderboard')}</h1>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', margin: '4px 0 0' }}>{t('social.rank')}</p>
         </div>
       </div>
 
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '20px 24px 100px' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: isMobile ? '16px 16px 100px' : '20px 24px 100px' }}>
         {/* Tab toggle */}
         <div style={s.tabRow}>
           {([
             { key: 'global' as TabKey, label: t('social.globalLeaderboard') },
             { key: 'friends' as TabKey, label: t('social.friendsLeaderboard') },
             { key: 'level' as TabKey, label: 'By Level' },
-          ]).map(t => (
+          ]).map(item => (
             <button
-              key={t.key}
-              onClick={() => fetchLeaderboard(t.key)}
-              style={{ ...s.tabBtn, ...(tab === t.key ? s.tabBtnActive : {}) }}
+              key={item.key}
+              onClick={() => fetchLeaderboard(item.key)}
+              style={{ ...s.tabBtn, ...(tab === item.key ? s.tabBtnActive : {}), minHeight: 44, fontSize: isMobile ? 12 : 13 }}
             >
-              {t.label}
+              {item.label}
             </button>
           ))}
         </div>
@@ -92,18 +94,18 @@ export default function LeaderboardPage(): React.ReactElement {
                 {[entries[1], entries[0], entries[2]].map((e, idx) => {
                   const podiumOrder = [1, 0, 2];
                   const rank = podiumOrder[idx];
-                  const heights = [100, 130, 80];
+                  const heights = isMobile ? [80, 110, 64] : [100, 130, 80];
                   return (
                     <div key={e.userId} style={{ textAlign: 'center', flex: 1 }}>
-                      <div style={{ ...s.podiumAvatar, ...(rank === 0 ? { width: 56, height: 56, borderRadius: 28, fontSize: 22 } : {}) }}>
+                      <div style={{ ...s.podiumAvatar, ...(rank === 0 ? { width: isMobile ? 48 : 56, height: isMobile ? 48 : 56, borderRadius: isMobile ? 24 : 28, fontSize: isMobile ? 18 : 22 } : {}) }}>
                         {e.displayName.charAt(0).toUpperCase()}
                       </div>
-                      <p style={{ margin: '6px 0 2px', fontWeight: 600, fontSize: rank === 0 ? 15 : 13, color: colors.textPrimary }}>{e.displayName}</p>
+                      <p style={{ margin: '6px 0 2px', fontWeight: 600, fontSize: rank === 0 ? (isMobile ? 13 : 15) : (isMobile ? 11 : 13), color: colors.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.displayName}</p>
                       <p style={{ margin: 0, fontSize: 11, color: colors.textMuted }}>
                         {tab === 'level' ? `Lvl ${e.level}` : `$${(e.netWorth / 100).toLocaleString()}`}
                       </p>
                       <div style={{ height: heights[idx], background: colors.primaryGradient, borderRadius: `${radius.sm}px ${radius.sm}px 0 0`, marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 28 }}>{MEDALS[rank]}</span>
+                        <span style={{ fontSize: isMobile ? 22 : 28 }}>{MEDALS[rank]}</span>
                       </div>
                     </div>
                   );
@@ -116,7 +118,7 @@ export default function LeaderboardPage(): React.ReactElement {
               {entries.map(entry => {
                 const isMe = entry.isMe || entry.userId === user?.id;
                 return (
-                  <div key={entry.userId} style={{ ...s.entryRow, ...(isMe ? s.entryRowMe : {}) }}>
+                  <div key={entry.userId} style={{ ...s.entryRow, ...(isMe ? s.entryRowMe : {}), padding: isMobile ? '10px 12px' : '14px 16px' }}>
                     <div style={s.rankBadge}>
                       {entry.rank <= 3 ? (
                         <span style={{ fontSize: 20 }}>{MEDALS[entry.rank - 1]}</span>
@@ -124,18 +126,18 @@ export default function LeaderboardPage(): React.ReactElement {
                         <span style={{ fontSize: 14, fontWeight: 700, color: colors.textMuted }}>{entry.rank}</span>
                       )}
                     </div>
-                    <div style={{ ...s.entryAvatar, ...(isMe ? { background: colors.cardGradient } : {}) }}>
+                    <div style={{ ...s.entryAvatar, ...(isMe ? { background: colors.cardGradient } : {}), width: isMobile ? 34 : 38, height: isMobile ? 34 : 38, borderRadius: isMobile ? 17 : 19 }}>
                       {entry.displayName.charAt(0).toUpperCase()}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: colors.textPrimary }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontWeight: 600, fontSize: isMobile ? 13 : 14, color: colors.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {entry.displayName} {isMe && <span style={{ fontSize: 11, color: colors.primary }}>(You)</span>}
                       </p>
-                      <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>
+                      <p style={{ margin: '2px 0 0', fontSize: isMobile ? 11 : 12, color: colors.textMuted }}>
                         Level {entry.level} · {entry.xp.toLocaleString()} XP
                       </p>
                     </div>
-                    <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: colors.textPrimary }}>
+                    <p style={{ margin: 0, fontWeight: 700, fontSize: isMobile ? 13 : 15, color: colors.textPrimary, whiteSpace: 'nowrap' }}>
                       ${(entry.netWorth / 100).toLocaleString()}
                     </p>
                   </div>
@@ -147,16 +149,16 @@ export default function LeaderboardPage(): React.ReactElement {
       </div>
 
       {/* Bottom nav */}
-      <div style={s.bottomNav}>
+      <div style={{ ...s.bottomNav, paddingBottom: 'env(safe-area-inset-bottom, 14px)' }}>
         {[
           { icon: '🏠', label: 'Home', href: '/dashboard' },
           { icon: '👥', label: 'Social', href: '/social' },
           { icon: '🏆', label: 'Leaderboard', href: '/leaderboard', active: true },
           { icon: '🎓', label: 'Classroom', href: '/classroom' },
-        ].map(tab => (
-          <Link key={tab.label} href={tab.href} style={{ ...s.navTab, color: tab.active ? colors.primary : colors.textMuted }}>
-            <span style={{ fontSize: 20 }}>{tab.icon}</span>
-            <span style={{ fontSize: 11, fontWeight: tab.active ? 600 : 400 }}>{tab.label}</span>
+        ].map(navTab => (
+          <Link key={navTab.href} href={navTab.href} style={{ ...s.navTab, color: navTab.active ? colors.primary : colors.textMuted, minWidth: 44, minHeight: 44, justifyContent: 'center' }}>
+            <span style={{ fontSize: 22 }}>{navTab.icon}</span>
+            {!isMobile && <span style={{ fontSize: 11, fontWeight: navTab.active ? 600 : 400 }}>{navTab.label}</span>}
           </Link>
         ))}
       </div>
@@ -174,8 +176,8 @@ const s: Record<string, React.CSSProperties> = {
   podiumAvatar: { width: 44, height: 44, borderRadius: 22, background: colors.primaryGradient, color: '#FFF', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, margin: '0 auto' },
   entryRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: colors.surface, borderRadius: radius.md, marginBottom: 8, boxShadow: shadows.card },
   entryRowMe: { border: `2px solid ${colors.primaryLight}`, background: '#EEF2FF' },
-  rankBadge: { width: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  entryAvatar: { width: 38, height: 38, borderRadius: 19, background: colors.primaryGradient, color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16 },
+  rankBadge: { width: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  entryAvatar: { width: 38, height: 38, borderRadius: 19, background: colors.primaryGradient, color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, flexShrink: 0 },
   bottomNav: { position: 'fixed' as const, bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-around', padding: '10px 0 14px', background: colors.surface, borderTop: `1px solid ${colors.border}`, zIndex: 50 },
   navTab: { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 2, textDecoration: 'none' },
 };

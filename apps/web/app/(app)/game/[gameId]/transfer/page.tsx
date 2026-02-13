@@ -6,6 +6,7 @@ import { useAuth } from '../../../../../src/lib/auth-context';
 import { useTranslation } from 'react-i18next';
 import { api, type GameResponse } from '../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
+import { useIsMobile } from '../../../../../src/hooks/useIsMobile';
 
 function fmt(amount: number, currency: string): string {
   return (amount / 100).toLocaleString('en-US', { style: 'currency', currency: currency || 'USD' });
@@ -16,6 +17,7 @@ export default function TransferPage(): React.ReactElement {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const gameId = params.gameId as string;
 
   const [game, setGame] = useState<GameResponse | null>(null);
@@ -67,10 +69,10 @@ export default function TransferPage(): React.ReactElement {
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
         <span style={s.headerTitle}>{t('transfer.title')}</span>
-        <div style={{ width: 32 }} />
+        <div style={{ width: 44 }} />
       </div>
 
-      <div style={s.content}>
+      <div style={{ ...s.content, padding: isMobile ? 16 : 20 }}>
         {/* Amount Display */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <p style={{ margin: '0 0 8px', fontSize: 14, color: colors.textMuted }}>{t('transfer.amount')} ({currency})</p>
@@ -81,7 +83,7 @@ export default function TransferPage(): React.ReactElement {
             value={amount}
             onChange={e => setAmount(e.target.value)}
             placeholder="0.00"
-            style={s.amountInput}
+            style={{ ...s.amountInput, width: isMobile ? '100%' : 200, fontSize: isMobile ? 28 : 36 }}
           />
         </div>
 
@@ -109,6 +111,14 @@ export default function TransferPage(): React.ReactElement {
           </div>
         </div>
 
+        {/* Empty state for no accounts */}
+        {accounts.length === 0 && (
+          <div style={{ textAlign: 'center', padding: 40, background: colors.surface, borderRadius: radius.lg, boxShadow: shadows.card, marginBottom: 24 }}>
+            <span style={{ fontSize: 48 }}>🏦</span>
+            <p style={{ color: colors.textMuted, margin: '12px 0 0' }}>No accounts available for transfer</p>
+          </div>
+        )}
+
         {error && <p style={{ color: colors.danger, margin: '12px 0', fontSize: 14 }}>{error}</p>}
 
         <button
@@ -126,13 +136,13 @@ export default function TransferPage(): React.ReactElement {
 const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', backgroundColor: colors.background },
   headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  headerBack: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer' },
+  headerBack: { width: 44, height: 44, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
   content: { padding: 20 },
   amountInput: { width: 200, fontSize: 36, fontWeight: 700, textAlign: 'center' as const, color: colors.textPrimary, border: 'none', borderBottom: `2px solid ${colors.primary}`, background: 'transparent', outline: 'none', padding: '8px 0' },
   formCard: { padding: 20, borderRadius: radius.lg, background: colors.surface, boxShadow: shadows.card, marginBottom: 24 },
   field: { marginBottom: 16 },
   label: { display: 'block', fontSize: 13, fontWeight: 600, color: colors.textSecondary, marginBottom: 6 },
-  select: { width: '100%', padding: '14px 16px', borderRadius: radius.md, border: `1px solid ${colors.border}`, fontSize: 15, color: colors.textPrimary, backgroundColor: colors.inputBg },
+  select: { width: '100%', padding: '14px 16px', borderRadius: radius.md, border: `1px solid ${colors.border}`, fontSize: 15, color: colors.textPrimary, backgroundColor: colors.inputBg, height: 52 },
   primaryBtn: { width: '100%', height: 52, borderRadius: radius.md, background: colors.primaryGradient, color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer' },
 };

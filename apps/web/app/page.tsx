@@ -4,12 +4,14 @@ import React from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { colors, radius, shadows } from '../src/lib/design-tokens';
+import { useIsMobile } from '../src/hooks/useIsMobile';
 
 /**
  * Landing page
  */
 export default function LandingPage(): React.ReactElement {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
 
   const features = [
     { icon: '📊', title: t('landing.realisticSim'), desc: t('landing.realisticSimDesc') },
@@ -25,26 +27,32 @@ export default function LandingPage(): React.ReactElement {
       {/* Hero */}
       <section style={{
         background: colors.primaryGradient,
-        padding: '100px 24px 80px',
+        padding: isMobile ? '60px 20px 50px' : '100px 24px 80px',
         textAlign: 'center',
         borderRadius: `0 0 ${radius.xl}px ${radius.xl}px`,
       }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>💰</div>
-          <h1 style={{ fontSize: 52, fontWeight: 700, color: '#FFFFFF', marginBottom: 12 }}>{t('appTitle')}</h1>
-          <p style={{ fontSize: 22, color: 'rgba(255,255,255,0.85)', marginBottom: 16 }}>{t('landing.tagline')}</p>
-          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.7)', maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.7 }}>
+          <div style={{ fontSize: isMobile ? 36 : 48, marginBottom: 12 }}>💰</div>
+          <h1 style={{ fontSize: isMobile ? 28 : 52, fontWeight: 700, color: '#FFFFFF', marginBottom: 12 }}>{t('appTitle')}</h1>
+          <p style={{ fontSize: isMobile ? 17 : 22, color: 'rgba(255,255,255,0.85)', marginBottom: 16 }}>{t('landing.tagline')}</p>
+          <p style={{ fontSize: isMobile ? 15 : 17, color: 'rgba(255,255,255,0.7)', maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.7 }}>
             {t('landing.description')}
           </p>
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center' }}>
             <Link href="/register" style={{
               background: '#FFFFFF',
               color: colors.primary,
               padding: '16px 36px',
               borderRadius: radius.pill,
-              fontSize: 18,
+              fontSize: isMobile ? 16 : 18,
               fontWeight: 600,
               boxShadow: shadows.elevated,
+              width: isMobile ? '100%' : 'auto',
+              textAlign: 'center',
+              minHeight: 44,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}>
               {t('landing.getStarted')}
             </Link>
@@ -53,8 +61,14 @@ export default function LandingPage(): React.ReactElement {
               color: '#FFFFFF',
               padding: '14px 36px',
               borderRadius: radius.pill,
-              fontSize: 18,
+              fontSize: isMobile ? 16 : 18,
               fontWeight: 600,
+              width: isMobile ? '100%' : 'auto',
+              textAlign: 'center',
+              minHeight: 44,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}>
               {t('landing.signIn')}
             </Link>
@@ -66,22 +80,22 @@ export default function LandingPage(): React.ReactElement {
       <section style={{
         maxWidth: 1100,
         margin: '0 auto',
-        padding: '60px 24px',
+        padding: isMobile ? '40px 16px' : '60px 24px',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: 20,
       }}>
         {features.map((f) => (
           <div key={f.title} style={{
             background: colors.surface,
-            padding: 28,
+            padding: isMobile ? 20 : 28,
             borderRadius: radius.lg,
             boxShadow: shadows.card,
             border: `1px solid ${colors.borderLight}`,
           }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>{f.icon}</div>
-            <h3 style={{ fontSize: 18, fontWeight: 600, color: colors.textPrimary, marginBottom: 8 }}>{f.title}</h3>
-            <p style={{ fontSize: 15, color: colors.textSecondary, lineHeight: 1.6 }}>{f.desc}</p>
+            <div style={{ fontSize: isMobile ? 28 : 36, marginBottom: 12 }}>{f.icon}</div>
+            <h3 style={{ fontSize: isMobile ? 16 : 18, fontWeight: 600, color: colors.textPrimary, marginBottom: 8 }}>{f.title}</h3>
+            <p style={{ fontSize: isMobile ? 14 : 15, color: colors.textSecondary, lineHeight: 1.6 }}>{f.desc}</p>
           </div>
         ))}
       </section>

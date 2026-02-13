@@ -32,6 +32,7 @@ if (!i18n.isInitialized) {
     react: {
       useSuspense: false,
     },
+    initImmediate: false,
   });
 }
 

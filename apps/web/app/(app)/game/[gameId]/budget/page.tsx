@@ -6,6 +6,7 @@ import { useAuth } from '../../../../../src/lib/auth-context';
 import { api, type GameResponse, type Transaction } from '../../../../../src/lib/api';
 import { colors, radius, shadows } from '../../../../../src/lib/design-tokens';
 import { useTranslation } from 'react-i18next';
+import { useIsMobile } from '../../../../../src/hooks/useIsMobile';
 
 const CATEGORIES = ['Housing', 'Food', 'Transport', 'Entertainment', 'Savings', 'Other'];
 const CAT_COLORS: Record<string, string> = {
@@ -22,6 +23,7 @@ export default function BudgetPage(): React.ReactElement {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const gameId = params.gameId as string;
 
   const [game, setGame] = useState<GameResponse | null>(null);
@@ -57,8 +59,8 @@ export default function BudgetPage(): React.ReactElement {
   const spendingByCategory = CATEGORIES.reduce((acc, cat) => {
     const key = cat.toLowerCase();
     acc[key] = transactions
-      .filter(t => (t.category || '').toLowerCase() === key && t.amount < 0)
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      .filter(tx => (tx.category || '').toLowerCase() === key && tx.amount < 0)
+      .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
     return acc;
   }, {} as Record<string, number>);
 
@@ -97,10 +99,10 @@ export default function BudgetPage(): React.ReactElement {
       <div style={s.headerBar}>
         <button onClick={() => router.push(`/game/${gameId}`)} style={s.headerBack}>←</button>
         <span style={s.headerTitle}>{t('budget.title')}</span>
-        <div style={{ width: 32 }} />
+        <div style={{ width: 44 }} />
       </div>
 
-      <div style={s.content}>
+      <div style={{ ...s.content, padding: isMobile ? 16 : 20 }}>
         {/* Budget Score Circle */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={s.scoreCircle}>
@@ -139,7 +141,7 @@ export default function BudgetPage(): React.ReactElement {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: catColor }} />
-                  <span style={{ fontWeight: 600, color: colors.textPrimary }}>{cat}</span>
+                  <span style={{ fontWeight: 600, color: colors.textPrimary, fontSize: isMobile ? 14 : 16 }}>{cat}</span>
                 </div>
                 <span style={{ fontSize: 13, color: colors.textSecondary }}>
                   {income > 0 ? `${fmt(spent, currency)} / ${fmt(budgeted, currency)}` : `${pct}%`}
@@ -154,7 +156,7 @@ export default function BudgetPage(): React.ReactElement {
                 <input
                   type="range" min="0" max="100" value={pct}
                   onChange={e => handleChange(key, e.target.value)}
-                  style={{ flex: 1, accentColor: colors.primary }}
+                  style={{ flex: 1, accentColor: colors.primary, height: 44 }}
                 />
                 <input
                   type="number" min="0" max="100" value={pct}
@@ -185,7 +187,7 @@ export default function BudgetPage(): React.ReactElement {
 const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', backgroundColor: colors.background },
   headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  headerBack: { width: 32, height: 32, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer' },
+  headerBack: { width: 44, height: 44, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
   content: { padding: 20 },
   scoreCircle: { position: 'relative' as const, display: 'inline-block', width: 120, height: 120 },
@@ -193,6 +195,6 @@ const s: Record<string, React.CSSProperties> = {
   totalBar: { display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderRadius: radius.md, background: colors.surface, boxShadow: shadows.card, marginBottom: 16 },
   catCard: { padding: 16, borderRadius: radius.md, background: colors.surface, boxShadow: shadows.card, marginBottom: 12 },
   progressTrack: { height: 6, borderRadius: 3, backgroundColor: colors.borderLight, overflow: 'hidden' },
-  pctInput: { width: 52, padding: '6px 8px', borderRadius: radius.sm, border: `1px solid ${colors.border}`, textAlign: 'center' as const, fontSize: 14, backgroundColor: colors.inputBg },
+  pctInput: { width: 52, padding: '6px 8px', borderRadius: radius.sm, border: `1px solid ${colors.border}`, textAlign: 'center' as const, fontSize: 14, backgroundColor: colors.inputBg, height: 44 },
   primaryBtn: { width: '100%', height: 52, borderRadius: radius.md, background: colors.primaryGradient, color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 8 },
 };
