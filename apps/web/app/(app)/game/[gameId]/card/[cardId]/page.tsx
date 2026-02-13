@@ -110,7 +110,8 @@ export default function CardPage(): React.ReactElement {
       setError(gameRes.error || t('game.failedToLoadCard'));
     }
     setLoading(false);
-  }, [gameId, cardId, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameId, cardId]);
 
   useEffect(() => {
     if (!authLoading && !user) { router.push('/login'); return; }

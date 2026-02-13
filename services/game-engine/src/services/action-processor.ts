@@ -887,15 +887,9 @@ async function processMonthEnd(
   const difficultyConfig = getDifficultyConfig(game.difficulty);
   const regionConfig = getRegionConfig(game.region);
 
-  // 1. Deposit salary
+  // 1. Salary is now deposited on the 1st of each month in advance_day
+  // (removed from here to prevent double-deposit)
   const checking = await getCheckingAccount(client, gameId);
-  if (checking) {
-    const income = parseInt(game.monthly_income, 10);
-    const newBal = await updateAccountBalance(client, checking.id, income);
-    await createTransaction(client, gameId, checking.id, dateStr, 'income', 'salary', income, newBal, 'Monthly salary deposit', undefined, true);
-    incomeTotal += income;
-    events.push({ type: 'salary_deposited', description: `Salary of ${income} cents deposited`, timestamp: currentDate, data: { amount: income } });
-  }
 
   // 2. Process all scheduled bills
   const bills = await client.query(

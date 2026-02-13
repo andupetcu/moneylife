@@ -124,14 +124,15 @@ export default function GamePage(): React.ReactElement {
       api.game.getBills(gameId),
     ]);
     if (gameRes.ok && gameRes.data) setGame(gameRes.data);
-    else setError(gameRes.error || t('game.failedToLoad'));
+    else setError(gameRes.error || 'Failed to load game');
     if (txRes.ok && txRes.data) {
       const txList = Array.isArray(txRes.data) ? txRes.data : (txRes.data as any).transactions || [];
       setTransactions(txList.slice(0, 15));
     }
     if (billsRes.ok && billsRes.data) setBills(billsRes.data);
     setLoading(false);
-  }, [gameId, t]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameId]);
 
   useEffect(() => {
     if (!authLoading && !user) { router.push('/login'); return; }

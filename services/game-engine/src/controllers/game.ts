@@ -187,7 +187,7 @@ export function getGameController(pool: Pool) {
         },
         currentLevel: game.current_level,
         totalXp: game.total_xp,
-        xpToNextLevel: getLevelConfig(game.current_level).cumulativeXp,
+        xpToNextLevel: getLevelConfig(Math.min(game.current_level + 1, 8)).cumulativeXp,
         totalCoins: game.total_coins,
         status: game.status,
         netWorth: parseInt(game.net_worth, 10),
