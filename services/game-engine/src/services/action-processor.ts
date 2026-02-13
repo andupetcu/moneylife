@@ -1228,7 +1228,18 @@ export async function processAction(
       const nextDate = advanceDay(currentDate);
       const dateStr = gameDateStr(nextDate);
 
-      // Process daily autopay bills
+      // Deposit salary on the 1st of each month
+      if (nextDate.day === 1) {
+        const salaryAcct = await getCheckingAccount(client, game.id);
+        if (salaryAcct) {
+          const income = parseInt(game.monthly_income, 10);
+          const newBal = await updateAccountBalance(client, salaryAcct.id, income);
+          await createTransaction(client, game.id, salaryAcct.id, dateStr, 'income', 'salary', income, newBal, 'Monthly salary deposit', undefined, true);
+          allEvents.push({ type: 'salary_deposited', description: `Salary of ${(income / 100).toFixed(0)} RON deposited`, timestamp: nextDate, data: { amount: income } });
+        }
+      }
+
+      // Process bills on their due dates
       await processDailyBills(client, game.id, nextDate);
 
       // Check job loss recovery

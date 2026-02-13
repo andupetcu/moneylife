@@ -160,6 +160,11 @@ export default function GamePage(): React.ReactElement {
 
         // Build day summary
         const events: string[] = [];
+        if (resData?.events && Array.isArray(resData.events)) {
+          (resData.events as { type: string; description: string }[])
+            .filter(e => e.type !== 'day_advanced')
+            .forEach(e => events.push(e.description));
+        }
         if (resData?.randomEvents && Array.isArray(resData.randomEvents)) {
           (resData.randomEvents as { description: string }[]).forEach(e => events.push(e.description));
         }
@@ -169,7 +174,7 @@ export default function GamePage(): React.ReactElement {
           newCards: Math.max(0, newCardCount - prevCardCount),
           events,
         });
-        setTimeout(() => setDaySummary(null), 5000);
+        setTimeout(() => setDaySummary(null), 8000);
 
         if (prevLevel !== null && updatedGame.data.level > prevLevel) {
           setLevelUpLevel(updatedGame.data.level);

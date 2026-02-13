@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 import { createGameSchema } from '../validators.js';
 import { findGameById } from '../models/game.js';
 import { findAccountsByGameId } from '../models/account.js';
-import { getPersonaConfig, getDifficultyConfig, getRegionConfig } from '@moneylife/config';
+import { getPersonaConfig, getDifficultyConfig, getRegionConfig, getLevelConfig } from '@moneylife/config';
 
 export function listGamesController(pool: Pool) {
   return async (req: Request, res: Response): Promise<void> => {
@@ -187,6 +187,7 @@ export function getGameController(pool: Pool) {
         },
         currentLevel: game.current_level,
         totalXp: game.total_xp,
+        xpToNextLevel: getLevelConfig(game.current_level).cumulativeXp,
         totalCoins: game.total_coins,
         status: game.status,
         netWorth: parseInt(game.net_worth, 10),
