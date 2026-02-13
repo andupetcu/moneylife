@@ -1152,8 +1152,9 @@ async function processDailyBills(
   currentDate: GameDate,
 ): Promise<void> {
   const dateStr = gameDateStr(currentDate);
+  // Process ALL bills on due date (both autopay and manual)
   const bills = await client.query(
-    "SELECT * FROM scheduled_bills WHERE game_id = $1 AND is_active = true AND auto_pay = true AND next_due_date = $2",
+    "SELECT * FROM scheduled_bills WHERE game_id = $1 AND is_active = true AND next_due_date <= $2",
     [gameId, dateStr],
   );
 
@@ -1163,7 +1164,7 @@ async function processDailyBills(
 
     const amt = parseInt(bill.amount, 10);
     const newBal = await updateAccountBalance(client, checking.id, -amt);
-    await createTransaction(client, gameId, checking.id, dateStr, 'expense', bill.category, -amt, newBal, `Auto-pay: ${bill.name}`, undefined, true);
+    await createTransaction(client, gameId, checking.id, dateStr, 'expense', bill.category, -amt, newBal, `Bill: ${bill.name}`, undefined, true);
 
     const nextDue = getNextDueDate(dateStr, bill.frequency);
     await client.query('UPDATE scheduled_bills SET next_due_date = $1, updated_at = NOW() WHERE id = $2', [nextDue, bill.id]);
@@ -1254,6 +1255,14 @@ export async function processAction(
         'UPDATE games SET current_game_date = $1, state_version = state_version + 1, updated_at = NOW() WHERE id = $2',
         [dateStr, game.id],
       );
+
+      // Recalculate net worth daily
+      const nwAccounts = await client.query(
+        "SELECT balance FROM game_accounts WHERE game_id = $1 AND status = 'active'",
+        [game.id],
+      );
+      const dailyNetWorth = nwAccounts.rows.reduce((sum: number, a: { balance: string }) => sum + parseInt(a.balance, 10), 0);
+      await client.query('UPDATE games SET net_worth = $1 WHERE id = $2', [dailyNetWorth, game.id]);
 
       allEvents.push({ type: 'day_advanced', description: 'Day advanced', timestamp: nextDate, data: {} });
       if (xpResult.leveledUp) {
@@ -1369,7 +1378,10 @@ export async function processAction(
         }
       }
 
-      await client.query('UPDATE games SET state_version = state_version + 1, updated_at = NOW() WHERE id = $1', [game.id]);
+      // Update net worth after card decision
+      const nwAfterCard = await client.query("SELECT balance FROM game_accounts WHERE game_id = $1 AND status = 'active'", [game.id]);
+      const cardNetWorth = nwAfterCard.rows.reduce((sum: number, a: { balance: string }) => sum + parseInt(a.balance, 10), 0);
+      await client.query('UPDATE games SET state_version = state_version + 1, net_worth = $1, updated_at = NOW() WHERE id = $2', [cardNetWorth, game.id]);
 
       events.push({ type: 'card_decided', description: `Decided card ${cardId}: ${chosenOption.label}`, timestamp: currentDate, data: { cardId, optionId, cost, xpAwarded, coinsAwarded } });
 

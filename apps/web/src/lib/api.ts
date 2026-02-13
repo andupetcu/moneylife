@@ -151,6 +151,8 @@ export interface GameResponse {
   monthlyIncome?: number;
   budgetScore?: number;
   creditHealthIndex?: number;
+  streakDays?: number;
+  totalCoins?: number;
   accounts?: Account[];
   pendingCards?: PendingCard[];
 }
@@ -185,6 +187,8 @@ function normalizeGame(raw: Record<string, unknown>): GameResponse {
     monthlyIncome: raw.monthlyIncome as number | undefined,
     budgetScore: raw.budgetScore as number | undefined,
     creditHealthIndex: chiScore as number | undefined,
+    streakDays: (raw.streakDays ?? 0) as number,
+    totalCoins: (raw.totalCoins ?? 0) as number,
     accounts: raw.accounts as Account[] | undefined,
     pendingCards: normalizeCards(raw.pendingCards as any[] | undefined),
   };

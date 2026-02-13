@@ -105,7 +105,7 @@ export default function CardPage(): React.ReactElement {
       setError(cardsRes.error || 'Failed to load card');
     }
     if (gameRes.ok && gameRes.data) {
-      setTotalCoins((gameRes.data as GameResponse & { coins?: number }).coins ?? (gameRes.data as any).totalCoins ?? 0);
+      setTotalCoins(gameRes.data.totalCoins ?? 0);
     } else {
       setError(gameRes.error || t('game.failedToLoadCard'));
     }
