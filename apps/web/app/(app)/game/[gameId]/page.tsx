@@ -258,7 +258,7 @@ export default function GamePage(): React.ReactElement {
               <div key={bill.id} style={{ ...s.billCard, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 0, alignItems: isMobile ? 'flex-start' : 'center' }}>
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{bill.name}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>{t('game.dueDay', { day: bill.dueDay })} · {bill.category}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>{t('game.dueDay', { day: bill.dueDay || (bill.dueDate ? new Date(bill.dueDate).getDate() : '?') })} · {bill.category}</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'space-between' : 'flex-end' }}>
                   <p style={{ margin: 0, fontWeight: 600, color: colors.textPrimary }}>{fmt(bill.amount, currency)}</p>

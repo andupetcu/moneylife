@@ -101,9 +101,11 @@ export interface Bill {
   id: string;
   name: string;
   amount: number;
-  dueDay: number;
+  dueDay?: number;
+  dueDate?: string;
   category: string;
   autopay: boolean;
+  isAutopay?: boolean;
   isPaid?: boolean;
 }
 
@@ -357,11 +359,38 @@ export const api = {
   },
   game: {
     list: () => request<GameResponse[]>('/api/game/games'),
-    create: (persona: string, difficulty: string, region: string, currencyCode: string) =>
-      request<GameResponse>('/api/game/games', {
+    create: async (persona: string, difficulty: string, region: string, currencyCode: string): Promise<ApiResponse<GameResponse>> => {
+      const res = await request<Record<string, unknown>>('/api/game/games', {
         method: 'POST',
         body: JSON.stringify({ persona, difficulty, region, currencyCode }),
-      }),
+      });
+      if (res.ok && res.data) {
+        // API returns {gameId, initialState} — normalize to GameResponse
+        const raw = res.data as Record<string, unknown>;
+        const state = (raw.initialState || raw) as Record<string, unknown>;
+        const game: GameResponse = {
+          id: (raw.gameId || state.id) as string,
+          persona: (state.persona || persona) as string,
+          difficulty: (state.difficulty || difficulty) as string,
+          currency: (state.currency || currencyCode) as string,
+          region: (state.region || region) as string,
+          level: (state.currentLevel || 1) as number,
+          xp: (state.totalXp || 0) as number,
+          xpToNextLevel: 100,
+          coins: (state.totalCoins || 0) as number,
+          status: (state.status || 'active') as string,
+          netWorth: 0,
+          happiness: 50,
+          chiScore: 50,
+          budgetScore: 0,
+          currentDate: state.currentDate as GameResponse['currentDate'],
+          accounts: (state.accounts || []) as GameResponse['accounts'],
+          bills: (state.bills || []) as GameResponse['bills'],
+        };
+        return { ok: true, data: game };
+      }
+      return res as ApiResponse<GameResponse>;
+    },
     get: async (id: string): Promise<ApiResponse<GameResponse>> => {
       const res = await request<Record<string, unknown>>(`/api/game/games/${id}`);
       if (res.ok && res.data) {
@@ -369,11 +398,13 @@ export const api = {
       }
       return res as ApiResponse<GameResponse>;
     },
-    submitAction: (gameId: string, action: Record<string, unknown>) =>
-      request(`/api/game/games/${gameId}/actions`, {
+    submitAction: (gameId: string, action: Record<string, unknown>) => {
+      const { type, ...rest } = action;
+      return request(`/api/game/games/${gameId}/actions`, {
         method: 'POST',
-        body: JSON.stringify({ ...action, idempotencyKey: crypto.randomUUID() }),
-      }),
+        body: JSON.stringify({ type, payload: rest, idempotencyKey: crypto.randomUUID() }),
+      });
+    },
     getCards: async (gameId: string): Promise<ApiResponse<PendingCard[]>> => {
       const res = await request<PendingCard[] | { cards: PendingCard[] }>(`/api/game/games/${gameId}/cards`);
       if (res.ok && res.data) {
@@ -391,9 +422,12 @@ export const api = {
       return res;
     },
     getBadges: async (gameId: string): Promise<ApiResponse<Badge[]>> => {
-      const res = await request<Badge[]>(`/api/game/games/${gameId}/badges`);
+      const res = await request<Badge[] | { badges: Badge[] }>(`/api/game/games/${gameId}/badges`);
       if (!res.ok && res.error?.includes('404')) return { ok: true, data: [] };
-      return res;
+      if (res.ok && res.data && !Array.isArray(res.data) && Array.isArray((res.data as { badges: Badge[] }).badges)) {
+        return { ok: true, data: (res.data as { badges: Badge[] }).badges };
+      }
+      return res as ApiResponse<Badge[]>;
     },
   },
   ai: {

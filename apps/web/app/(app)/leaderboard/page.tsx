@@ -102,7 +102,7 @@ export default function LeaderboardPage(): React.ReactElement {
                       </div>
                       <p style={{ margin: '6px 0 2px', fontWeight: 600, fontSize: rank === 0 ? (isMobile ? 13 : 15) : (isMobile ? 11 : 13), color: colors.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.displayName}</p>
                       <p style={{ margin: 0, fontSize: 11, color: colors.textMuted }}>
-                        {tab === 'level' ? `Lvl ${e.level}` : `$${(e.netWorth / 100).toLocaleString()}`}
+                        {tab === 'level' ? `Lvl ${e.level}` : `RON ${(e.netWorth / 100).toLocaleString()}`}
                       </p>
                       <div style={{ height: heights[idx], background: colors.primaryGradient, borderRadius: `${radius.sm}px ${radius.sm}px 0 0`, marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <span style={{ fontSize: isMobile ? 22 : 28 }}>{MEDALS[rank]}</span>
@@ -138,7 +138,7 @@ export default function LeaderboardPage(): React.ReactElement {
                       </p>
                     </div>
                     <p style={{ margin: 0, fontWeight: 700, fontSize: isMobile ? 13 : 15, color: colors.textPrimary, whiteSpace: 'nowrap' }}>
-                      ${(entry.netWorth / 100).toLocaleString()}
+                      RON {(entry.netWorth / 100).toLocaleString()}
                     </p>
                   </div>
                 );
