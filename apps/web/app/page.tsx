@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { colors, radius, shadows } from '../src/lib/design-tokens';
@@ -10,8 +10,11 @@ import { useIsMobile } from '../src/hooks/useIsMobile';
  * Landing page
  */
 export default function LandingPage(): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, ready } = useTranslation();
   const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted || !ready) return <div style={{ minHeight: '100vh', background: colors.background }} />;
 
   const features = [
     { icon: '📊', title: t('landing.realisticSim'), desc: t('landing.realisticSimDesc') },
