@@ -37,7 +37,7 @@ export default function AccountDetailPage(): React.ReactElement {
     if (gameRes.ok && gameRes.data) setGame(gameRes.data);
     if (txRes.ok && txRes.data) {
       const all = Array.isArray(txRes.data) ? txRes.data : (txRes.data as any).transactions || [];
-      setTransactions(all.filter((tx: Transaction) => tx.accountId === accountId));
+      setTransactions(all.filter((tx: Transaction) => tx.accountId === accountId || !tx.accountId));
     }
     setLoading(false);
   }, [gameId, accountId]);

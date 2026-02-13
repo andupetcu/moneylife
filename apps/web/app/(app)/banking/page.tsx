@@ -290,11 +290,19 @@ export default function BankingPage(): React.ReactElement {
       <div style={{ ...s.bottomNav, paddingBottom: 'env(safe-area-inset-bottom, 14px)' }}>
         <button onClick={() => router.push('/dashboard')} style={s.navTab}>
           <span style={{ fontSize: 22 }}>🏠</span>
-          {!isMobile && <span style={{ fontSize: 11 }}>Home</span>}
+          <span style={{ fontSize: 11 }}>Home</span>
+        </button>
+        <button onClick={() => router.push('/social')} style={s.navTab}>
+          <span style={{ fontSize: 22 }}>👥</span>
+          <span style={{ fontSize: 11 }}>Social</span>
+        </button>
+        <button onClick={() => router.push('/leaderboard')} style={s.navTab}>
+          <span style={{ fontSize: 22 }}>🏆</span>
+          <span style={{ fontSize: 11 }}>Leaderboard</span>
         </button>
         <button onClick={() => {}} style={{ ...s.navTab, color: colors.primary }}>
           <span style={{ fontSize: 22 }}>🏦</span>
-          {!isMobile && <span style={{ fontSize: 11, fontWeight: 600 }}>Banking</span>}
+          <span style={{ fontSize: 11, fontWeight: 600 }}>Banking</span>
         </button>
       </div>
     </div>

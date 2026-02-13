@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description:
     'A financial education game where you manage personal finances through realistic life scenarios. Build budgets, handle emergencies, invest, and learn to make smart money decisions.',
   keywords: ['financial education', 'money game', 'budgeting', 'personal finance', 'financial literacy'],
+  icons: { icon: '/favicon.svg' },
   openGraph: {
     title: 'MoneyLife — Learn Money by Living It',
     description: 'The financial education game that teaches through play.',
