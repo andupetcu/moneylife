@@ -18,6 +18,7 @@ function tx(key: string): string {
 
 export default function LandingPage(): React.ReactElement {
   const [isMobile, setIsMobile] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const { t, ready } = useTranslation();
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -41,32 +42,42 @@ export default function LandingPage(): React.ReactElement {
   return (
     <main style={{ minHeight: '100vh', background: colors.background }}>
       <section style={{
-        background: colors.primaryGradient,
         padding: isMobile ? '60px 20px 50px' : '100px 24px 80px',
         textAlign: 'center',
-        borderRadius: `0 0 ${radius.xl}px ${radius.xl}px`,
+        position: 'relative',
+        overflow: 'hidden',
       }}>
-        <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <div style={{ fontSize: isMobile ? 36 : 48, marginBottom: 12 }}>💰</div>
-          <h1 style={{ fontSize: isMobile ? 28 : 52, fontWeight: 700, color: '#FFFFFF', marginBottom: 12 }}>MoneyLife</h1>
-          <p style={{ fontSize: isMobile ? 17 : 22, color: 'rgba(255,255,255,0.85)', marginBottom: 16 }}>{T('landing.tagline')}</p>
-          <p style={{ fontSize: isMobile ? 15 : 17, color: 'rgba(255,255,255,0.7)', maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.7 }}>
+        <div style={{ maxWidth: 700, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div style={{ fontSize: isMobile ? 48 : 64, marginBottom: 16, animation: 'float 3s ease-in-out infinite' }}>💰</div>
+          <h1 style={{
+            fontSize: isMobile ? 32 : 56,
+            fontWeight: 800,
+            marginBottom: 12,
+            background: 'linear-gradient(135deg, #818CF8 0%, #6366F1 40%, #22D3EE 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>MoneyLife</h1>
+          <p style={{ fontSize: isMobile ? 17 : 22, color: colors.textPrimary, marginBottom: 16 }}>{T('landing.tagline')}</p>
+          <p style={{ fontSize: isMobile ? 15 : 17, color: colors.textSecondary, maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.7 }}>
             {T('landing.description')}
           </p>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center' }}>
             <Link href="/register" style={{
-              background: '#FFFFFF', color: colors.primary, padding: '16px 36px', borderRadius: radius.pill,
-              fontSize: isMobile ? 16 : 18, fontWeight: 600, boxShadow: shadows.elevated,
+              background: colors.primaryGradient, color: '#FFFFFF', padding: '16px 36px', borderRadius: radius.pill,
+              fontSize: isMobile ? 16 : 18, fontWeight: 600, boxShadow: colors.glowPrimary,
               width: isMobile ? '100%' : 'auto', textAlign: 'center', minHeight: 44,
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'box-shadow 0.3s ease, transform 0.2s ease',
             }}>
               {T('landing.getStarted')}
             </Link>
             <Link href="/login" style={{
-              border: '2px solid rgba(255,255,255,0.5)', color: '#FFFFFF', padding: '14px 36px',
+              border: `2px solid ${colors.border}`, color: colors.textPrimary, padding: '14px 36px',
               borderRadius: radius.pill, fontSize: isMobile ? 16 : 18, fontWeight: 600,
               width: isMobile ? '100%' : 'auto', textAlign: 'center', minHeight: 44,
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
             }}>
               {T('landing.signIn')}
             </Link>
@@ -79,10 +90,16 @@ export default function LandingPage(): React.ReactElement {
         display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20,
       }}>
         {features.map((f) => (
-          <div key={f.title} style={{
-            background: colors.surface, padding: isMobile ? 20 : 28, borderRadius: radius.lg,
-            boxShadow: shadows.card, border: `1px solid ${colors.borderLight}`,
-          }}>
+          <div key={f.title}
+            onMouseEnter={() => setHoveredCard(f.title)}
+            onMouseLeave={() => setHoveredCard(null)}
+            style={{
+              background: colors.surface, padding: isMobile ? 20 : 28, borderRadius: radius.lg,
+              boxShadow: hoveredCard === f.title ? colors.glowPrimary : shadows.card,
+              border: `1px solid ${hoveredCard === f.title ? colors.borderGlow : colors.border}`,
+              transition: 'box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease',
+              transform: hoveredCard === f.title ? 'scale(1.02)' : 'scale(1)',
+            }}>
             <div style={{ fontSize: isMobile ? 28 : 36, marginBottom: 12 }}>{f.icon}</div>
             <h3 style={{ fontSize: isMobile ? 16 : 18, fontWeight: 600, color: colors.textPrimary, marginBottom: 8 }}>{f.title}</h3>
             <p style={{ fontSize: isMobile ? 14 : 15, color: colors.textSecondary, lineHeight: 1.6 }}>{f.desc}</p>
