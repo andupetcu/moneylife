@@ -20,13 +20,13 @@ function fmt(amount: number, currency: string): string {
 }
 
 function getProgressColor(ratio: number): string {
-  if (ratio >= 1) return colors.danger;
-  if (ratio >= 0.85) return colors.warning;
-  return colors.success;
+  if (ratio >= 1) return '#FB7185';
+  if (ratio >= 0.85) return '#FBBF24';
+  return '#34D399';
 }
 
 const shimmerStyle: React.CSSProperties = {
-  background: `linear-gradient(90deg, ${colors.borderLight} 25%, ${colors.border} 50%, ${colors.borderLight} 75%)`,
+  background: `linear-gradient(90deg, #1E1838 25%, #2D2545 50%, #1E1838 75%)`,
   backgroundSize: '200% 100%',
   animation: 'shimmer 1.5s infinite',
   borderRadius: radius.md,
@@ -107,8 +107,8 @@ export default function BudgetPage(): React.ReactElement {
   if (loading || authLoading) return (
     <div style={s.page}>
       <div style={s.headerBar}>
-        <div style={{ width: 44, height: 44, borderRadius: radius.sm, background: 'rgba(255,255,255,0.2)' }} />
-        <div style={{ width: 80, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.2)' }} />
+        <div style={{ width: 44, height: 44, borderRadius: radius.sm, background: 'rgba(255,255,255,0.1)' }} />
+        <div style={{ width: 80, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.1)' }} />
         <div style={{ width: 44 }} />
       </div>
       <div style={{ padding: 20 }}>
@@ -125,7 +125,7 @@ export default function BudgetPage(): React.ReactElement {
   const income = game?.monthlyIncome ?? 0;
   const budgetScore = game?.budgetScore ?? 0;
   const scorePct = Math.min(100, Math.max(0, budgetScore));
-  const scoreColor = budgetScore >= 70 ? colors.success : budgetScore >= 40 ? colors.warning : colors.danger;
+  const scoreColor = budgetScore >= 70 ? '#34D399' : budgetScore >= 40 ? '#FBBF24' : '#FB7185';
 
   return (
     <div style={s.page}>
@@ -136,40 +136,63 @@ export default function BudgetPage(): React.ReactElement {
         <div style={{ width: 44 }} />
       </div>
 
-      <div style={{ ...s.content, padding: isMobile ? 16 : 20 }}>
-        {/* Budget Score Circle */}
+      <div style={{ ...s.content, padding: isMobile ? 16 : 24 }}>
+        {/* Budget Score Circle with glow */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={s.scoreCircle}>
+          <div style={{
+            position: 'relative' as const,
+            display: 'inline-block',
+            width: 120,
+            height: 120,
+            filter: `drop-shadow(0 0 12px ${scoreColor}40)`,
+          }}>
             <svg width="120" height="120" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" fill="none" stroke={colors.borderLight} strokeWidth="8" />
+              <circle cx="60" cy="60" r="52" fill="none" stroke="#2D2545" strokeWidth="8" />
               <circle cx="60" cy="60" r="52" fill="none" stroke={scoreColor} strokeWidth="8"
                 strokeDasharray={`${scorePct * 3.27} 327`} strokeLinecap="round"
-                transform="rotate(-90 60 60)" />
+                transform="rotate(-90 60 60)"
+                style={{ filter: `drop-shadow(0 0 6px ${scoreColor}60)` }}
+              />
             </svg>
-            <div style={s.scoreText}>
+            <div style={{
+              position: 'absolute' as const,
+              top: 0, left: 0, right: 0, bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
               <span style={{ fontSize: 28, fontWeight: 700, color: scoreColor }}>{budgetScore}%</span>
             </div>
           </div>
-          <p style={{ color: colors.textSecondary, fontSize: 14, margin: '8px 0 0' }}>{t('budget.budgetScore')}</p>
+          <p style={{ color: '#A5A0C8', fontSize: 14, margin: '8px 0 0' }}>{t('budget.budgetScore')}</p>
         </div>
 
         {/* Income vs Spending Summary */}
         {income > 0 && (
           <div style={{
-            padding: 14, borderRadius: radius.md, background: colors.surface, boxShadow: shadows.card, marginBottom: 16,
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 8,
+            padding: 14,
+            borderRadius: radius.md,
+            background: '#211B3A',
+            boxShadow: '0 2px 12px rgba(0, 0, 0, 0.3)',
+            marginBottom: 16,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap' as const,
+            gap: 8,
+            border: '1px solid #2D2545',
           }}>
             <div>
-              <p style={{ margin: 0, fontSize: 12, color: colors.textMuted }}>Monthly Income</p>
-              <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: colors.success }}>{fmt(income, currency)}</p>
+              <p style={{ margin: 0, fontSize: 12, color: '#6B6490' }}>Monthly Income</p>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#34D399' }}>{fmt(income, currency)}</p>
             </div>
             <div>
-              <p style={{ margin: 0, fontSize: 12, color: colors.textMuted }}>Total Spent</p>
-              <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: totalSpent > income ? colors.danger : colors.textPrimary }}>{fmt(totalSpent, currency)}</p>
+              <p style={{ margin: 0, fontSize: 12, color: '#6B6490' }}>Total Spent</p>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: totalSpent > income ? '#FB7185' : '#F1F0FF' }}>{fmt(totalSpent, currency)}</p>
             </div>
             <div>
-              <p style={{ margin: 0, fontSize: 12, color: colors.textMuted }}>Remaining</p>
-              <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: income - totalSpent >= 0 ? colors.success : colors.danger }}>
+              <p style={{ margin: 0, fontSize: 12, color: '#6B6490' }}>Remaining</p>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: income - totalSpent >= 0 ? '#34D399' : '#FB7185' }}>
                 {fmt(income - totalSpent, currency)}
               </p>
             </div>
@@ -177,9 +200,18 @@ export default function BudgetPage(): React.ReactElement {
         )}
 
         {/* Total allocation bar */}
-        <div style={s.totalBar}>
-          <span style={{ fontWeight: 600, color: colors.textPrimary }}>{t('budget.total')}: {totalPct}%</span>
-          <span style={{ color: totalPct === 100 ? colors.success : colors.danger, fontWeight: 600, fontSize: 13 }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          borderRadius: radius.md,
+          background: '#211B3A',
+          boxShadow: '0 2px 12px rgba(0, 0, 0, 0.3)',
+          marginBottom: 16,
+          border: '1px solid #2D2545',
+        }}>
+          <span style={{ fontWeight: 600, color: '#F1F0FF' }}>{t('budget.total')}: {totalPct}%</span>
+          <span style={{ color: totalPct === 100 ? '#34D399' : '#FB7185', fontWeight: 600, fontSize: 13 }}>
             {totalPct === 100 ? `✓ ${t('budget.balanced')}` : t('budget.percentRemaining', { percent: 100 - totalPct })}
           </span>
         </div>
@@ -190,56 +222,114 @@ export default function BudgetPage(): React.ReactElement {
           const pct = allocations[key] || 0;
           const budgeted = income > 0 ? Math.round(income * pct / 100) : 0;
           const spent = spendingByCategory[key] || 0;
-          const catColor = CAT_COLORS[key] || colors.textMuted;
+          const catColor = CAT_COLORS[key] || '#6B6490';
           const ratio = budgeted > 0 ? spent / budgeted : 0;
           const progressColor = getProgressColor(ratio);
+          const isOverBudget = ratio >= 1;
+
           return (
-            <div key={cat} style={s.catCard}>
+            <div key={cat} style={{
+              padding: 16,
+              borderRadius: radius.md,
+              background: '#211B3A',
+              boxShadow: isOverBudget
+                ? '0 0 12px rgba(251, 113, 133, 0.2), 0 2px 12px rgba(0, 0, 0, 0.3)'
+                : '0 2px 12px rgba(0, 0, 0, 0.3)',
+              marginBottom: 12,
+              border: isOverBudget ? '1px solid rgba(251, 113, 133, 0.3)' : '1px solid #2D2545',
+            }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: catColor }} />
-                  <span style={{ fontWeight: 600, color: colors.textPrimary, fontSize: isMobile ? 14 : 16 }}>{cat}</span>
+                  <div style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: catColor,
+                    boxShadow: `0 0 6px ${catColor}60`,
+                  }} />
+                  <span style={{ fontWeight: 600, color: '#F1F0FF', fontSize: isMobile ? 14 : 16 }}>{cat}</span>
                 </div>
-                <span style={{ fontSize: 13, color: ratio >= 1 ? colors.danger : colors.textSecondary }}>
+                <span style={{ fontSize: 13, color: isOverBudget ? '#FB7185' : '#A5A0C8' }}>
                   {income > 0 ? `${fmt(spent, currency)} / ${fmt(budgeted, currency)}` : `${pct}%`}
                 </span>
               </div>
               {/* Progress bar */}
-              <div style={s.progressTrack}>
+              <div style={{
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: '#2D2545',
+                overflow: 'hidden',
+              }}>
                 <div style={{
-                  height: '100%', borderRadius: 3,
+                  height: '100%',
+                  borderRadius: 4,
                   width: `${Math.min(100, ratio * 100)}%`,
                   backgroundColor: progressColor,
                   transition: 'width 0.4s ease, background-color 0.3s ease',
+                  boxShadow: `0 0 6px ${progressColor}40`,
                 }} />
               </div>
-              {ratio >= 1 && (
-                <p style={{ margin: '4px 0 0', fontSize: 11, color: colors.danger, fontWeight: 500 }}>Over budget by {fmt(spent - budgeted, currency)}</p>
+              {isOverBudget && (
+                <p style={{ margin: '4px 0 0', fontSize: 11, color: '#FB7185', fontWeight: 500 }}>
+                  Over budget by {fmt(spent - budgeted, currency)}
+                </p>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
                 <input
                   type="range" min="0" max="100" value={pct}
                   onChange={e => handleChange(key, e.target.value)}
-                  style={{ flex: 1, accentColor: colors.primary, height: 44 }}
+                  style={{
+                    flex: 1,
+                    accentColor: '#6366F1',
+                    height: 44,
+                  }}
                 />
                 <input
                   type="number" min="0" max="100" value={pct}
                   onChange={e => handleChange(key, e.target.value)}
-                  style={s.pctInput}
+                  style={{
+                    width: 52,
+                    padding: '6px 8px',
+                    borderRadius: radius.sm,
+                    border: '1px solid #2D2545',
+                    textAlign: 'center' as const,
+                    fontSize: 14,
+                    backgroundColor: '#1A1333',
+                    color: '#F1F0FF',
+                    height: 44,
+                  }}
                 />
-                <span style={{ fontSize: 13, color: colors.textMuted }}>%</span>
+                <span style={{ fontSize: 13, color: '#6B6490' }}>%</span>
               </div>
             </div>
           );
         })}
 
-        {error && <p style={{ color: colors.danger, margin: '12px 0', fontSize: 14 }}>{error}</p>}
-        {success && <p style={{ color: colors.success, margin: '12px 0', fontSize: 14 }}>✓ {t('budget.budgetSaved')}</p>}
+        {error && <p style={{ color: '#FB7185', margin: '12px 0', fontSize: 14 }}>{error}</p>}
+        {success && <p style={{ color: '#34D399', margin: '12px 0', fontSize: 14 }}>✓ {t('budget.budgetSaved')}</p>}
 
         <button
           onClick={handleSubmit}
           disabled={submitting || totalPct !== 100}
-          style={{ ...s.primaryBtn, opacity: submitting || totalPct !== 100 ? 0.5 : 1 }}
+          style={{
+            width: '100%',
+            height: 52,
+            borderRadius: radius.md,
+            background: submitting || totalPct !== 100
+              ? '#2D2545'
+              : 'linear-gradient(135deg, #4338CA 0%, #6366F1 50%, #818CF8 100%)',
+            color: submitting || totalPct !== 100 ? '#6B6490' : '#FFF',
+            fontSize: 16,
+            fontWeight: 700,
+            border: 'none',
+            cursor: submitting || totalPct !== 100 ? 'not-allowed' : 'pointer',
+            marginTop: 8,
+            transition: 'all 0.3s ease',
+            boxShadow: submitting || totalPct !== 100
+              ? 'none'
+              : '0 0 20px rgba(99, 102, 241, 0.4), 0 8px 32px rgba(0, 0, 0, 0.3)',
+            opacity: submitting || totalPct !== 100 ? 0.5 : 1,
+          }}
         >
           {submitting ? t('budget.saving') : `💾 ${t('budget.saveBudget')}`}
         </button>
@@ -249,16 +339,28 @@ export default function BudgetPage(): React.ReactElement {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', backgroundColor: colors.background },
-  headerBar: { background: colors.primaryGradient, padding: '16px 20px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  headerBack: { width: 44, height: 44, borderRadius: radius.sm, border: 'none', background: 'rgba(255,255,255,0.2)', color: '#FFF', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: 700, color: '#FFF' },
+  page: { minHeight: '100vh', backgroundColor: '#0F0B1E' },
+  headerBar: {
+    background: '#211B3A',
+    padding: '16px 20px 20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottom: '1px solid #2D2545',
+  },
+  headerBack: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.sm,
+    border: '1px solid #2D2545',
+    background: '#2D2545',
+    color: '#F1F0FF',
+    fontSize: 16,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: { fontSize: 18, fontWeight: 700, color: '#F1F0FF' },
   content: { padding: 20 },
-  scoreCircle: { position: 'relative' as const, display: 'inline-block', width: 120, height: 120 },
-  scoreText: { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  totalBar: { display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderRadius: radius.md, background: colors.surface, boxShadow: shadows.card, marginBottom: 16 },
-  catCard: { padding: 16, borderRadius: radius.md, background: colors.surface, boxShadow: shadows.card, marginBottom: 12 },
-  progressTrack: { height: 8, borderRadius: 4, backgroundColor: colors.borderLight, overflow: 'hidden' },
-  pctInput: { width: 52, padding: '6px 8px', borderRadius: radius.sm, border: `1px solid ${colors.border}`, textAlign: 'center' as const, fontSize: 14, backgroundColor: colors.inputBg, height: 44 },
-  primaryBtn: { width: '100%', height: 52, borderRadius: radius.md, background: colors.primaryGradient, color: '#FFF', fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: 8 },
 };
