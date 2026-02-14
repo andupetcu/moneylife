@@ -42,6 +42,23 @@ import {
   getLoginCalendarController,
   claimLoginRewardController,
 } from './controllers/daily-engagement.js';
+import {
+  weeklyXpLeaderboardController,
+  streaksLeaderboardController,
+  creditLeaderboardController,
+  badgesLeaderboardController,
+  challengesLeaderboardController,
+  createChallengeController,
+  listChallengesController,
+  acceptChallengeController,
+  declineChallengeController,
+  getChallengeController,
+  listShopItemsController,
+  buyItemController,
+  listInventoryController,
+  useItemController,
+  logShareController,
+} from './controllers/competition.js';
 
 export function createRoutes(pool: Pool): Router {
   const router = Router();
@@ -119,6 +136,27 @@ export function createRoutes(pool: Pool): Router {
   router.get('/leaderboard/global', globalLeaderboardController(pool));
   router.get('/leaderboard/friends', friendsLeaderboardController(pool));
   router.get('/leaderboard/level', levelLeaderboardController(pool));
+  router.get('/leaderboard/xp-weekly', weeklyXpLeaderboardController(pool));
+  router.get('/leaderboard/streaks', streaksLeaderboardController(pool));
+  router.get('/leaderboard/credit', creditLeaderboardController(pool));
+  router.get('/leaderboard/badges', badgesLeaderboardController(pool));
+  router.get('/leaderboard/challenges', challengesLeaderboardController(pool));
+
+  // Friend Challenges
+  router.post('/challenges', createChallengeController(pool));
+  router.get('/challenges', listChallengesController(pool));
+  router.post('/challenges/:id/accept', acceptChallengeController(pool));
+  router.post('/challenges/:id/decline', declineChallengeController(pool));
+  router.get('/challenges/:id', getChallengeController(pool));
+
+  // Coin Shop
+  router.get('/shop/items', listShopItemsController(pool));
+  router.post('/shop/buy', buyItemController(pool));
+  router.get('/shop/inventory', listInventoryController(pool));
+  router.post('/shop/use/:itemId', useItemController(pool));
+
+  // Achievement sharing
+  router.post('/share', logShareController(pool));
 
   // Social: Classrooms
   router.post('/classrooms', createClassroomController(pool));

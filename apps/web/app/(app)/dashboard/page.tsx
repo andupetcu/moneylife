@@ -342,7 +342,7 @@ export default function DashboardPage(): React.ReactElement {
           { icon: '🏠', label: isMobile ? '' : 'Home', href: '/dashboard', active: true },
           { icon: '👥', label: isMobile ? '' : 'Social', href: '/social' },
           { icon: '🏆', label: isMobile ? '' : 'Leaderboard', href: '/leaderboard' },
-          { icon: '🎓', label: isMobile ? '' : 'Classroom', href: '/classroom' },
+          { icon: '🛒', label: isMobile ? '' : 'Shop', href: '/shop' },
         ].map(tab => (
           <Link key={tab.href} href={tab.href} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,

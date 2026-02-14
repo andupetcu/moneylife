@@ -343,6 +343,7 @@ export default function GamePage(): React.ReactElement {
     { href: `/game/${gameId}/mirror`, icon: '🪞', label: 'Mirror' },
     { href: `/game/${gameId}/monthly-report/${game.currentDate?.split('-')[0]}/${game.currentDate?.split('-')[1]}`, icon: '📋', label: t('game.report') },
     { href: `/game/${gameId}/calendar`, icon: '📅', label: t('dailyEngagement.calendar') },
+    { href: `/shop`, icon: '🛒', label: 'Shop' },
   ];
 
   // Limit transactions to 5 for the main screen
@@ -896,7 +897,7 @@ export default function GamePage(): React.ReactElement {
           { key: 'dashboard', icon: '🏠', label: t('game.dashboard'), href: `/game/${gameId}` },
           { key: 'social', icon: '👥', label: 'Social', href: '/social' },
           { key: 'leaderboard', icon: '🏆', label: 'Ranks', href: '/leaderboard' },
-          { key: 'classroom', icon: '🎓', label: 'Class', href: '/classroom' },
+          { key: 'shop', icon: '🛒', label: 'Shop', href: '/shop' },
         ].map(tab => (
           <Link
             key={tab.key}

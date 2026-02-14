@@ -396,6 +396,71 @@ export interface LoginReward {
   alreadyClaimed?: boolean;
 }
 
+// ─── Competition types ──────────────────────────────────────────
+
+export interface RankedEntry {
+  rank: number;
+  userId: string;
+  displayName: string;
+  avatarInitial: string;
+  score: number;
+  isYou: boolean;
+}
+
+export interface Challenge {
+  id: string;
+  challengerId: string;
+  challengerName: string;
+  opponentId: string;
+  opponentName: string;
+  challengeType: string;
+  durationDays: number;
+  startGameDate: string | null;
+  endGameDate: string | null;
+  challengerScore: number;
+  opponentScore: number;
+  status: string;
+  winnerId: string | null;
+  rewardXp: number;
+  rewardCoins: number;
+  createdAt: string;
+  isChallenger: boolean;
+}
+
+export interface ShopItem {
+  id: string;
+  itemKey: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  icon: string;
+  effectType: string;
+  effectDurationHours: number | null;
+  maxOwned: number;
+  ownedCount: number;
+}
+
+export interface InventoryItem {
+  id: string;
+  itemKey: string;
+  name: string;
+  description: string;
+  category: string;
+  icon: string;
+  effectType: string;
+  quantity: number;
+  usedAt: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface BuyResult {
+  success: boolean;
+  remainingCoins: number;
+  item: { id: string; itemKey: string; name: string; icon: string };
+}
+
 export const api = {
   auth: {
     register: (email: string, password: string, displayName: string) =>
@@ -536,6 +601,36 @@ export const api = {
     levelLeaderboard: (limit = 50, offset = 0) =>
       request<{ entries: LeaderboardEntry[] }>(`/api/game/leaderboard/level?limit=${limit}&offset=${offset}`),
 
+    // Extended Leaderboards
+    weeklyXpLeaderboard: () =>
+      request<{ entries: RankedEntry[] }>('/api/game/leaderboard/xp-weekly'),
+    streaksLeaderboard: () =>
+      request<{ entries: RankedEntry[] }>('/api/game/leaderboard/streaks'),
+    creditLeaderboard: () =>
+      request<{ entries: RankedEntry[] }>('/api/game/leaderboard/credit'),
+    badgesLeaderboard: () =>
+      request<{ entries: RankedEntry[] }>('/api/game/leaderboard/badges'),
+    challengesLeaderboard: () =>
+      request<{ entries: RankedEntry[] }>('/api/game/leaderboard/challenges'),
+
+    // Friend Challenges
+    createChallenge: (opponentId: string, gameId: string, challengeType: string, durationDays: number) =>
+      request<Challenge>('/api/game/challenges', {
+        method: 'POST',
+        body: JSON.stringify({ opponentId, gameId, challengeType, durationDays }),
+      }),
+    listChallenges: () =>
+      request<{ challenges: Challenge[] }>('/api/game/challenges'),
+    acceptChallenge: (id: string, gameId: string) =>
+      request(`/api/game/challenges/${id}/accept`, {
+        method: 'POST',
+        body: JSON.stringify({ gameId }),
+      }),
+    declineChallenge: (id: string) =>
+      request(`/api/game/challenges/${id}/decline`, { method: 'POST' }),
+    getChallenge: (id: string) =>
+      request<Challenge>(`/api/game/challenges/${id}`),
+
     // Classrooms
     createClassroom: (name: string, description: string) =>
       request<Classroom>('/api/game/classrooms', { method: 'POST', body: JSON.stringify({ name, description }) }),
@@ -547,6 +642,26 @@ export const api = {
       request<Classroom>(`/api/game/classrooms/${id}`),
     classroomLeaderboard: (id: string) =>
       request<{ entries: LeaderboardEntry[] }>(`/api/game/classrooms/${id}/leaderboard`),
+  },
+  shop: {
+    listItems: () =>
+      request<{ items: ShopItem[] }>('/api/game/shop/items'),
+    buy: (itemKey: string, gameId: string) =>
+      request<BuyResult>('/api/game/shop/buy', {
+        method: 'POST',
+        body: JSON.stringify({ itemKey, gameId }),
+      }),
+    listInventory: () =>
+      request<{ items: InventoryItem[] }>('/api/game/shop/inventory'),
+    useItem: (itemId: string) =>
+      request('/api/game/shop/use/' + itemId, { method: 'POST' }),
+  },
+  share: {
+    log: (shareType: string, sharePlatform?: string, badgeId?: string, shareData?: Record<string, unknown>) =>
+      request('/api/game/share', {
+        method: 'POST',
+        body: JSON.stringify({ shareType, sharePlatform, badgeId, shareData }),
+      }),
   },
   banking: {
     link: (region: string, redirectUri?: string) =>

@@ -157,6 +157,23 @@ export default function SocialPage(): React.ReactElement {
           </div>
         )}
 
+        {/* Challenges link */}
+        <Link href="/challenges" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: colors.surface, borderRadius: radius.lg, padding: 16,
+          boxShadow: shadows.card, marginBottom: 20, textDecoration: 'none',
+          border: `1px solid ${colors.border}`,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 28 }}>⚔️</span>
+            <div>
+              <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: colors.textPrimary }}>{t('social.challenges')}</p>
+              <p style={{ margin: '2px 0 0', fontSize: 12, color: colors.textMuted }}>{t('social.headToHead')}</p>
+            </div>
+          </div>
+          <span style={{ fontSize: 20, color: colors.textMuted }}>→</span>
+        </Link>
+
         {/* Friends list */}
         <h2 style={s.sectionTitle}>{t('social.friends')} ({friends.length})</h2>
         {friends.length === 0 ? (
@@ -196,7 +213,7 @@ export default function SocialPage(): React.ReactElement {
           { icon: '🏠', label: 'Home', href: '/dashboard' },
           { icon: '👥', label: 'Social', href: '/social', active: true },
           { icon: '🏆', label: 'Leaderboard', href: '/leaderboard' },
-          { icon: '🎓', label: 'Classroom', href: '/classroom' },
+          { icon: '🛒', label: 'Shop', href: '/shop' },
         ].map(tab => (
           <Link key={tab.href} href={tab.href} style={{ ...s.navTab, color: tab.active ? colors.primary : colors.textMuted, minWidth: 44, minHeight: 44, justifyContent: 'center' }}>
             <span style={{ fontSize: 22 }}>{tab.icon}</span>
