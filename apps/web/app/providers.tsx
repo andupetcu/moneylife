@@ -7,6 +7,8 @@ import { I18nextProvider } from 'react-i18next';
 import { ThemeProvider } from '@moneylife/ui-kit';
 import { AuthProvider } from '../src/lib/auth-context';
 import { ToastProvider } from '../src/components/Toast';
+import { CelebrationProvider } from '../src/lib/celebration-context';
+import CelebrationOverlay from '../src/components/CelebrationOverlay';
 import i18n from '../src/i18n';
 
 const queryClient = new QueryClient({
@@ -40,9 +42,12 @@ export function Providers({ children }: { children: React.ReactNode }): React.Re
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
+            <CelebrationProvider>
+              <ToastProvider>
+                {children}
+                <CelebrationOverlay />
+              </ToastProvider>
+            </CelebrationProvider>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>

@@ -9,6 +9,7 @@ import { colors, radius, shadows } from '../../../../../../src/lib/design-tokens
 import { CardHintButton } from '../../../../../../src/components/AIAdvisor';
 import { useIsMobile } from '../../../../../../src/hooks/useIsMobile';
 import { useToast } from '../../../../../../src/components/Toast';
+import { useCelebration } from '../../../../../../src/lib/celebration-context';
 
 const CATEGORY_STYLES: Record<string, { icon: string; color: string }> = {
   housing:       { icon: '🏠', color: '#7C3AED' },
@@ -120,6 +121,7 @@ export default function CardPage(): React.ReactElement {
   const t = useT();
   const isMobile = useIsMobile();
   const { showToast } = useToast();
+  const { celebrate } = useCelebration();
   const gameId = params.gameId as string;
   const cardId = params.cardId as string;
 
@@ -170,9 +172,21 @@ export default function CardPage(): React.ReactElement {
     setSubmitting(false);
     if (res.ok) {
       const chosen = card?.options?.find(o => o.id === selectedOption);
-      setOutcome({ label: chosen?.label || t('game.decisionMade'), effects: chosen?.effects || [] });
+      const effects = chosen?.effects || [];
+      setOutcome({ label: chosen?.label || t('game.decisionMade'), effects });
       setConfirmed(true);
       showToast(t('game.decisionMade'), 'success');
+
+      // Fire celebrations for card effects
+      for (const eff of effects) {
+        if (eff.type === 'xp' && (eff.amount ?? 0) > 0) {
+          celebrate('xp', { amount: eff.amount });
+        }
+        if (eff.type === 'coins' && (eff.amount ?? 0) > 0) {
+          celebrate('coins', { amount: eff.amount });
+        }
+      }
+
       setTimeout(() => router.push(`/game/${gameId}`), 2500);
     } else {
       setError(res.error || t('game.failedToSubmit'));

@@ -491,6 +491,36 @@
     "multiCurrencyDesc": "Play in your local currency — RON, PLN, EUR, GBP, USD, and more.",
     "footer": "© 2026 MoneyLife. Financial education for everyone."
   },
+  "celebration": {
+    "xpGained": "+{{amount}} XP",
+    "badgeEarned": "Badge Earned!",
+    "levelUp": "LEVEL UP!",
+    "streakMilestone": "🔥 {{days}}-day streak!",
+    "streakMultiplier": "{{multiplier}}x XP bonus",
+    "salaryReceived": "Salary received",
+    "survived": "Survived!"
+  },
+  "streak": {
+    "daysCount": "{{days}} days",
+    "multiplier": "({{multiplier}}x XP)",
+    "noStreak": "Start a streak!"
+  },
+  "badgeProgress": {
+    "title": "Next Badge",
+    "progress": "{{current}}/{{target}} {{description}}",
+    "keepPlaying": "Keep playing to unlock badges!",
+    "almostThere": "Almost there!"
+  },
+  "daySummary": {
+    "title": "Day {{day}} Summary",
+    "xpEarned": "+{{amount}} XP earned",
+    "coinsEarned": "+{{amount}} coins earned",
+    "salaryReceived": "Salary received",
+    "billsPaid": "{{count}} bills paid",
+    "eventsTriggered": "Events today",
+    "noEvents": "A quiet day",
+    "tapToDismiss": "Tap to dismiss"
+  },
   "languages": {
     "en": "English",
     "ro": "Română",

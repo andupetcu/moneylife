@@ -83,4 +83,51 @@ export const globalAnimations = `
     0%, 100% { filter: brightness(1); }
     50% { filter: brightness(1.3); }
   }
+  @keyframes celebrateFloat {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-60px); opacity: 0; }
+  }
+  @keyframes celebrateZoomIn {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes celebrateLevelFly {
+    0% { transform: translateY(80px) scale(0.5); opacity: 0; }
+    50% { transform: translateY(-10px) scale(1.1); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  @keyframes celebrateParticle {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { opacity: 0; }
+  }
+  @keyframes celebrateCheckmark {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  @keyframes celebrateCountUp {
+    0% { transform: scale(0.95); opacity: 0.5; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes celebrateShield {
+    0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+    50% { transform: scale(1.15) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  @keyframes celebrateGoldFlash {
+    0% { box-shadow: 0 0 0 0 rgba(252, 211, 77, 0); }
+    50% { box-shadow: 0 0 30px 8px rgba(252, 211, 77, 0.5); }
+    100% { box-shadow: 0 0 0 0 rgba(252, 211, 77, 0); }
+  }
+  @keyframes celebrateSparkle {
+    0% { transform: scale(0) rotate(0); opacity: 0; }
+    50% { transform: scale(1) rotate(180deg); opacity: 1; }
+    100% { transform: scale(0) rotate(360deg); opacity: 0; }
+  }
+  @keyframes celebrateStreakPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
 `;

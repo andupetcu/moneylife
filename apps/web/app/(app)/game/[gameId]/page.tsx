@@ -14,6 +14,7 @@ import { useT } from '../../../../src/lib/useT';
 import LanguageSwitcher from '../../../../src/components/LanguageSwitcher';
 import { useIsMobile } from '../../../../src/hooks/useIsMobile';
 import { useToast } from '../../../../src/components/Toast';
+import { useCelebration } from '../../../../src/lib/celebration-context';
 
 // Dark theme colors (hardcoded — chunk A may not be merged yet)
 const dk = {
@@ -34,7 +35,9 @@ const dk = {
   danger: '#FB7185',
   warning: '#FBBF24',
   accentCyan: '#22D3EE',
+  accentGold: '#FCD34D',
   glowPrimary: '0 0 20px rgba(99, 102, 241, 0.4)',
+  glowGold: '0 0 20px rgba(252, 211, 77, 0.4)',
   glowCyan: '0 0 15px rgba(34, 211, 238, 0.3)',
   shadowCard: '0 2px 12px rgba(0, 0, 0, 0.3)',
   shadowElevated: '0 8px 32px rgba(0, 0, 0, 0.4)',
@@ -119,11 +122,30 @@ function GameSkeleton() {
   );
 }
 
+function getStreakTier(days: number): { color: string; glowColor: string } {
+  if (days >= 90) return { color: dk.accentGold, glowColor: 'rgba(252, 211, 77, 0.4)' };
+  if (days >= 30) return { color: '#A855F7', glowColor: 'rgba(168, 85, 247, 0.4)' };
+  if (days >= 7) return { color: '#EF4444', glowColor: 'rgba(239, 68, 68, 0.4)' };
+  if (days >= 1) return { color: '#F97316', glowColor: 'rgba(249, 115, 22, 0.4)' };
+  return { color: dk.textMuted, glowColor: 'none' };
+}
+
+function getStreakMultiplier(days: number): number {
+  if (days >= 90) return 1.5;
+  if (days >= 30) return 1.3;
+  if (days >= 7) return 1.2;
+  if (days >= 3) return 1.1;
+  return 1;
+}
+
 interface DaySummary {
   day: number;
   xpGained: number;
+  coinsGained: number;
   newCards: number;
   events: string[];
+  salaryReceived: boolean;
+  billsPaid: number;
 }
 
 export default function GamePage(): React.ReactElement {
@@ -133,9 +155,11 @@ export default function GamePage(): React.ReactElement {
   const t = useT();
   const isMobile = useIsMobile();
   const { showToast } = useToast();
+  const { celebrate } = useCelebration();
   const gameId = params.gameId as string;
 
   const [game, setGame] = useState<GameResponse | null>(null);
+  const [badges, setBadges] = useState<Badge[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -146,25 +170,35 @@ export default function GamePage(): React.ReactElement {
   const [levelUpLevel, setLevelUpLevel] = useState<number | null>(null);
   const [newBadges, setNewBadges] = useState<Badge[]>([]);
   const [daySummary, setDaySummary] = useState<DaySummary | null>(null);
+  const [showDaySummaryOverlay, setShowDaySummaryOverlay] = useState(false);
   const prevLevelRef = useRef<number | null>(null);
+  const prevNetWorthRef = useRef<number | null>(null);
   const pendingCardsRef = useRef<HTMLDivElement>(null);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [bankCardHover, setBankCardHover] = useState(false);
 
   const fetchGame = useCallback(async () => {
     if (!gameId) return;
-    const [gameRes, txRes, billsRes] = await Promise.all([
+    const [gameRes, txRes, billsRes, badgesRes] = await Promise.all([
       api.game.get(gameId),
       api.game.getTransactions(gameId),
       api.game.getBills(gameId),
+      api.game.getBadges(gameId),
     ]);
-    if (gameRes.ok && gameRes.data) setGame(gameRes.data);
-    else setError(gameRes.error || 'Failed to load game');
+    if (gameRes.ok && gameRes.data) {
+      setGame(gameRes.data);
+      if (prevNetWorthRef.current === null) {
+        prevNetWorthRef.current = gameRes.data.netWorth ?? 0;
+      }
+    } else {
+      setError(gameRes.error || 'Failed to load game');
+    }
     if (txRes.ok && txRes.data) {
       const txList = Array.isArray(txRes.data) ? txRes.data : (txRes.data as any).transactions || [];
       setTransactions(txList.slice(0, 15));
     }
     if (billsRes.ok && billsRes.data) setBills(billsRes.data);
+    if (badgesRes.ok && badgesRes.data) setBadges(badgesRes.data);
     setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
@@ -179,6 +213,8 @@ export default function GamePage(): React.ReactElement {
     setError(null);
     const prevLevel = game?.level ?? null;
     const prevXp = game?.xp ?? 0;
+    const prevCoins = game?.totalCoins ?? 0;
+    const prevNW = game?.netWorth ?? 0;
     const prevCardCount = game?.pendingCards?.length ?? 0;
     const res = await api.game.submitAction(gameId, { type: 'advance_day' });
     setAdvancing(false);
@@ -191,28 +227,73 @@ export default function GamePage(): React.ReactElement {
       const updatedGame = await api.game.get(gameId);
       if (updatedGame.ok && updatedGame.data) {
         const newXp = updatedGame.data.xp ?? 0;
+        const newCoins = updatedGame.data.totalCoins ?? 0;
+        const newNW = updatedGame.data.netWorth ?? 0;
         const newCardCount = updatedGame.data.pendingCards?.length ?? 0;
         const dayNum = updatedGame.data.currentDate ? new Date(updatedGame.data.currentDate).getDate() : 0;
 
         // Build day summary
         const events: string[] = [];
+        let salaryReceived = false;
+        let billsPaid = 0;
+        let hasCrisis = false;
         if (resData?.events && Array.isArray(resData.events)) {
-          (resData.events as { type: string; description: string }[])
-            .filter(e => e.type !== 'day_advanced')
-            .forEach(e => events.push(e.description));
+          (resData.events as { type: string; description: string }[]).forEach(e => {
+            if (e.type === 'day_advanced') return;
+            if (e.type === 'salary' || e.type === 'salary_deposit') salaryReceived = true;
+            if (e.type === 'bill_paid' || e.type === 'bill_autopaid') billsPaid++;
+            events.push(e.description);
+          });
         }
         if (resData?.randomEvents && Array.isArray(resData.randomEvents)) {
-          (resData.randomEvents as { description: string }[]).forEach(e => events.push(e.description));
+          (resData.randomEvents as { description: string; type?: string }[]).forEach(e => {
+            if ((e as any).type === 'crisis' || (e as any).type === 'emergency') hasCrisis = true;
+            events.push(e.description);
+          });
         }
+
+        const xpGained = Math.max(0, newXp - prevXp);
+        const coinsGained = Math.max(0, newCoins - prevCoins);
+
+        // Show enhanced day summary overlay
         setDaySummary({
           day: dayNum > 0 ? dayNum - 1 : 0,
-          xpGained: Math.max(0, newXp - prevXp),
+          xpGained,
+          coinsGained,
           newCards: Math.max(0, newCardCount - prevCardCount),
           events,
+          salaryReceived,
+          billsPaid,
         });
-        setTimeout(() => setDaySummary(null), 8000);
+        setShowDaySummaryOverlay(true);
+        setTimeout(() => setShowDaySummaryOverlay(false), 3000);
 
+        // Fire celebrations
+        if (xpGained > 0) {
+          celebrate('xp', { amount: xpGained });
+        }
+        if (coinsGained > 0) {
+          celebrate('coins', { amount: coinsGained });
+        }
+        if (salaryReceived && (updatedGame.data.monthlyIncome ?? 0) > 0) {
+          celebrate('salary', { amount: updatedGame.data.monthlyIncome ?? 0 });
+        }
+        if (billsPaid > 0) {
+          celebrate('billPaid');
+        }
+        if (hasCrisis) {
+          celebrate('crisis');
+        }
+
+        // Net worth high
+        if (prevNetWorthRef.current !== null && newNW > prevNetWorthRef.current && newNW > prevNW) {
+          celebrate('netWorthHigh');
+        }
+        prevNetWorthRef.current = Math.max(prevNetWorthRef.current ?? 0, newNW);
+
+        // Level up
         if (prevLevel !== null && updatedGame.data.level > prevLevel) {
+          celebrate('levelUp', { level: updatedGame.data.level });
           setLevelUpLevel(updatedGame.data.level);
         }
 
@@ -278,9 +359,9 @@ export default function GamePage(): React.ReactElement {
           </div>
           {!isMobile && <LanguageSwitcher />}
         </div>
-        {/* XP Bar in header — cyan glow */}
+        {/* XP Bar + Streak in header */}
         <div style={{ marginTop: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>⭐ XP</span>
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{game.xp}{game.xpToNextLevel ? ` / ${game.xpToNextLevel}` : ''}</span>
           </div>
@@ -293,6 +374,41 @@ export default function GamePage(): React.ReactElement {
               boxShadow: dk.glowCyan,
             }} />
           </div>
+          {/* Streak Counter */}
+          {(() => {
+            const streakDays = game.streakDays ?? 0;
+            const tier = getStreakTier(streakDays);
+            const mult = getStreakMultiplier(streakDays);
+            return (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginTop: 10,
+                padding: '6px 12px',
+                borderRadius: radius.pill,
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                alignSelf: 'flex-start',
+              }}>
+                <span style={{
+                  fontSize: streakDays >= 30 ? 22 : streakDays >= 7 ? 20 : 18,
+                  animation: streakDays > 0 ? 'celebrateStreakPulse 1.5s ease-in-out infinite' : 'none',
+                  filter: streakDays > 0 ? `drop-shadow(0 0 6px ${tier.glowColor})` : 'none',
+                }}>🔥</span>
+                <span style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: tier.color,
+                  textShadow: streakDays > 0 ? `0 0 8px ${tier.glowColor}` : 'none',
+                }}>
+                  {streakDays > 0
+                    ? `${streakDays} ${t('streak.daysCount', { days: streakDays })} ${mult > 1 ? t('streak.multiplier', { multiplier: mult.toFixed(1) }) : ''}`
+                    : t('streak.noStreak')
+                  }
+                </span>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -351,6 +467,66 @@ export default function GamePage(): React.ReactElement {
           </div>
         </div>
 
+        {/* Badge Progress Widget */}
+        {(() => {
+          const unearnedBadges = badges.filter(b => !b.earned);
+          if (unearnedBadges.length === 0) {
+            return (
+              <div style={{
+                padding: 16,
+                borderRadius: radius.lg,
+                background: dk.surface,
+                border: `1px solid ${dk.border}`,
+                marginBottom: 20,
+                textAlign: 'center' as const,
+              }}>
+                <span style={{ fontSize: 24 }}>🏆</span>
+                <p style={{ margin: '8px 0 0', fontSize: 13, color: dk.textSecondary }}>
+                  {t('badgeProgress.keepPlaying')}
+                </p>
+              </div>
+            );
+          }
+          const nextBadge = unearnedBadges[0];
+          return (
+            <div style={{
+              padding: 16,
+              borderRadius: radius.lg,
+              background: dk.surface,
+              border: `1px solid ${dk.border}`,
+              marginBottom: 20,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              boxShadow: dk.shadowCard,
+            }}>
+              <div style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                background: `${dk.accentGold}15`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: dk.glowGold,
+                animation: 'glowPulse 3s ease-in-out infinite',
+              }}>
+                <span style={{ fontSize: 28, filter: 'brightness(0.7)' }}>{nextBadge.icon || '🏅'}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: dk.accentGold, textTransform: 'uppercase' as const, letterSpacing: 0.5 }}>
+                  {t('badgeProgress.title')}
+                </p>
+                <p style={{ margin: '2px 0 4px', fontSize: 14, fontWeight: 600, color: dk.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                  {nextBadge.name}
+                </p>
+                <p style={{ margin: 0, fontSize: 12, color: dk.textSecondary }}>{nextBadge.description}</p>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Quick Actions */}
         <div style={{ ...s.quickGrid, gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)' }}>
           {quickActions.map(item => (
@@ -388,36 +564,121 @@ export default function GamePage(): React.ReactElement {
           </button>
         </div>
 
-        {/* Day Summary Feedback */}
-        {daySummary && (
-          <div style={{
-            padding: 16, borderRadius: radius.lg,
-            background: dk.surfaceElevated,
-            border: `1px solid ${dk.primary}33`,
-            marginBottom: 20,
-            animation: 'slideUp 0.4s ease',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 20 }}>🌟</span>
-              <span style={{ fontWeight: 700, color: dk.textPrimary, fontSize: 15 }}>
-                Day {daySummary.day} complete!
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const }}>
-              {daySummary.xpGained > 0 && (
-                <span style={{ fontSize: 13, color: dk.accentCyan, fontWeight: 600 }}>+{daySummary.xpGained} XP</span>
-              )}
-              {daySummary.newCards > 0 && (
-                <span style={{ fontSize: 13, color: dk.warning, fontWeight: 600 }}>{daySummary.newCards} new decisions</span>
-              )}
-            </div>
-            {daySummary.events.length > 0 && (
-              <div style={{ marginTop: 8 }}>
-                {daySummary.events.map((evt, i) => (
-                  <p key={i} style={{ margin: '4px 0 0', fontSize: 13, color: dk.textSecondary }}>⚡ {evt}</p>
-                ))}
+        {/* Enhanced Day Summary Overlay */}
+        {showDaySummaryOverlay && daySummary && (
+          <div
+            onClick={() => setShowDaySummaryOverlay(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1060,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 24,
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(15, 11, 30, 0.7)',
+              backdropFilter: 'blur(4px)',
+            }} />
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: 360,
+              padding: 24,
+              borderRadius: radius.xl,
+              background: dk.surfaceElevated,
+              border: `1px solid ${dk.primary}33`,
+              boxShadow: dk.shadowElevated,
+              animation: 'scaleIn 0.3s ease',
+              zIndex: 1,
+            }}>
+              <div style={{ textAlign: 'center' as const, marginBottom: 16 }}>
+                <span style={{ fontSize: 40 }}>🌟</span>
+                <h3 style={{ margin: '8px 0 4px', fontSize: 18, fontWeight: 700, color: dk.textPrimary }}>
+                  {t('daySummary.title', { day: daySummary.day })}
+                </h3>
               </div>
-            )}
+
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' as const, marginBottom: 16 }}>
+                {daySummary.xpGained > 0 && (
+                  <div style={{
+                    padding: '6px 14px',
+                    borderRadius: radius.pill,
+                    backgroundColor: 'rgba(34, 211, 238, 0.15)',
+                    border: '1px solid rgba(34, 211, 238, 0.3)',
+                  }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: dk.accentCyan, animation: 'celebrateCountUp 0.8s ease-out' }}>
+                      {t('daySummary.xpEarned', { amount: daySummary.xpGained })}
+                    </span>
+                  </div>
+                )}
+                {daySummary.coinsGained > 0 && (
+                  <div style={{
+                    padding: '6px 14px',
+                    borderRadius: radius.pill,
+                    backgroundColor: 'rgba(252, 211, 77, 0.15)',
+                    border: '1px solid rgba(252, 211, 77, 0.3)',
+                  }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: dk.accentGold, animation: 'celebrateCountUp 0.8s ease-out 0.1s both' }}>
+                      {t('daySummary.coinsEarned', { amount: daySummary.coinsGained })}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {(daySummary.salaryReceived || daySummary.billsPaid > 0 || daySummary.newCards > 0) && (
+                <div style={{ marginBottom: 12 }}>
+                  {daySummary.salaryReceived && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <span>💰</span>
+                      <span style={{ fontSize: 13, color: dk.success, fontWeight: 600 }}>{t('daySummary.salaryReceived')}</span>
+                    </div>
+                  )}
+                  {daySummary.billsPaid > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <span>✅</span>
+                      <span style={{ fontSize: 13, color: dk.success, fontWeight: 600 }}>{t('daySummary.billsPaid', { count: daySummary.billsPaid })}</span>
+                    </div>
+                  )}
+                  {daySummary.newCards > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <span>⚡</span>
+                      <span style={{ fontSize: 13, color: dk.warning, fontWeight: 600 }}>{daySummary.newCards} new decisions</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {daySummary.events.length > 0 && (
+                <div style={{
+                  padding: 12,
+                  borderRadius: radius.md,
+                  backgroundColor: dk.surface,
+                  marginBottom: 12,
+                }}>
+                  <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 600, color: dk.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.5 }}>
+                    {t('daySummary.eventsTriggered')}
+                  </p>
+                  {daySummary.events.map((evt, i) => (
+                    <p key={i} style={{
+                      margin: '4px 0 0',
+                      fontSize: 13,
+                      color: dk.textSecondary,
+                      animation: `fadeIn 0.3s ease ${i * 0.1}s both`,
+                    }}>⚡ {evt}</p>
+                  ))}
+                </div>
+              )}
+
+              <p style={{ margin: 0, textAlign: 'center' as const, fontSize: 12, color: dk.textMuted }}>
+                {t('daySummary.tapToDismiss')}
+              </p>
+            </div>
           </div>
         )}
 
