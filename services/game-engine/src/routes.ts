@@ -34,6 +34,14 @@ import {
   syncBankController,
   mirrorController,
 } from './controllers/banking.js';
+import {
+  getDailyTipController,
+  markTipUsefulController,
+  getDailyChallengeController,
+  completeDailyChallengeController,
+  getLoginCalendarController,
+  claimLoginRewardController,
+} from './controllers/daily-engagement.js';
 
 export function createRoutes(pool: Pool): Router {
   const router = Router();
@@ -54,6 +62,14 @@ export function createRoutes(pool: Pool): Router {
   router.get('/games/:id/badges', getBadgesController(pool));
   router.get('/games/:id/rewards-summary', getRewardsSummaryController(pool));
   router.post('/games/:id/spend-coins', spendCoinsController(pool));
+
+  // Daily engagement endpoints
+  router.get('/games/:id/daily-tip', getDailyTipController(pool));
+  router.post('/games/:id/daily-tip/:tipId/useful', markTipUsefulController(pool));
+  router.get('/games/:id/daily-challenge', getDailyChallengeController(pool));
+  router.post('/games/:id/daily-challenge/complete', completeDailyChallengeController(pool));
+  router.get('/games/:id/login-calendar', getLoginCalendarController(pool));
+  router.post('/games/:id/login-reward', claimLoginRewardController(pool));
 
   // AI advisor endpoints
   router.get('/games/:id/ai/status', getAIStatusController(pool));

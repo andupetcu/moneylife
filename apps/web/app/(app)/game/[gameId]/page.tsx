@@ -15,6 +15,9 @@ import LanguageSwitcher from '../../../../src/components/LanguageSwitcher';
 import { useIsMobile } from '../../../../src/hooks/useIsMobile';
 import { useToast } from '../../../../src/components/Toast';
 import { useCelebration } from '../../../../src/lib/celebration-context';
+import MorningBriefing from '../../../../src/components/MorningBriefing';
+import DailyTipBanner from '../../../../src/components/DailyTipBanner';
+import DailyChallengeCard from '../../../../src/components/DailyChallengeCard';
 
 // Dark theme colors (hardcoded — chunk A may not be merged yet)
 const dk = {
@@ -176,6 +179,7 @@ export default function GamePage(): React.ReactElement {
   const pendingCardsRef = useRef<HTMLDivElement>(null);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [bankCardHover, setBankCardHover] = useState(false);
+  const [showBriefing, setShowBriefing] = useState(true);
 
   const fetchGame = useCallback(async () => {
     if (!gameId) return;
@@ -338,6 +342,7 @@ export default function GamePage(): React.ReactElement {
     { href: `/banking`, icon: '🏦', label: 'Banking' },
     { href: `/game/${gameId}/mirror`, icon: '🪞', label: 'Mirror' },
     { href: `/game/${gameId}/monthly-report/${game.currentDate?.split('-')[0]}/${game.currentDate?.split('-')[1]}`, icon: '📋', label: t('game.report') },
+    { href: `/game/${gameId}/calendar`, icon: '📅', label: t('dailyEngagement.calendar') },
   ];
 
   // Limit transactions to 5 for the main screen
@@ -466,6 +471,19 @@ export default function GamePage(): React.ReactElement {
             </div>
           </div>
         </div>
+
+        {/* Daily Tip Banner */}
+        <DailyTipBanner gameId={gameId} />
+
+        {/* Daily Challenge Card */}
+        <DailyChallengeCard
+          gameId={gameId}
+          onComplete={(xp, coins) => {
+            if (xp > 0) celebrate('xp', { amount: xp });
+            if (coins > 0) celebrate('coins', { amount: coins });
+            fetchGame();
+          }}
+        />
 
         {/* Badge Progress Widget */}
         {(() => {
@@ -852,6 +870,11 @@ export default function GamePage(): React.ReactElement {
           </div>
         )}
       </div>
+
+      {/* Morning Briefing */}
+      {showBriefing && game && (
+        <MorningBriefing game={game} onDismiss={() => setShowBriefing(false)} />
+      )}
 
       {/* Tutorial overlay */}
       {showTutorial && <Tutorial gameId={gameId} onComplete={() => setShowTutorial(false)} />}

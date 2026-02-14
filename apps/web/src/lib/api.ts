@@ -368,6 +368,34 @@ export interface MirrorDashboard {
   topDifferences: CategoryComparison[];
 }
 
+// ─── Daily engagement types ──────────────────────────────────────
+
+export interface DailyTip {
+  id: string;
+  category: string;
+  tipText: string;
+  tipSource?: string;
+}
+
+export interface DailyChallenge {
+  id: string;
+  challengeType: string;
+  title: string;
+  description: string;
+  rewardXp: number;
+  rewardCoins: number;
+  checkType: string;
+  status: string;
+  gameDate: string;
+}
+
+export interface LoginReward {
+  gameDate: string;
+  rewardCoins: number;
+  streakDay: number;
+  alreadyClaimed?: boolean;
+}
+
 export const api = {
   auth: {
     register: (email: string, password: string, displayName: string) =>
@@ -456,6 +484,20 @@ export const api = {
       }
       return res as ApiResponse<Badge[]>;
     },
+  },
+  dailyEngagement: {
+    getDailyTip: (gameId: string) =>
+      request<DailyTip>(`/api/game/games/${gameId}/daily-tip`),
+    markTipUseful: (gameId: string, tipId: string) =>
+      request<void>(`/api/game/games/${gameId}/daily-tip/${tipId}/useful`, { method: 'POST' }),
+    getDailyChallenge: (gameId: string) =>
+      request<DailyChallenge>(`/api/game/games/${gameId}/daily-challenge`),
+    completeDailyChallenge: (gameId: string) =>
+      request<{ xpEarned: number; coinsEarned: number }>(`/api/game/games/${gameId}/daily-challenge/complete`, { method: 'POST' }),
+    getLoginCalendar: (gameId: string) =>
+      request<LoginReward[]>(`/api/game/games/${gameId}/login-calendar`),
+    claimLoginReward: (gameId: string) =>
+      request<LoginReward>(`/api/game/games/${gameId}/login-reward`, { method: 'POST' }),
   },
   ai: {
     getStatus: (gameId: string) =>
