@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { radius } from '../../../src/lib/design-tokens';
 import LanguageSwitcher from '../../../src/components/LanguageSwitcher';
 import { useIsMobile } from '../../../src/hooks/useIsMobile';
+import VirtualPet from '../../../src/components/VirtualPet';
+import { getPetState, getPetStage, getPetSpecies } from '../../../src/lib/pet-utils';
 
 // Dark theme colors (hardcoded — chunk A may not be merged yet)
 const dk = {
@@ -176,7 +178,16 @@ export default function DashboardPage(): React.ReactElement {
                   <div style={{ position: 'absolute', bottom: -30, right: 40, width: 100, height: 100, borderRadius: 50, background: 'rgba(255,255,255,0.05)' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 10 : 14 }}>
-                      <span style={{ fontSize: isMobile ? 32 : 40 }}>{PERSONAS.find(p => p.id === game.persona)?.emoji || '🎮'}</span>
+                      {game.status === 'active' ? (
+                        <VirtualPet
+                          species={getPetSpecies(game.persona)}
+                          stage={getPetStage(game.level)}
+                          state={getPetState(game)}
+                          size="mini"
+                        />
+                      ) : (
+                        <span style={{ fontSize: isMobile ? 32 : 40 }}>{PERSONAS.find(p => p.id === game.persona)?.emoji || '🎮'}</span>
+                      )}
                       <div>
                         <p style={{ fontWeight: 600, fontSize: isMobile ? 15 : 17, margin: 0, textTransform: 'capitalize' }}>{game.persona.replace('_', ' ')}</p>
                         <p style={{ fontSize: 13, opacity: 0.85, margin: '2px 0 0' }}>{t('game.level', { level: game.level })} · {game.xp} XP</p>
@@ -339,12 +350,13 @@ export default function DashboardPage(): React.ReactElement {
         paddingBottom: 'env(safe-area-inset-bottom, 14px)',
       }}>
         {[
-          { icon: '🏠', label: isMobile ? '' : 'Home', href: '/dashboard', active: true },
-          { icon: '👥', label: isMobile ? '' : 'Social', href: '/social' },
-          { icon: '🏆', label: isMobile ? '' : 'Leaderboard', href: '/leaderboard' },
-          { icon: '🛒', label: isMobile ? '' : 'Shop', href: '/shop' },
+          { key: 'home', icon: '🏠', label: isMobile ? '' : 'Home', href: '/dashboard', active: true },
+          { key: 'pet', icon: '🐾', label: isMobile ? '' : 'Pet', href: (() => { const ag = games.find(g => g.status === 'active'); return ag ? `/pet/${ag.id}` : '/dashboard'; })() },
+          { key: 'social', icon: '👥', label: isMobile ? '' : 'Social', href: '/social' },
+          { key: 'leaderboard', icon: '🏆', label: isMobile ? '' : 'Leaderboard', href: '/leaderboard' },
+          { key: 'shop', icon: '🛒', label: isMobile ? '' : 'Shop', href: '/shop' },
         ].map(tab => (
-          <Link key={tab.href} href={tab.href} style={{
+          <Link key={tab.key} href={tab.href} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
             textDecoration: 'none',
             color: tab.active ? dk.primary : dk.textMuted,

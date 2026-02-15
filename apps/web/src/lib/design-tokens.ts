@@ -130,4 +130,63 @@ export const globalAnimations = `
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.15); }
   }
+  @keyframes petBounce {
+    0%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
+    50% { transform: translateY(-6px); }
+    70% { transform: translateY(-8px); }
+  }
+  @keyframes petFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  @keyframes petShiver {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-2px); }
+    40% { transform: translateX(2px); }
+    60% { transform: translateX(-1px); }
+    80% { transform: translateX(1px); }
+  }
+  @keyframes petSad {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(3px) rotate(-2deg); }
+  }
+  @keyframes petBlink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.1); }
+  }
+  @keyframes petSparkle {
+    0% { transform: scale(0) rotate(0deg); opacity: 0; }
+    50% { transform: scale(1) rotate(180deg); opacity: 1; }
+    100% { transform: scale(0) rotate(360deg); opacity: 0; }
+  }
+  @keyframes petRain {
+    0% { transform: translateY(-10px); opacity: 0; }
+    30% { opacity: 0.7; }
+    100% { transform: translateY(40px); opacity: 0; }
+  }
+  @keyframes petEvolve {
+    0% { transform: scale(1); filter: brightness(1); }
+    30% { transform: scale(1.3); filter: brightness(2); }
+    50% { transform: scale(0.9); filter: brightness(1.5); }
+    70% { transform: scale(1.1); filter: brightness(1.8); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+  @keyframes petInteract {
+    0% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(-10deg) scale(1.1); }
+    50% { transform: rotate(10deg) scale(1.05); }
+    75% { transform: rotate(-5deg) scale(1.08); }
+    100% { transform: rotate(0deg) scale(1); }
+  }
+  @keyframes petTailWag {
+    0%, 100% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+  }
+  @keyframes habitatCloud {
+    0% { transform: translateX(-100px); opacity: 0; }
+    10% { opacity: 0.5; }
+    90% { opacity: 0.5; }
+    100% { transform: translateX(400px); opacity: 0; }
+  }
 `;

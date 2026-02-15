@@ -18,6 +18,8 @@ import { useCelebration } from '../../../../src/lib/celebration-context';
 import MorningBriefing from '../../../../src/components/MorningBriefing';
 import DailyTipBanner from '../../../../src/components/DailyTipBanner';
 import DailyChallengeCard from '../../../../src/components/DailyChallengeCard';
+import PetHabitat from '../../../../src/components/PetHabitat';
+import { getPetName, getPetSpecies, getPetStage } from '../../../../src/lib/pet-utils';
 
 // Dark theme colors (hardcoded — chunk A may not be merged yet)
 const dk = {
@@ -419,6 +421,23 @@ export default function GamePage(): React.ReactElement {
       </div>
 
       <div style={{ ...s.content, padding: isMobile ? '0 16px 120px' : '0 20px 120px' }}>
+        {/* Pet Habitat Hero */}
+        <div style={{ margin: '-8px 0 16px' }}>
+          <PetHabitat game={game} height={isMobile ? 180 : 220} />
+          <Link href={`/pet/${gameId}`} style={{
+            display: 'block',
+            textAlign: 'center',
+            padding: '8px 0',
+            fontSize: 13,
+            fontWeight: 600,
+            color: dk.primary,
+            textDecoration: 'none',
+            marginTop: -12,
+          }}>
+            Visit {getPetName(game.persona, getPetStage(game.level))} →
+          </Link>
+        </div>
+
         {/* Bank Card - Net Worth with 3D tilt on hover */}
         <div
           onMouseEnter={() => setBankCardHover(true)}
@@ -895,6 +914,7 @@ export default function GamePage(): React.ReactElement {
       <div style={{ ...s.bottomNav, paddingBottom: 'env(safe-area-inset-bottom, 14px)' }}>
         {[
           { key: 'dashboard', icon: '🏠', label: t('game.dashboard'), href: `/game/${gameId}` },
+          { key: 'pet', icon: '🐾', label: 'Pet', href: `/pet/${gameId}` },
           { key: 'social', icon: '👥', label: 'Social', href: '/social' },
           { key: 'leaderboard', icon: '🏆', label: 'Ranks', href: '/leaderboard' },
           { key: 'shop', icon: '🛒', label: 'Shop', href: '/shop' },
