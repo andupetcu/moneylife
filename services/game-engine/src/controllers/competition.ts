@@ -569,10 +569,16 @@ export function buyItemController(pool: Pool) {
           [item.price, gameId],
         );
 
+        const balanceResult = await client.query(
+          'SELECT total_coins FROM games WHERE id = $1',
+          [gameId],
+        );
+        const balanceAfter = balanceResult.rows[0]?.total_coins ?? 0;
+
         await client.query(
-          `INSERT INTO coin_ledger (user_id, amount, reason, reference_id)
-           VALUES ($1, $2, $3, $4)`,
-          [userId, -item.price, `Shop purchase: ${item.name}`, item.id],
+          `INSERT INTO coin_ledger (user_id, amount, balance_after, reason, reference_id)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [userId, -item.price, balanceAfter, `Shop purchase: ${item.name}`, item.id],
         );
 
         const expiresAt = item.effect_duration_hours
