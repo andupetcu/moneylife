@@ -13,6 +13,22 @@ const LANGUAGES = [
   { code: 'fr', flag: '🇫🇷', name: 'Français' },
   { code: 'es', flag: '🇪🇸', name: 'Español' },
   { code: 'cs', flag: '🇨🇿', name: 'Čeština' },
+  { code: 'it', flag: '🇮🇹', name: 'Italiano' },
+  { code: 'pt', flag: '🇧🇷', name: 'Português' },
+  { code: 'sv', flag: '🇸🇪', name: 'Svenska' },
+  { code: 'da', flag: '🇩🇰', name: 'Dansk' },
+  { code: 'nb', flag: '🇳🇴', name: 'Norsk' },
+  { code: 'fi', flag: '🇫🇮', name: 'Suomi' },
+  { code: 'ja', flag: '🇯🇵', name: '日本語' },
+  { code: 'hi', flag: '🇮🇳', name: 'हिन्दी' },
+  { code: 'zh', flag: '🇨🇳', name: '中文' },
+  { code: 'tr', flag: '🇹🇷', name: 'Türkçe' },
+  { code: 'nl', flag: '🇳🇱', name: 'Nederlands' },
+  { code: 'el', flag: '🇬🇷', name: 'Ελληνικά' },
+  { code: 'bg', flag: '🇧🇬', name: 'Български' },
+  { code: 'hr', flag: '🇭🇷', name: 'Hrvatski' },
+  { code: 'sk', flag: '🇸🇰', name: 'Slovenčina' },
+  { code: 'uk', flag: '🇺🇦', name: 'Українська' },
 ];
 
 export default function LanguageSwitcher(): React.ReactElement {
